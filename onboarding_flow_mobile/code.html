@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Onboarding - Threads SMM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary-fixed": "#24005b",
+                        "on-background": "#dfe2ec",
+                        "on-tertiary-fixed": "#321300",
+                        "surface-dim": "#0f141a",
+                        "inverse-on-surface": "#2c3138",
+                        "secondary-container": "#5919c1",
+                        "on-tertiary": "#512300",
+                        "error": "#ffb4ab",
+                        "surface-container": "#1c2027",
+                        "on-primary-fixed": "#001c39",
+                        "surface-bright": "#353941",
+                        "primary": "#a3c9ff",
+                        "secondary-fixed-dim": "#d1bcff",
+                        "on-tertiary-fixed-variant": "#743500",
+                        "on-surface-variant": "#c0c7d5",
+                        "surface-container-lowest": "#0a0e15",
+                        "on-tertiary-container": "#471e00",
+                        "on-secondary": "#3d0090",
+                        "outline": "#8a919f",
+                        "surface-container-high": "#262a31",
+                        "inverse-surface": "#dfe2ec",
+                        "surface-variant": "#31353c",
+                        "tertiary-fixed-dim": "#ffb689",
+                        "surface-tint": "#a3c9ff",
+                        "on-primary-container": "#002a51",
+                        "error-container": "#93000a",
+                        "surface": "#0f141a",
+                        "primary-container": "#1493ff",
+                        "on-surface": "#dfe2ec",
+                        "surface-container-low": "#181c22",
+                        "secondary-fixed": "#eaddff",
+                        "background": "#0f141a",
+                        "tertiary-container": "#e56f03",
+                        "primary-fixed": "#d3e3ff",
+                        "on-secondary-fixed-variant": "#5714be",
+                        "on-secondary-container": "#c5abff",
+                        "outline-variant": "#404753",
+                        "tertiary": "#ffb689",
+                        "on-primary-fixed-variant": "#004883",
+                        "on-error-container": "#ffdad6",
+                        "on-error": "#690005",
+                        "tertiary-fixed": "#ffdbc8",
+                        "surface-container-highest": "#31353c",
+                        "primary-fixed-dim": "#a3c9ff",
+                        "inverse-primary": "#0060ab",
+                        "secondary": "#d1bcff",
+                        "on-primary": "#00315d"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "sidebar-width": "240px",
+                        "base": "8px",
+                        "lg": "48px",
+                        "container-max": "1440px",
+                        "xl": "80px",
+                        "gutter": "24px",
+                        "sm": "12px",
+                        "md": "24px",
+                        "xs": "4px"
+                    },
+                    fontFamily: {
+                        "table-text": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["JetBrains Mono"],
+                        "display": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    fontSize: {
+                        "table-text": ["13px", { lineHeight: "1.4", fontWeight: "400" }],
+                        "headline-md": ["24px", { lineHeight: "1.3", fontWeight: "600" }],
+                        "headline-lg": ["32px", { lineHeight: "1.2", letterSpacing: "-0.01em", fontWeight: "600" }],
+                        "body-md": ["14px", { lineHeight: "1.5", fontWeight: "400" }],
+                        "label-caps": ["11px", { lineHeight: "1", letterSpacing: "0.05em", fontWeight: "500" }],
+                        "display": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "body-lg": ["16px", { lineHeight: "1.6", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #0A0A0C; /* Explicitly setting base level 0 */
+        }
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f141a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #31353c;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #404753;
+        }
+        
+        .glass-panel {
+            background: rgba(31, 31, 35, 0.7); /* Custom card level 2 with opacity */
+            backdrop-filter: blur(12px);
+            border: 1px solid #2D2D33;
+        }
+        
+        .input-glow:focus {
+            border-color: #a3c9ff;
+            box-shadow: 0 0 0 2px rgba(163, 201, 255, 0.2);
+            outline: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col relative pb-[80px]">
+<!-- Header (No TopNavBar shell due to transactional intent, just a simple brand header) -->
+<header class="w-full flex justify-center items-center h-16 px-md z-40 border-b border-outline-variant bg-surface/80 backdrop-blur-md sticky top-0">
+<h1 class="font-headline-md text-headline-md font-black text-on-surface tracking-tight">Threads SMM</h1>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col px-md py-md w-full max-w-container-max mx-auto md:flex-row gap-lg">
+<!-- Mobile Vertical Stepper (Hidden on larger screens or shown as aside) -->
+<aside class="w-full md:w-64 flex-shrink-0 mb-md md:mb-0">
+<div class="glass-panel rounded-xl p-md">
+<h2 class="font-label-caps text-label-caps text-on-surface-variant mb-md uppercase">Onboarding Progress</h2>
+<ol class="relative border-l border-outline-variant ml-sm space-y-md">
+<!-- Step 1: Completed -->
+<li class="relative pl-md">
+<span class="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-primary flex items-center justify-center ring-4 ring-background">
+<span class="material-symbols-outlined text-[10px] text-on-primary font-bold">check</span>
+</span>
+<h3 class="font-body-md text-body-md font-semibold text-on-surface">Create Account</h3>
+</li>
+<!-- Step 2: Active -->
+<li class="relative pl-md">
+<span class="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-primary flex items-center justify-center ring-4 ring-background shadow-[0_0_8px_rgba(163,201,255,0.5)]">
+<span class="h-1.5 w-1.5 rounded-full bg-on-primary"></span>
+</span>
+<h3 class="font-body-md text-body-md font-bold text-primary">Configure Workspace</h3>
+<p class="font-body-md text-[12px] text-on-surface-variant mt-xs">Set up your initial environment.</p>
+</li>
+<!-- Step 3: Pending -->
+<li class="relative pl-md">
+<span class="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-surface-container-high border border-outline flex items-center justify-center ring-4 ring-background"></span>
+<h3 class="font-body-md text-body-md text-on-surface-variant">Connect Threads</h3>
+</li>
+<!-- Step 4: Pending -->
+<li class="relative pl-md">
+<span class="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-surface-container-high border border-outline flex items-center justify-center ring-4 ring-background"></span>
+<h3 class="font-body-md text-body-md text-on-surface-variant">Invite Team</h3>
+</li>
+<!-- Step 5: Pending -->
+<li class="relative pl-md">
+<span class="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-surface-container-high border border-outline flex items-center justify-center ring-4 ring-background"></span>
+<h3 class="font-body-md text-body-md text-on-surface-variant">Finish</h3>
+</li>
+</ol>
+</div>
+</aside>
+<!-- Configuration Card -->
+<section class="flex-grow flex justify-center items-start">
+<div class="glass-panel rounded-xl w-full max-w-md p-lg">
+<div class="mb-lg">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Workspace Setup</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Define the primary details for your management environment. These can be changed later in Settings.</p>
+</div>
+<form class="space-y-md">
+<!-- Workspace Name -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-caps text-label-caps text-on-surface" for="workspace-name">Workspace Name</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">domain</span>
+<input class="w-full bg-[#1F1F23] border border-[#2D2D33] rounded-lg py-sm pl-xl pr-sm text-on-surface placeholder-on-surface-variant font-body-md input-glow transition-all duration-200" id="workspace-name" name="workspace-name" placeholder="e.g., Acme Corp Marketing" type="text"/>
+</div>
+</div>
+<!-- Region Selection -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-caps text-label-caps text-on-surface" for="region">Primary Region</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">public</span>
+<select class="w-full bg-[#1F1F23] border border-[#2D2D33] rounded-lg py-sm pl-xl pr-sm text-on-surface font-body-md input-glow transition-all duration-200 appearance-none" id="region" name="region">
+<option class="text-on-surface-variant" disabled="" selected="" value="">Select region</option>
+<option value="na">North America</option>
+<option value="eu">Europe</option>
+<option value="ap">Asia Pacific</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Language Selection -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-caps text-label-caps text-on-surface" for="language">Default Language</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">language</span>
+<select class="w-full bg-[#1F1F23] border border-[#2D2D33] rounded-lg py-sm pl-xl pr-sm text-on-surface font-body-md input-glow transition-all duration-200 appearance-none" id="language" name="language">
+<option selected="" value="en">English (US)</option>
+<option value="es">Español</option>
+<option value="fr">Français</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] pointer-events-none">expand_more</span>
+</div>
+</div>
+</form>
+</div>
+</section>
+</main>
+<!-- Fixed Bottom Action Bar for Onboarding -->
+<div class="fixed bottom-0 left-0 w-full p-md bg-surface/90 backdrop-blur-md border-t border-outline-variant z-50 flex justify-center items-center">
+<div class="w-full max-w-container-max flex justify-between items-center md:px-lg">
+<button class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors py-sm px-md rounded-lg flex items-center gap-xs border border-transparent hover:border-outline-variant">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                Back
+            </button>
+<button class="font-body-md text-body-md font-semibold bg-[#1493ff] text-white hover:bg-[#a3c9ff] transition-colors py-sm px-xl rounded-lg flex items-center gap-xs">
+                Continue
+                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</body></html>

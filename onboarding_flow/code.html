@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Onboarding - Threads SMM Agent</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface": "#dfe2ec",
+                      "surface-container-high": "#262a31",
+                      "surface-variant": "#31353c",
+                      "on-tertiary-fixed-variant": "#743500",
+                      "on-secondary-fixed-variant": "#5714be",
+                      "inverse-primary": "#0060ab",
+                      "on-tertiary-fixed": "#321300",
+                      "outline-variant": "#404753",
+                      "on-error": "#690005",
+                      "on-background": "#dfe2ec",
+                      "background": "#0f141a",
+                      "outline": "#8a919f",
+                      "primary": "#a3c9ff",
+                      "on-secondary-container": "#c5abff",
+                      "inverse-on-surface": "#2c3138",
+                      "primary-fixed-dim": "#a3c9ff",
+                      "surface-container": "#1c2027",
+                      "primary-container": "#1493ff",
+                      "on-tertiary-container": "#471e00",
+                      "tertiary": "#ffb689",
+                      "surface-container-low": "#181c22",
+                      "surface-container-highest": "#31353c",
+                      "primary-fixed": "#d3e3ff",
+                      "tertiary-fixed": "#ffdbc8",
+                      "on-primary-fixed": "#001c39",
+                      "secondary-container": "#5919c1",
+                      "tertiary-fixed-dim": "#ffb689",
+                      "surface": "#0f141a",
+                      "inverse-surface": "#dfe2ec",
+                      "secondary-fixed": "#eaddff",
+                      "on-primary": "#00315d",
+                      "on-error-container": "#ffdad6",
+                      "surface-container-lowest": "#0a0e15",
+                      "on-surface-variant": "#c0c7d5",
+                      "error": "#ffb4ab",
+                      "surface-tint": "#a3c9ff",
+                      "on-primary-container": "#002a51",
+                      "on-tertiary": "#512300",
+                      "secondary-fixed-dim": "#d1bcff",
+                      "error-container": "#93000a",
+                      "tertiary-container": "#e56f03",
+                      "on-secondary": "#3d0090",
+                      "secondary": "#d1bcff",
+                      "surface-dim": "#0f141a",
+                      "surface-bright": "#353941",
+                      "on-primary-fixed-variant": "#004883",
+                      "on-secondary-fixed": "#24005b"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-max": "1440px",
+                      "sm": "12px",
+                      "md": "24px",
+                      "base": "8px",
+                      "lg": "48px",
+                      "sidebar-width": "240px",
+                      "xl": "80px",
+                      "gutter": "24px",
+                      "xs": "4px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Inter"],
+                      "label-caps": ["JetBrains Mono"],
+                      "body-md": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "table-text": ["Inter"],
+                      "display": ["Inter"],
+                      "headline-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                      "label-caps": ["11px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                      "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                      "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                      "table-text": ["13px", { "lineHeight": "1.4", "fontWeight": "400" }],
+                      "display": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                      "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        /* Form inputs styling based on Style Guidance */
+        .input-dark {
+            @apply bg-[#1F1F23] border border-outline-variant text-on-surface rounded-md px-sm py-2 w-full transition-all duration-200 outline-none;
+        }
+        .input-dark:focus {
+            @apply border-primary ring-2 ring-primary/20;
+        }
+        .btn-primary {
+            @apply bg-primary text-on-primary px-md py-sm rounded-md font-medium transition-colors hover:bg-[#b5d5ff] active:bg-[#92beff];
+        }
+        .btn-secondary {
+            @apply border border-outline-variant text-on-surface px-md py-sm rounded-md font-medium transition-colors hover:bg-surface-variant active:bg-[#1a1d24] bg-transparent;
+        }
+        /* Custom scrollbar for stealth */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #31353c; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #404753; }
+        
+        /* Stepper transitions */
+        .step-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .step-content.active {
+            display: block;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
+<!-- Top Nav Placeholder (Suppressed Nav Shells as per guidelines for Onboarding) -->
+<header class="absolute top-0 w-full flex justify-between items-center p-md z-10">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-3xl">auto_awesome</span>
+<span class="font-headline-md text-headline-md font-black tracking-tight">Threads SMM</span>
+</div>
+<div>
+<span class="text-on-surface-variant font-label-caps text-label-caps">SETUP WIZARD</span>
+</div>
+</header>
+<!-- Main Container -->
+<main class="w-full max-w-2xl px-4 z-10">
+<!-- Progress Stepper -->
+<div class="mb-lg">
+<div class="flex justify-between items-center relative">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-px bg-surface-variant -z-10"></div>
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1/4 h-px bg-primary -z-10 transition-all duration-300" id="progress-bar"></div>
+<!-- Steps Indicators -->
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm ring-4 ring-background z-0" data-step="1">1</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant border border-outline-variant flex items-center justify-center font-bold text-sm ring-4 ring-background z-0" data-step="2">2</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant border border-outline-variant flex items-center justify-center font-bold text-sm ring-4 ring-background z-0" data-step="3">3</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant border border-outline-variant flex items-center justify-center font-bold text-sm ring-4 ring-background z-0" data-step="4">4</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant border border-outline-variant flex items-center justify-center font-bold text-sm ring-4 ring-background z-0" data-step="5">5</div>
+</div>
+<div class="text-center mt-sm text-on-surface-variant font-body-md text-body-md" id="step-title">Workspace Details</div>
+</div>
+<!-- Card Container -->
+<div class="bg-[#1F1F23] border border-[#2D2D33] rounded-xl p-md shadow-lg backdrop-blur-sm">
+<!-- STEP 1: Workspace -->
+<div class="step-content active" id="step-1">
+<h2 class="font-headline-md text-headline-md mb-md text-on-surface">Configure Workspace</h2>
+<p class="text-on-surface-variant mb-md font-body-md text-body-md">Set up your primary environment for content management.</p>
+<div class="space-y-sm mb-lg">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs">WORKSPACE NAME</label>
+<input class="input-dark" placeholder="e.g. Acme Corp Marketing" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs">REGION</label>
+<select class="input-dark appearance-none">
+<option>Global</option>
+<option>North America</option>
+<option>CIS</option>
+<option>EMEA</option>
+</select>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs">LANGUAGE</label>
+<select class="input-dark appearance-none">
+<option>English</option>
+<option>Russian</option>
+<option>Spanish</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+<!-- STEP 2: Connect Threads -->
+<div class="step-content" id="step-2">
+<h2 class="font-headline-md text-headline-md mb-md text-on-surface">Connect Account</h2>
+<div class="bg-surface border border-outline-variant rounded-lg p-md flex flex-col items-center text-center mb-lg">
+<div class="w-16 h-16 bg-surface-variant rounded-full flex items-center justify-center mb-sm">
+<span class="material-symbols-outlined text-3xl text-on-surface">alternate_email</span>
+</div>
+<h3 class="font-body-lg text-body-lg font-semibold mb-xs">Authenticate with Threads</h3>
+<p class="text-on-surface-variant text-sm mb-md">We need read/write access to schedule and post on your behalf. We do not store your raw credentials.</p>
+<button class="btn-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">link</span>
+                        Connect via Meta
+                    </button>
+<div class="mt-sm flex items-center gap-1 text-xs text-on-surface-variant opacity-70">
+<span class="material-symbols-outlined" style="font-size: 14px;">lock</span>
+<span>Secure OAuth 2.0 Connection</span>
+</div>
+</div>
+</div>
+<!-- STEP 3: Brand Profile -->
+<div class="step-content" id="step-3">
+<h2 class="font-headline-md text-headline-md mb-md text-on-surface">Brand Identity</h2>
+<div class="space-y-sm mb-lg">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs">BRAND NAME</label>
+<input class="input-dark" placeholder="Your brand name on Threads" type="text"/>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs">SHORT DESCRIPTION</label>
+<textarea class="input-dark resize-none h-24" placeholder="What does your company do?"></textarea>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs">NICHE / INDUSTRY</label>
+<input class="input-dark" placeholder="e.g. B2B SaaS, Tech Hardware" type="text"/>
+</div>
+</div>
+</div>
+<!-- STEP 4: Audience & Goals (Combined for brevity in stepper visualization) -->
+<div class="step-content" id="step-4">
+<h2 class="font-headline-md text-headline-md mb-md text-on-surface">Target Audience &amp; Goals</h2>
+<div class="space-y-md mb-lg">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs">IDEAL CUSTOMER PROFILE (ICP)</label>
+<textarea class="input-dark resize-none h-20" placeholder="Describe your target audience..."></textarea>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs">PRIMARY GOAL</label>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-sm mt-2">
+<div class="border border-primary bg-primary/10 rounded-md p-sm cursor-pointer text-center">
+<span class="material-symbols-outlined text-primary mb-1 block">school</span>
+<span class="text-sm font-medium">Expert Authority</span>
+</div>
+<div class="border border-outline-variant bg-surface rounded-md p-sm cursor-pointer text-center hover:border-outline transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant mb-1 block">group_add</span>
+<span class="text-sm font-medium text-on-surface-variant">Lead Gen</span>
+</div>
+<div class="border border-outline-variant bg-surface rounded-md p-sm cursor-pointer text-center hover:border-outline transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant mb-1 block">forum</span>
+<span class="text-sm font-medium text-on-surface-variant">Community</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- STEP 5: AI & Finalize -->
+<div class="step-content" id="step-5">
+<h2 class="font-headline-md text-headline-md mb-md text-on-surface">Agent Configuration</h2>
+<div class="space-y-md mb-lg">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-xs">PREFERRED MODEL</label>
+<select class="input-dark appearance-none">
+<option>Claude 3.5 Sonnet (Recommended)</option>
+<option>GPT-4o</option>
+<option>Gemini 1.5 Pro</option>
+</select>
+</div>
+<div class="bg-surface-variant/30 border border-outline-variant border-dashed rounded-lg p-md text-center">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant mb-2">upload_file</span>
+<h4 class="font-medium text-sm mb-1">Upload Style Examples</h4>
+<p class="text-xs text-on-surface-variant mb-3">Upload past posts to extract your brand's tone of voice.</p>
+<button class="btn-secondary text-sm py-1">Choose Files</button>
+</div>
+</div>
+<div class="hidden" id="final-state">
+<div class="text-center py-lg">
+<span class="material-symbols-outlined text-6xl text-primary mb-md block animate-pulse">robot_2</span>
+<h2 class="font-headline-lg text-headline-lg mb-sm">Agent Ready</h2>
+<p class="text-on-surface-variant">Your automated SMM workflow is fully configured.</p>
+</div>
+</div>
+</div>
+<!-- Navigation Buttons -->
+<div class="flex justify-between items-center border-t border-outline-variant pt-md mt-sm" id="nav-buttons">
+<button class="btn-secondary invisible" id="btn-prev">Back</button>
+<button class="btn-primary" id="btn-next">Continue</button>
+</div>
+<div class="hidden justify-center border-t border-outline-variant pt-md mt-sm" id="nav-final">
+<button class="btn-primary w-full" onclick="window.location.reload()">Go to Dashboard</button>
+</div>
+</div>
+</main>
+<script>
+        // Simple stepper logic
+        let currentStep = 1;
+        const totalSteps = 5;
+        const stepTitles = ["Workspace Details", "Connect Account", "Brand Identity", "Audience & Goals", "Agent Configuration"];
+        
+        const btnNext = document.getElementById('btn-next');
+        const btnPrev = document.getElementById('btn-prev');
+        const titleEl = document.getElementById('step-title');
+        const progressBar = document.getElementById('progress-bar');
+        const navButtons = document.getElementById('nav-buttons');
+        const navFinal = document.getElementById('nav-final');
+
+        function updateUI() {
+            // Update contents
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step-${currentStep}`).classList.add('active');
+            
+            // Update indicators
+            document.querySelectorAll('[data-step]').forEach(el => {
+                const step = parseInt(el.getAttribute('data-step'));
+                if(step < currentStep) {
+                    el.className = 'w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm ring-4 ring-background z-0';
+                    el.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">check</span>';
+                } else if (step === currentStep) {
+                    el.className = 'w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm ring-4 ring-background z-0';
+                    el.innerHTML = step;
+                } else {
+                    el.className = 'w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant border border-outline-variant flex items-center justify-center font-bold text-sm ring-4 ring-background z-0';
+                    el.innerHTML = step;
+                }
+            });
+
+            // Update line
+            progressBar.style.width = `${((currentStep - 1) / (totalSteps - 1)) * 100}%`;
+            
+            // Update text
+            titleEl.textContent = stepTitles[currentStep - 1];
+
+            // Update buttons
+            if(currentStep === 1) {
+                btnPrev.classList.add('invisible');
+            } else {
+                btnPrev.classList.remove('invisible');
+            }
+
+            if(currentStep === totalSteps) {
+                btnNext.textContent = 'Finish Setup';
+            } else {
+                btnNext.textContent = 'Continue';
+            }
+        }
+
+        btnNext.addEventListener('click', () => {
+            if(currentStep < totalSteps) {
+                currentStep++;
+                updateUI();
+            } else if (currentStep === totalSteps) {
+                // Show final state
+                document.querySelector('#step-5 > div:not(#final-state)').style.display = 'none';
+                document.querySelector('#step-5 > div:nth-child(2)').style.display = 'none';
+                document.querySelector('#step-5 > h2').style.display = 'none';
+                document.getElementById('final-state').classList.remove('hidden');
+                
+                navButtons.classList.add('hidden');
+                navButtons.classList.remove('flex');
+                navFinal.classList.remove('hidden');
+                navFinal.classList.add('flex');
+            }
+        });
+
+        btnPrev.addEventListener('click', () => {
+            if(currentStep > 1) {
+                currentStep--;
+                updateUI();
+            }
+        });
+    </script>
+</body></html>

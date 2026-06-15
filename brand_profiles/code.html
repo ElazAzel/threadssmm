@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Brand Profiles Management - Threads SMM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-surface": "#dfe2ec",
+                        "surface-container-high": "#262a31",
+                        "surface-variant": "#31353c",
+                        "on-tertiary-fixed-variant": "#743500",
+                        "on-secondary-fixed-variant": "#5714be",
+                        "inverse-primary": "#0060ab",
+                        "on-tertiary-fixed": "#321300",
+                        "outline-variant": "#404753",
+                        "on-error": "#690005",
+                        "on-background": "#dfe2ec",
+                        "background": "#0f141a",
+                        "outline": "#8a919f",
+                        "primary": "#a3c9ff",
+                        "on-secondary-container": "#c5abff",
+                        "inverse-on-surface": "#2c3138",
+                        "primary-fixed-dim": "#a3c9ff",
+                        "surface-container": "#1c2027",
+                        "primary-container": "#1493ff",
+                        "on-tertiary-container": "#471e00",
+                        "tertiary": "#ffb689",
+                        "surface-container-low": "#181c22",
+                        "surface-container-highest": "#31353c",
+                        "primary-fixed": "#d3e3ff",
+                        "tertiary-fixed": "#ffdbc8",
+                        "on-primary-fixed": "#001c39",
+                        "secondary-container": "#5919c1",
+                        "tertiary-fixed-dim": "#ffb689",
+                        "surface": "#0f141a",
+                        "inverse-surface": "#dfe2ec",
+                        "secondary-fixed": "#eaddff",
+                        "on-primary": "#00315d",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-lowest": "#0a0e15",
+                        "on-surface-variant": "#c0c7d5",
+                        "error": "#ffb4ab",
+                        "surface-tint": "#a3c9ff",
+                        "on-primary-container": "#002a51",
+                        "on-tertiary": "#512300",
+                        "secondary-fixed-dim": "#d1bcff",
+                        "error-container": "#93000a",
+                        "tertiary-container": "#e56f03",
+                        "on-secondary": "#3d0090",
+                        "secondary": "#d1bcff",
+                        "surface-dim": "#0f141a",
+                        "surface-bright": "#353941",
+                        "on-primary-fixed-variant": "#004883",
+                        "on-secondary-fixed": "#24005b"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        "container-max": "1440px",
+                        "sm": "12px",
+                        "md": "24px",
+                        "base": "8px",
+                        "lg": "48px",
+                        "sidebar-width": "240px",
+                        "xl": "80px",
+                        "gutter": "24px",
+                        "xs": "4px"
+                    },
+                    fontFamily: {
+                        "headline-md": ["Inter"],
+                        "label-caps": ["JetBrains Mono"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "table-text": ["Inter"],
+                        "display": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    fontSize: {
+                        "headline-md": ["24px", { lineHeight: "1.3", fontWeight: "600" }],
+                        "label-caps": ["11px", { lineHeight: "1", letterSpacing: "0.05em", fontWeight: "500" }],
+                        "body-md": ["14px", { lineHeight: "1.5", fontWeight: "400" }],
+                        "body-lg": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "table-text": ["13px", { lineHeight: "1.4", fontWeight: "400" }],
+                        "display": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "headline-lg": ["32px", { lineHeight: "1.2", letterSpacing: "-0.01em", fontWeight: "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .glass-panel {
+                @apply bg-surface-container-high/80 backdrop-blur-md border border-outline-variant/50;
+            }
+            .card-panel {
+                @apply bg-[#1F1F23] border border-[#2D2D33] rounded-[16px];
+            }
+            .btn-primary {
+                @apply bg-[#1493ff] hover:bg-[#3ba3ff] text-white transition-colors duration-200 px-4 py-2 rounded-lg font-body-md text-body-md font-medium;
+            }
+            .btn-secondary {
+                @apply bg-transparent border border-[#1F1F23] hover:border-outline-variant text-white transition-colors duration-200 px-4 py-2 rounded-lg font-body-md text-body-md;
+            }
+            .input-dark {
+                @apply bg-[#1F1F23] border border-[#2D2D33] text-on-surface rounded-lg px-3 py-2 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all font-body-md text-body-md;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#0A0A0C] text-on-surface font-body-md text-body-md antialiased overflow-hidden flex h-screen">
+<!-- SideNavBar (Hidden on Mobile, Visible on md+) -->
+<nav class="hidden md:flex flex-col h-full py-md px-sm bg-surface-container-low dark:bg-surface-container-low text-primary dark:text-primary font-body-md text-body-md docked left-0 h-screen w-sidebar-width border-r border-outline-variant dark:border-outline-variant flat no shadows z-50">
+<!-- Header -->
+<div class="flex items-center gap-3 mb-8 px-3">
+<div class="w-10 h-10 rounded-lg overflow-hidden bg-surface-variant flex-shrink-0 relative">
+<img alt="Workspace Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpYaDl2mjgB0zOLhCfixghfvBhxA8nZcB_LR3PX1HoCx1nQmriwISBvT3wq1jdOIMyEXo7yFrMg1SsXszQixGrVnOW_SVLmyQU7cQqkDZpUPieRwRj7NxwuKt6qiwn1xtOkPYIcNBqLJn8pdaKw52wKJgFujglBmQKerKZoJmq1roVfBUfaRRbmStjTWRR4QzIBKKTkV0e5AF80pYDNvi2ba5b_PRql0AnUAZfLE6LFgth6nkDk1aL3WZ_i-2w1ElrXzpYgG8M33U"/>
+</div>
+<div class="flex flex-col overflow-hidden">
+<span class="font-headline-md text-headline-md font-bold text-on-surface dark:text-on-surface truncate tracking-tight text-[18px]">Threads SMM</span>
+<span class="text-on-surface-variant text-[12px] truncate">Pro Workspace</span>
+</div>
+</div>
+<!-- CTA -->
+<div class="px-3 mb-6">
+<button class="w-full btn-primary flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(20,147,255,0.3)]">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">add</span>
+                Create Post
+            </button>
+</div>
+<!-- Scrollable Navigation -->
+<div class="flex-1 overflow-y-auto scrollbar-hide flex flex-col gap-1 px-2">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">group</span>
+<span>Accounts</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-secondary-container dark:bg-secondary-container text-on-secondary-container font-semibold scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">identity_platform</span>
+<span>Brand Profiles</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">auto_awesome</span>
+<span>AI Studio</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">calendar_today</span>
+<span>Calendar</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">monitoring</span>
+<span>Monitoring</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">fact_check</span>
+<span>Approvals</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">analytics</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">photo_library</span>
+<span>Media Library</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">payments</span>
+<span>Billing</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">settings</span>
+<span>Settings</span>
+</a>
+</div>
+<!-- Footer Actions -->
+<div class="mt-auto pt-4 border-t border-outline-variant/50 px-2 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">help</span>
+<span>Support</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">campaign</span>
+<span>What's New</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#0A0A0C] relative">
+<!-- TopNavBar (Visible md+) -->
+<header class="hidden md:flex justify-between items-center h-16 px-md w-full z-40 bg-surface/80 dark:bg-surface/80 backdrop-blur-md text-primary dark:text-primary font-body-md text-body-md border-b border-outline-variant dark:border-outline-variant">
+<!-- Left: Search/Brand -->
+<div class="flex items-center gap-6">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full bg-[#1F1F23] border border-[#2D2D33] text-on-surface rounded-full pl-9 pr-4 py-1.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all font-body-md text-[13px]" placeholder="Search profiles..." type="text"/>
+</div>
+</div>
+<!-- Right: Actions -->
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 bg-surface-container-high px-3 py-1.5 rounded-full border border-outline-variant/50">
+<span class="material-symbols-outlined text-tertiary text-[16px]">monetization_on</span>
+<span class="font-label-caps text-label-caps text-on-surface">650 Credits</span>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/50 focus:outline-none focus:ring-2 focus:ring-primary">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDk6g90RbVWizm6Ee8CIiPkeHDtn0Lmg_Ei4tQMdMyy5NV_d_FinSqxEdhhyaaGJxNSwEFJZXihhTcDzQn77_w2NJwcPSTzE3e4bnlGInVRj1F5-tPmhSRS9WsGmuks8Q4uMLQL4hR_hu1r5TSsdbDoyjvMyLGDw7MiivOf7VDwY4kuuRoMhvftYlSDvk2lcbenTBoBixvXrer8LGEnVdKPrNpBrVS3zQu4XuDSzW_X_Nxg0Py_bKZaJNfqlV-JH6lMTzpdNadmeU"/>
+</button>
+</div>
+</header>
+<!-- Page Content Layout -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Left Panel: Brand List -->
+<aside class="w-80 border-r border-[#2D2D33] flex flex-col bg-[#141416] z-10 hidden lg:flex">
+<div class="p-4 border-b border-[#2D2D33] flex justify-between items-center">
+<h2 class="font-headline-md text-[16px] font-semibold text-on-surface">Active Profiles</h2>
+<button class="text-primary hover:text-primary-container p-1 rounded hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+<div class="p-3">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px]">filter_list</span>
+<input class="w-full bg-[#1F1F23] border border-[#2D2D33] text-on-surface rounded-md pl-9 pr-3 py-1.5 focus:outline-none focus:border-primary transition-all text-[13px]" placeholder="Filter profiles..." type="text"/>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-3 flex flex-col gap-2 scrollbar-hide">
+<!-- Active Brand -->
+<div class="p-3 rounded-lg bg-primary/10 border border-primary/30 cursor-pointer transition-all">
+<div class="flex justify-between items-start mb-1">
+<span class="font-medium text-on-surface text-[14px]">TechNova Inc.</span>
+<span class="w-2 h-2 rounded-full bg-green-500 mt-1.5"></span>
+</div>
+<p class="text-on-surface-variant text-[12px] truncate">B2B SaaS / Developer Tools</p>
+</div>
+<!-- Inactive Brands -->
+<div class="p-3 rounded-lg hover:bg-[#1F1F23] border border-transparent hover:border-[#2D2D33] cursor-pointer transition-all group">
+<div class="flex justify-between items-start mb-1">
+<span class="font-medium text-on-surface-variant group-hover:text-on-surface transition-colors text-[14px]">Lumina Coffee</span>
+</div>
+<p class="text-outline text-[12px] truncate">D2C E-commerce / Lifestyle</p>
+</div>
+<div class="p-3 rounded-lg hover:bg-[#1F1F23] border border-transparent hover:border-[#2D2D33] cursor-pointer transition-all group">
+<div class="flex justify-between items-start mb-1">
+<span class="font-medium text-on-surface-variant group-hover:text-on-surface transition-colors text-[14px]">Apex Fitness</span>
+</div>
+<p class="text-outline text-[12px] truncate">Local Business / Services</p>
+</div>
+</div>
+</aside>
+<!-- Main Panel: Tabs and Config -->
+<section class="flex-1 flex flex-col overflow-hidden bg-[#0A0A0C]">
+<!-- Profile Header -->
+<div class="pt-6 px-6 pb-0 border-b border-[#2D2D33] bg-[#141416]">
+<div class="flex justify-between items-end mb-6">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg border border-white/10">
+<span class="material-symbols-outlined text-[32px] text-white">memory</span>
+</div>
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">TechNova Inc.</h1>
+<div class="flex items-center gap-3 mt-1">
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-label-caps text-label-caps border border-outline-variant/50">B2B SaaS</span>
+<span class="text-on-surface-variant text-[13px] flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">sync</span> Last updated 2h ago
+                                    </span>
+</div>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="btn-secondary flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">history</span> History
+                            </button>
+<button class="btn-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">save</span> Save Profile
+                            </button>
+</div>
+</div>
+<!-- Tabs -->
+<div class="flex gap-6 overflow-x-auto scrollbar-hide">
+<button class="pb-3 border-b-2 border-primary text-primary font-medium px-1 flex items-center gap-2 whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">info</span> Overview
+                        </button>
+<button class="pb-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface transition-colors px-1 flex items-center gap-2 whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">record_voice_over</span> Voice &amp; Tone
+                        </button>
+<button class="pb-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface transition-colors px-1 flex items-center gap-2 whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">groups</span> Audience
+                        </button>
+<button class="pb-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface transition-colors px-1 flex items-center gap-2 whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">gavel</span> Rules &amp; Bounds
+                        </button>
+<button class="pb-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface transition-colors px-1 flex items-center gap-2 whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">view_column</span> Content Pillars
+                        </button>
+</div>
+</div>
+<!-- Tab Content: Overview (Active) -->
+<div class="flex-1 overflow-y-auto p-6 scrollbar-hide">
+<div class="max-w-5xl mx-auto space-y-6">
+<!-- Core Identity Bento -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Basic Info -->
+<div class="card-panel p-5 md:col-span-2 space-y-4">
+<h3 class="font-headline-md text-[16px] text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">fingerprint</span>
+                                    Core Identity
+                                </h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Brand Name</label>
+<input class="w-full input-dark" type="text" value="TechNova Inc."/>
+</div>
+<div class="space-y-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Primary Industry / Niche</label>
+<input class="w-full input-dark" type="text" value="B2B SaaS / Developer Tools"/>
+</div>
+</div>
+<div class="space-y-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Unique Value Proposition (USP)</label>
+<textarea class="w-full input-dark resize-none" rows="2">AI-powered deployment pipelines that cut infrastructure setup time by 80% while maintaining enterprise-grade security.</textarea>
+</div>
+</div>
+<!-- Goals -->
+<div class="card-panel p-5 space-y-4 relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent z-0 pointer-events-none"></div>
+<h3 class="font-headline-md text-[16px] text-on-surface flex items-center gap-2 relative z-10">
+<span class="material-symbols-outlined text-tertiary text-[20px]">flag</span>
+                                    Primary Goals
+                                </h3>
+<div class="space-y-3 relative z-10">
+<div class="flex items-center gap-3 bg-[#141416] p-2 rounded-lg border border-[#2D2D33]">
+<span class="w-6 h-6 rounded-md bg-secondary-container/30 text-on-secondary-container flex items-center justify-center text-[12px] font-bold">1</span>
+<span class="text-[14px]">Drive developer signups</span>
+</div>
+<div class="flex items-center gap-3 bg-[#141416] p-2 rounded-lg border border-[#2D2D33]">
+<span class="w-6 h-6 rounded-md bg-surface-variant text-on-surface-variant flex items-center justify-center text-[12px] font-bold">2</span>
+<span class="text-[14px]">Establish technical authority</span>
+</div>
+<div class="flex items-center gap-3 bg-[#141416] p-2 rounded-lg border border-[#2D2D33] opacity-60">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant ml-1">add</span>
+<span class="text-[14px] text-on-surface-variant">Add goal...</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Brand Extraction AI Area -->
+<div class="card-panel p-5 border-primary/20 bg-[#141416] relative">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-[80px]">auto_awesome</span>
+</div>
+<div class="relative z-10">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-headline-md text-[16px] text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">psychology</span>
+                                        AI Profile Extraction
+                                    </h3>
+<span class="px-2 py-1 rounded bg-surface-variant text-on-surface-variant text-[11px] font-mono border border-outline-variant/50">Model: Claude 3.5 Sonnet</span>
+</div>
+<p class="text-on-surface-variant text-[14px] mb-4">Paste URL or sample text to automatically generate voice, audience, and pillar settings.</p>
+<div class="flex gap-3">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">link</span>
+<input class="w-full input-dark pl-10" placeholder="https://technova.io/about" type="text"/>
+</div>
+<button class="bg-surface-variant hover:bg-surface-container-highest text-on-surface px-4 py-2 rounded-lg border border-[#2D2D33] transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">upload_file</span>
+                                        Upload PDF
+                                    </button>
+<button class="btn-primary flex items-center gap-2 shadow-[0_0_10px_rgba(20,147,255,0.2)]">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                                        Extract
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- BottomNavBar (Visible only on Mobile) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface-container-highest dark:bg-surface-container-highest font-label-caps text-label-caps-mobile border-t border-outline-variant shadow-lg rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:bg-surface-variant tap-highlight-none" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:bg-surface-variant tap-highlight-none" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="mt-1">AI</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:bg-surface-variant tap-highlight-none" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+<span class="mt-1">Calendar</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:bg-surface-variant tap-highlight-none" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="mt-1">Alerts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary bg-primary-container/20 rounded-xl p-2 active:bg-surface-variant tap-highlight-none" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="mt-1">Settings</span>
+</a>
+</nav>
+</body></html>

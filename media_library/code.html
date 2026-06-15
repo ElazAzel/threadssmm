@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Media Library - Threads SMM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-surface": "#dfe2ec",
+                        "surface-container-high": "#262a31",
+                        "surface-variant": "#31353c",
+                        "on-tertiary-fixed-variant": "#743500",
+                        "on-secondary-fixed-variant": "#5714be",
+                        "inverse-primary": "#0060ab",
+                        "on-tertiary-fixed": "#321300",
+                        "outline-variant": "#404753",
+                        "on-error": "#690005",
+                        "on-background": "#dfe2ec",
+                        "background": "#0f141a",
+                        "outline": "#8a919f",
+                        "primary": "#a3c9ff",
+                        "on-secondary-container": "#c5abff",
+                        "inverse-on-surface": "#2c3138",
+                        "primary-fixed-dim": "#a3c9ff",
+                        "surface-container": "#1c2027",
+                        "primary-container": "#1493ff",
+                        "on-tertiary-container": "#471e00",
+                        "tertiary": "#ffb689",
+                        "surface-container-low": "#181c22",
+                        "surface-container-highest": "#31353c",
+                        "primary-fixed": "#d3e3ff",
+                        "tertiary-fixed": "#ffdbc8",
+                        "on-primary-fixed": "#001c39",
+                        "secondary-container": "#5919c1",
+                        "tertiary-fixed-dim": "#ffb689",
+                        "surface": "#0f141a",
+                        "inverse-surface": "#dfe2ec",
+                        "secondary-fixed": "#eaddff",
+                        "on-primary": "#00315d",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-lowest": "#0a0e15",
+                        "on-surface-variant": "#c0c7d5",
+                        "error": "#ffb4ab",
+                        "surface-tint": "#a3c9ff",
+                        "on-primary-container": "#002a51",
+                        "on-tertiary": "#512300",
+                        "secondary-fixed-dim": "#d1bcff",
+                        "error-container": "#93000a",
+                        "tertiary-container": "#e56f03",
+                        "on-secondary": "#3d0090",
+                        "secondary": "#d1bcff",
+                        "surface-dim": "#0f141a",
+                        "surface-bright": "#353941",
+                        "on-primary-fixed-variant": "#004883",
+                        "on-secondary-fixed": "#24005b"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        "container-max": "1440px",
+                        "sm": "12px",
+                        "md": "24px",
+                        "base": "8px",
+                        "lg": "48px",
+                        "sidebar-width": "240px",
+                        "xl": "80px",
+                        "gutter": "24px",
+                        "xs": "4px"
+                    },
+                    fontFamily: {
+                        "headline-md": ["Inter"],
+                        "label-caps": ["JetBrains Mono"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "table-text": ["Inter"],
+                        "display": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    fontSize: {
+                        "headline-md": ["24px", { lineHeight: "1.3", fontWeight: "600" }],
+                        "label-caps": ["11px", { lineHeight: "1", letterSpacing: "0.05em", fontWeight: "500" }],
+                        "body-md": ["14px", { lineHeight: "1.5", fontWeight: "400" }],
+                        "body-lg": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "table-text": ["13px", { lineHeight: "1.4", fontWeight: "400" }],
+                        "display": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "headline-lg": ["32px", { lineHeight: "1.2", letterSpacing: "-0.01em", fontWeight: "600" }]
+                    }
+                }
+            }
+        };
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f141a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #31353c; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #404753; 
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md overflow-hidden flex h-screen">
+<!-- Desktop SideNavBar -->
+<nav class="hidden md:flex flex-col h-full py-md px-sm bg-surface-container-low border-r border-outline-variant w-sidebar-width flex-shrink-0 z-10">
+<!-- Header -->
+<div class="flex items-center gap-sm px-sm mb-lg">
+<img alt="Workspace Avatar" class="w-10 h-10 rounded-full border border-outline-variant" data-alt="A sleek, abstract geometric 3d rendered logo element. Dark grey and electric blue colors. High contrast, sharp edges. Corporate tech startup vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmotofNK03WNGVBTfcS_UoeQNim6t_D3xTBpJlWKEXPklr7KXoyypdrt5jdKYyF5WJ5ERpcQ0uODxWd1-USKbbYf4RJozr_Cct5DZ3P_7P7auTla_c41ZD_lS9wo8Rsm4nQ9n4VOWBrJls7f7R305Wo8HMDLjFVV51mal891bLh4fh_l12RU2hNa2Hp2rKYhRObeDkbL-RO3zwSn16jrRQcVR8-Ui5iK3f5wa_FlVZ2fEzY5A-KnOvKWB8uqn6X4soZAdMfJWdwtk"/>
+<div>
+<h1 class="font-headline-md text-[16px] font-bold text-on-surface">Threads SMM</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Pro Workspace</p>
+</div>
+</div>
+<!-- Create CTA -->
+<button class="w-full bg-primary-container text-on-primary-container font-body-md text-body-md font-semibold py-sm rounded-lg hover:bg-[#2b9dff] transition-colors duration-200 mb-lg flex justify-center items-center gap-xs">
+<span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+            Create Post
+        </button>
+<!-- Main Nav Tabs -->
+<div class="flex-1 overflow-y-auto space-y-[2px]">
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">group</span>
+                Accounts
+            </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">identity_platform</span>
+                Brand Profiles
+            </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+                AI Studio
+            </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+                Calendar
+            </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+                Monitoring
+            </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">fact_check</span>
+                Approvals
+            </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">analytics</span>
+                Analytics
+            </a>
+<!-- Active Tab -->
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg bg-secondary-container text-on-secondary-container font-semibold scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined fill">photo_library</span>
+                Media Library
+            </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">payments</span>
+                Billing
+            </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+</div>
+<!-- Footer Tabs -->
+<div class="mt-auto pt-sm border-t border-outline-variant space-y-[2px]">
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">help</span>
+                Support
+            </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">campaign</span>
+                What's New
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center h-16 px-md w-full z-40 bg-surface/80 backdrop-blur-md border-b border-outline-variant flex-shrink-0">
+<!-- Left: Branding & Search -->
+<div class="flex items-center gap-md">
+<span class="md:hidden font-headline-md text-headline-md font-black text-on-surface">Threads SMM Agent</span>
+<div class="hidden md:flex items-center bg-surface-container-high rounded-full px-sm py-xs border border-outline-variant focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 20px;">search</span>
+<input class="bg-transparent border-none text-body-md text-on-surface focus:ring-0 placeholder-on-surface-variant w-64 py-1 px-2" placeholder="Search media..." type="text"/>
+</div>
+</div>
+<!-- Right: Actions -->
+<div class="flex items-center gap-sm">
+<div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border border-outline-variant text-on-surface-variant font-label-caps text-label-caps">
+<span class="material-symbols-outlined" style="font-size: 16px;">toll</span>
+                    650 Credits
+                </div>
+<button class="hidden sm:block bg-primary-container text-on-primary-container px-4 py-1.5 rounded-lg font-body-md text-body-md font-medium hover:bg-[#2b9dff] transition-colors">
+                    Upload
+                </button>
+<div class="h-6 w-[1px] bg-outline-variant mx-1 hidden sm:block"></div>
+<button class="text-on-surface-variant hover:text-primary transition-colors opacity-90 hover:opacity-100 p-1">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors opacity-90 hover:opacity-100 p-1">
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-outline-variant object-cover" data-alt="A professional headshot of a young woman with dark hair, lit by soft studio lighting against a dark neutral background. Serious, focused expression. High resolution, shallow depth of field." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeGCBG0ZBV9RzV4sR7zq_pOaA7Md37yfBCE8S5pLdJnvt4rBhn0DCcXINhv8ZAOvTH2SzHQw4PG1QcqDYKk2BaSv6GWL28kQG_I6CD2VMuLdRpWYjIH_qM6xbankzt-x_Jwm0YXYh_7F3Rp4916ac0qqmxnBLlFsvq2gUyB7VFbvQndVXWxGeJcaWAygzqva92wH9Mwp1Pco_kIWy0pID-KRnAxVHMh4lKeCAu5DsAiLN2EeeSG-Wq8fAHXVk7qahdJOM40t1ceOM"/>
+</button>
+</div>
+</header>
+<!-- Main Scrollable Canvas -->
+<main class="flex-1 overflow-y-auto p-md md:p-lg">
+<!-- Page Header & Filters -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+<div>
+<h2 class="font-headline-lg text-[28px] font-semibold text-on-surface leading-tight">Media Library</h2>
+<p class="text-on-surface-variant font-body-md mt-1">Manage generated assets and uploaded files.</p>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<!-- Filter Pill 1 -->
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-outline-variant bg-surface-container-low text-on-surface text-sm hover:bg-surface-variant transition-colors">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                        Brand: TechNova
+                        <span class="material-symbols-outlined" style="font-size: 16px;">expand_more</span>
+</button>
+<!-- Filter Pill 2 -->
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-outline-variant bg-surface-container-low text-on-surface text-sm hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined" style="font-size: 16px;">palette</span>
+                        Style: Cyberpunk
+                        <span class="material-symbols-outlined" style="font-size: 16px;">expand_more</span>
+</button>
+<!-- Filter Pill 3 -->
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-outline-variant bg-surface-container-low text-on-surface text-sm hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined" style="font-size: 16px;">calendar_month</span>
+                        Last 30 Days
+                        <span class="material-symbols-outlined" style="font-size: 16px;">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Bento Grid Gallery -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+<!-- Card 1: Highlight/Featured (Spans 2 cols/rows) -->
+<div class="col-span-2 row-span-2 rounded-2xl border border-[#2D2D33] bg-[#1F1F23] overflow-hidden group cursor-pointer relative" onclick="openDetailPanel()">
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10"></div>
+<img alt="Generated abstract art" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A highly detailed 3D abstract composition featuring fluid, liquid-like metallic shapes intertwining. Dark background with vibrant neon pink and electric blue rim lighting. Smooth, glossy textures. High-end digital art style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWYJfp0nlb0Gs71elLH0DBL-0J86eN_P_NH0DBHSTjFoznf46aWdAQ75dPhNDecWFPfKxrA_JFBZYwDPxEpwzaoXU0N73-pRxhyU6Vunzy_221TIEalgkUpZITdX-ato4iBCgPL8toCTPmTksEi5Gqzzh6nl3H23TwivCNMq29aX0WI97NJsGDpQgV2YrQFLqOL9DXC0gSwFg_9lm3xm42KofvfSxb3_95xpkGZ1xAPKLyNzT3y2o2V-lw6z3Bq_9Ieey-V4OcMi0"/>
+<!-- Overlay Info -->
+<div class="absolute bottom-0 left-0 right-0 p-4 z-20 flex justify-between items-end">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="px-2 py-0.5 rounded-full bg-primary/20 text-primary font-label-caps text-[10px] border border-primary/30">AI GENERATED</span>
+</div>
+<p class="text-on-surface font-body-md font-medium truncate max-w-[200px]">Liquid Metal Concept #04</p>
+<p class="text-on-surface-variant text-xs mt-1">Created 2h ago • TechNova</p>
+</div>
+<button class="w-8 h-8 rounded-full bg-surface-variant/80 backdrop-blur border border-outline-variant flex items-center justify-center text-on-surface hover:bg-primary-container hover:text-on-primary-container transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined" style="font-size: 18px;">more_horiz</span>
+</button>
+</div>
+</div>
+<!-- Standard Cards -->
+<!-- Card 2 -->
+<div class="aspect-square rounded-2xl border border-[#2D2D33] bg-[#1F1F23] overflow-hidden group cursor-pointer relative">
+<img alt="Cyberpunk setup" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A dark, moody workstation setup bathed in neon blue and purple lights. A mechanical keyboard and glowing mouse pad sit on a dark desk. Cinematic lighting, cyberpunk aesthetic, high tech environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUYBVdxFWqTYlrtj8QQ5jMs8zYH0C4LyGCZq7IQHtEsgsys_WUBPD6w7qUCxYugbMXRayz4bzdVLwQfBXVqKgE0tfn5ughfhO_nOFIKYy3fbWATco4zj48qz7zmhfFI1rSySUiNHilX8AiTiy8v9TsFflXIdMCUbGLFd7RQcIeu5I-J3GQfiO0LUOttYS5uoj_vT1vodG4i7fboT4KkPiTYXyiVW59zFp4J65O2sxPwgfphv3TRwkbrqTeVmFbDHr334iuSvVtQHQ"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex flex-col justify-between p-3">
+<div class="self-end px-2 py-0.5 rounded-full bg-[#141416] text-on-surface font-label-caps text-[10px] border border-outline-variant">UPLOADED</div>
+<button class="self-end w-8 h-8 rounded-full bg-surface-variant border border-outline-variant flex items-center justify-center text-on-surface hover:bg-primary-container hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">open_in_full</span>
+</button>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="aspect-square rounded-2xl border border-[#2D2D33] bg-[#1F1F23] overflow-hidden group cursor-pointer relative">
+<img alt="Abstract gradient" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A smooth, flowing gradient mesh in dark mode colors. Deep purple, navy blue, and subtle hints of magenta blending seamlessly. Soft, blurred edges. Modern tech background aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBr7uMVLZuk-gHHaj8PH_2ESfeeVw7FK2SGO7DpDV0jtGRSjosnxLBEwIFCBOVyEVLXXoGF7NEKriw515YB8cUmXyuTVmwidzdANrB2E2i7KdzCpKt9DiI_KGgVjJZNFppj7JogUppwyftKHYp4Lr3tOGs-86ZFjpuq1MqPgF0g3l-BQRimTyeucDcol4GWKVr85jL-TPqkAO_Ej1HKjQhmobmrAst4ybcZXMWm1cXokLuHAbFgXEM8pyUBRkxBlh-jomopV8PJnwE"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex flex-col justify-between p-3">
+<div class="self-end px-2 py-0.5 rounded-full bg-primary/20 text-primary font-label-caps text-[10px] border border-primary/30">AI GENERATED</div>
+<button class="self-end w-8 h-8 rounded-full bg-surface-variant border border-outline-variant flex items-center justify-center text-on-surface hover:bg-primary-container hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">open_in_full</span>
+</button>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="aspect-square rounded-2xl border border-[#2D2D33] bg-[#1F1F23] overflow-hidden group cursor-pointer relative">
+<img alt="Tech hardware" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Close-up macro shot of a computer motherboard or microchip. Intricate circuit patterns glowing faintly with blue light against a dark green/black board. Highly detailed, sharp focus on central processor area. Technical, industrial mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCO9LA8gldp7AthyZYOOeWB4_5TCAVZqbmWljKS2HwzEXLl2FsH8uYqOiROcM2WdHdYU0Lv1qgPXBWW1CPMI9dTDq5BwXSRts1yCpwj02ImXq_EAhfMsvgt2XHuHLZHHcs5HKzJYHbuJo6XPm6Sz1E6s-0O4IcAnhhhfN33tyPEC6VO14g3AbxX5vmsJWPjEl3wJ5EFyxcFf3WXOhPHVUNJXrugXp5APdnw5LaJaBdt2vmR9sP-ihCnBLPtBBxCVsOBT9pfiCfQtl0"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex flex-col justify-between p-3">
+<div class="self-end px-2 py-0.5 rounded-full bg-primary/20 text-primary font-label-caps text-[10px] border border-primary/30">AI GENERATED</div>
+<button class="self-end w-8 h-8 rounded-full bg-surface-variant border border-outline-variant flex items-center justify-center text-on-surface hover:bg-primary-container hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">open_in_full</span>
+</button>
+</div>
+</div>
+<!-- Card 5 (Wide) -->
+<div class="col-span-2 aspect-[2/1] rounded-2xl border border-[#2D2D33] bg-[#1F1F23] overflow-hidden group cursor-pointer relative">
+<img alt="Dark mode UI mockup" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A stylized 3D render of a futuristic smartphone laying on a sleek dark surface. The screen displays a minimalist dark-mode dashboard with glowing blue and purple charts. Soft directional lighting creates elegant shadows. Corporate tech presentation style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4XC8l2ocUDFGXTdAPMr6pOKH5YDA7TvD16UK9wQ1ddDUQ1dLFcnPnF_-dTeoRG48n9416JaKcTmna9jJeacdvjamSCWYqmoyvoxlRCfKmTXbqQBwg3FoSVks9872o1LUFZfxTYB4QoB-VaoU9dAu6wLJBwR-mhd7dYj7nqGejN7w3owoY9gW7vlT7fEJH4pTdo1TqaH7R0wCks4lHmWK0JIWV6m3DfLQAaKCYzRYTScTbiOV5-GxaMxLK873h2_8qKaYxdhzlavQ"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex flex-col justify-between p-3">
+<div class="self-end px-2 py-0.5 rounded-full bg-[#141416] text-on-surface font-label-caps text-[10px] border border-outline-variant">UPLOADED</div>
+<button class="self-end w-8 h-8 rounded-full bg-surface-variant border border-outline-variant flex items-center justify-center text-on-surface hover:bg-primary-container hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">open_in_full</span>
+</button>
+</div>
+</div>
+<!-- Card 6 -->
+<div class="aspect-square rounded-2xl border border-[#2D2D33] bg-[#1F1F23] overflow-hidden group cursor-pointer relative">
+<div class="w-full h-full flex items-center justify-center bg-surface-container-high text-outline-variant">
+<span class="material-symbols-outlined" style="font-size: 48px;">video_file</span>
+</div>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex flex-col justify-between p-3">
+<div class="self-end px-2 py-0.5 rounded-full bg-[#141416] text-on-surface font-label-caps text-[10px] border border-outline-variant">MP4</div>
+<div class="self-start text-xs text-on-surface font-medium">Product_Promo_v2.mp4</div>
+</div>
+</div>
+<!-- Card 7 -->
+<div class="aspect-square rounded-2xl border border-[#2D2D33] bg-[#1F1F23] overflow-hidden group cursor-pointer relative">
+<img alt="Space abstract" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A vivid, deep space nebula illustration. Swirling clouds of deep purple, pink, and bright blue stardust against a pitch-black background. Tiny glowing white stars scattered throughout. High contrast, cinematic, awe-inspiring mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuADTzdHiR1xLs8C-UCz83-gmMssGh8OyOEeA_z7MIgIluL216PosNFuYm5ytq-7YfimHgthX-R7to-FbkoRps3AMa_1LqjAL0JOOSsQBcrNTsp3hYNISCXA49rvSncjd1ejpDc4PKKt3Jtlj-MlUzLqB4JpxeLvnw9PmigldSSBD0EPmFoHF0dHPKAPCRxhC4I4ZFh5A9tR0Gomc7iyE9YmDHTxrO5Suy5qVCosAPcmO5u163PCGv_p3BIIy4Aj8DDs2guhaK_B0hk"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex flex-col justify-between p-3">
+<div class="self-end px-2 py-0.5 rounded-full bg-primary/20 text-primary font-label-caps text-[10px] border border-primary/30">AI GENERATED</div>
+<button class="self-end w-8 h-8 rounded-full bg-surface-variant border border-outline-variant flex items-center justify-center text-on-surface hover:bg-primary-container hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">open_in_full</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Detail Overlay Panel (Hidden by default, triggered via JS) -->
+<div class="fixed inset-y-0 right-0 w-[400px] bg-[#1F1F23] border-l border-[#3F3F46] shadow-[-20px_0_40px_rgba(0,0,0,0.4)] transform translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col" id="detailPanel">
+<!-- Panel Header -->
+<div class="flex items-center justify-between p-4 border-b border-[#2D2D33]">
+<h3 class="font-headline-md text-[18px] text-on-surface">Asset Details</h3>
+<button class="text-on-surface-variant hover:text-on-surface p-1 rounded hover:bg-surface-variant transition-colors" onclick="closeDetailPanel()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Scrollable Details -->
+<div class="flex-1 overflow-y-auto p-4 space-y-6">
+<!-- Image Preview -->
+<div class="rounded-xl overflow-hidden border border-[#2D2D33] bg-black">
+<img alt="Preview" class="w-full h-auto" data-alt="A highly detailed 3D abstract composition featuring fluid, liquid-like metallic shapes intertwining. Dark background with vibrant neon pink and electric blue rim lighting. Smooth, glossy textures. High-end digital art style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDW4J_ZXvIwXkKExyLK5J1bAASAMzYu4XagSRrRtIilaaWAza7amrAq3grLmsqwaiiqRHaVYeb9Q8XnSPwW-8pKj63PgVoSOPgHtlsf6IRtcQieDebV0TFqOfoe1zivRaiNEdpKWtuCqpoEMqnHYkaATFV1vs1Fg18OPErOSSFDA4r_cw3RFcFMkqZJU8lkW7TQlHvnuGMwKdqjh7nUnnRQ4eRFrZkbj1_dj2VAA_PkkeJQHWGcX-3gvtSUneeo77H-fvehiirYTA"/>
+</div>
+<!-- Metadata -->
+<div>
+<h4 class="text-on-surface font-semibold mb-1">Liquid Metal Concept #04</h4>
+<div class="flex gap-4 text-sm text-on-surface-variant mb-4">
+<span>1024 x 1024</span>
+<span>•</span>
+<span>2.4 MB</span>
+<span>•</span>
+<span>PNG</span>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between py-2 border-b border-[#2D2D33]">
+<span class="text-on-surface-variant text-sm">Created</span>
+<span class="text-on-surface text-sm">Oct 24, 2023, 14:32</span>
+</div>
+<div class="flex justify-between py-2 border-b border-[#2D2D33]">
+<span class="text-on-surface-variant text-sm">Brand</span>
+<span class="text-on-surface text-sm">TechNova</span>
+</div>
+<div class="flex justify-between py-2 border-b border-[#2D2D33]">
+<span class="text-on-surface-variant text-sm">Engine</span>
+<span class="text-on-surface text-sm">Midjourney v5.2</span>
+</div>
+</div>
+</div>
+<!-- Prompt Area (If AI Generated) -->
+<div class="bg-surface-container-low p-3 rounded-lg border border-[#2D2D33]">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">GENERATION PROMPT</span>
+<button class="text-primary hover:text-primary-container text-xs flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 14px;">content_copy</span> Copy
+                    </button>
+</div>
+<p class="text-sm text-on-surface font-table-text leading-relaxed">
+                    A highly detailed 3D abstract composition featuring fluid, liquid-like metallic shapes intertwining. Dark background with vibrant neon pink and electric blue rim lighting. Smooth, glossy textures. High-end digital art style, octane render, 8k resolution, cinematic lighting --ar 16:9 --v 5.2
+                </p>
+</div>
+</div>
+<!-- Fixed Bottom Actions -->
+<div class="p-4 border-t border-[#2D2D33] bg-[#1F1F23] flex flex-col gap-3">
+<button class="w-full bg-primary-container text-on-primary-container py-2 rounded-lg font-medium hover:bg-[#2b9dff] transition-colors flex justify-center items-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 18px;">post_add</span>
+                Attach to Draft
+            </button>
+<div class="flex gap-3">
+<button class="flex-1 bg-transparent border border-[#3F3F46] text-on-surface py-2 rounded-lg font-medium hover:bg-surface-variant transition-colors flex justify-center items-center gap-2 text-sm">
+<span class="material-symbols-outlined" style="font-size: 18px;">auto_awesome</span>
+                    Regenerate Similar
+                </button>
+<button class="w-10 bg-transparent border border-error/50 text-error rounded-lg flex items-center justify-center hover:bg-error/10 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Mobile BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface-container-highest border-t border-outline-variant shadow-lg rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 tap-highlight-none active:bg-surface-variant rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 tap-highlight-none active:bg-surface-variant rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-label-caps text-[10px]">AI</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 tap-highlight-none active:bg-surface-variant rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+<span class="font-label-caps text-[10px]">Calendar</span>
+</a>
+<!-- Active Tab Mobile (Assuming Alerts/Notifications context isn't media library, using closest fit or adding visual for Media) -->
+<a class="flex flex-col items-center justify-center text-primary bg-primary-container/20 rounded-xl p-2 tap-highlight-none" href="#">
+<span class="material-symbols-outlined fill">photo_library</span>
+<span class="font-label-caps text-[10px] mt-1">Media</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 tap-highlight-none active:bg-surface-variant rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-[10px]">Settings</span>
+</a>
+</nav>
+<script>
+        function openDetailPanel() {
+            document.getElementById('detailPanel').classList.remove('translate-x-full');
+            // Optional: add an overlay backgdrop here if desired
+        }
+
+        function closeDetailPanel() {
+            document.getElementById('detailPanel').classList.add('translate-x-full');
+        }
+    </script>
+</body></html>

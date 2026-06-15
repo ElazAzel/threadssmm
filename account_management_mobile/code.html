@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Account Management - Threads SMM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#24005b",
+                        "on-background": "#dfe2ec",
+                        "on-tertiary-fixed": "#321300",
+                        "surface-dim": "#0f141a",
+                        "inverse-on-surface": "#2c3138",
+                        "secondary-container": "#5919c1",
+                        "on-tertiary": "#512300",
+                        "error": "#ffb4ab",
+                        "surface-container": "#1c2027",
+                        "on-primary-fixed": "#001c39",
+                        "surface-bright": "#353941",
+                        "primary": "#a3c9ff",
+                        "secondary-fixed-dim": "#d1bcff",
+                        "on-tertiary-fixed-variant": "#743500",
+                        "on-surface-variant": "#c0c7d5",
+                        "surface-container-lowest": "#0a0e15",
+                        "on-tertiary-container": "#471e00",
+                        "on-secondary": "#3d0090",
+                        "outline": "#8a919f",
+                        "surface-container-high": "#262a31",
+                        "inverse-surface": "#dfe2ec",
+                        "surface-variant": "#31353c",
+                        "tertiary-fixed-dim": "#ffb689",
+                        "surface-tint": "#a3c9ff",
+                        "on-primary-container": "#002a51",
+                        "error-container": "#93000a",
+                        "surface": "#0f141a",
+                        "primary-container": "#1493ff",
+                        "on-surface": "#dfe2ec",
+                        "surface-container-low": "#181c22",
+                        "secondary-fixed": "#eaddff",
+                        "background": "#0f141a",
+                        "tertiary-container": "#e56f03",
+                        "primary-fixed": "#d3e3ff",
+                        "on-secondary-fixed-variant": "#5714be",
+                        "on-secondary-container": "#c5abff",
+                        "outline-variant": "#404753",
+                        "tertiary": "#ffb689",
+                        "on-primary-fixed-variant": "#004883",
+                        "on-error-container": "#ffdad6",
+                        "on-error": "#690005",
+                        "tertiary-fixed": "#ffdbc8",
+                        "surface-container-highest": "#31353c",
+                        "primary-fixed-dim": "#a3c9ff",
+                        "inverse-primary": "#0060ab",
+                        "secondary": "#d1bcff",
+                        "on-primary": "#00315d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sidebar-width": "240px",
+                        "base": "8px",
+                        "lg": "48px",
+                        "container-max": "1440px",
+                        "xl": "80px",
+                        "gutter": "24px",
+                        "sm": "12px",
+                        "md": "24px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "table-text": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["JetBrains Mono"],
+                        "display": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "table-text": ["13px", { "lineHeight": "1.4", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-caps": ["11px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: theme('colors.surface');
+        }
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.surface-variant');
+            border-radius: theme('borderRadius.full');
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.outline-variant');
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased min-h-screen flex flex-col md:flex-row relative">
+<!-- Desktop SideNavBar (Hidden on Mobile) -->
+<nav class="hidden md:flex flex-col h-screen w-sidebar-width bg-surface-container-low border-r border-outline-variant py-md px-sm sticky top-0 left-0 z-40">
+<div class="flex items-center gap-3 mb-8 px-2">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center text-on-primary-container font-headline-md text-headline-md font-bold">
+                T
+            </div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface leading-tight text-lg">Threads SMM</h1>
+<p class="font-body-md text-body-md text-on-surface-variant text-xs">Pro Workspace</p>
+</div>
+</div>
+<button class="mb-6 w-full bg-primary text-on-primary font-body-md text-body-md font-semibold py-2 rounded-lg hover:brightness-110 transition-all scale-98 active:scale-95 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span>
+            Create Post
+        </button>
+<div class="flex-1 overflow-y-auto pr-2">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+                        Dashboard
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body-md text-body-md bg-secondary-container text-on-secondary-container font-semibold transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+                        Accounts
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">identity_platform</span>
+                        Brand Profiles
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+                        AI Studio
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+                        Calendar
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">monitoring</span>
+                        Monitoring
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">fact_check</span>
+                        Approvals
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+                        Analytics
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">photo_library</span>
+                        Media Library
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+                        Billing
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+                        Settings
+                    </a>
+</li>
+</ul>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">help</span>
+                        Support
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">campaign</span>
+                        What's New
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col min-w-0 pb-20 md:pb-0 relative h-screen overflow-hidden">
+<!-- TopNavBar (Visible on Mobile & Desktop) -->
+<header class="flex justify-between items-center h-16 px-md w-full z-40 bg-surface/80 backdrop-blur-md sticky top-0 shrink-0">
+<div class="flex items-center gap-3">
+<span class="md:hidden font-headline-md text-headline-md font-black text-on-surface text-lg">Accounts</span>
+<span class="hidden md:inline font-headline-md text-headline-md font-black text-on-surface text-xl">Active Connections</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="hidden md:flex bg-primary text-on-primary font-body-md text-body-md font-semibold px-4 py-1.5 rounded-md hover:brightness-110 transition-all text-sm">
+                    Connect Account
+                </button>
+<div class="hidden md:flex items-center gap-2 font-label-caps text-label-caps text-on-surface-variant bg-surface-variant px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px]">monetization_on</span>
+                    650 Credits
+                </div>
+<button class="text-on-surface-variant hover:text-primary transition-colors opacity-90 hover:opacity-100">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors opacity-90 hover:opacity-100">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content Area -->
+<div class="flex-1 overflow-y-auto p-4 md:p-8">
+<div class="max-w-4xl mx-auto space-y-6">
+<!-- Mobile Only Connect CTA -->
+<button class="md:hidden w-full bg-primary text-on-primary font-body-md text-body-md font-semibold py-3 rounded-xl hover:brightness-110 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg mb-6">
+<span class="material-symbols-outlined text-[20px]">link</span>
+                    Connect New Account
+                </button>
+<!-- Accounts List -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Account Card 1 -->
+<div class="bg-surface-container border border-outline-variant rounded-2xl p-4 cursor-pointer hover:bg-surface-container-high transition-colors group relative overflow-hidden" onclick="toggleDetails('details-1')">
+<div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full opacity-50 pointer-events-none"></div>
+<div class="flex items-start justify-between mb-4 relative z-10">
+<div class="flex items-center gap-3">
+<img alt="Brand Logo" class="w-12 h-12 rounded-full border border-surface-variant object-cover" data-alt="A clean, minimalist logo for a tech brand featuring a stylized geometric shape in deep blue and vibrant orange on a dark background. The logo sits perfectly centered in a circle, conveying trust and innovation in a digital space." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfVxOZhjoxDdmHKHNTCxMxhz9XhGv0rakGbMqhn9j9GC6owo9ehz4waPzu5ieDfQvNgxwzaLacHeCOn7dFLq0eHyC7-yz8LVGG3G5SjwKKNDrrbOb6uW03G8nP8AXklpQBSP9eoveCQTutz9_vfEZGZFIbHP4mjCn4DM2-94UzQDYKn53OT9Ku_8LLekRkmNHirYyJaL96IAWKGJzLswLhsI3P8obVPez0pq16sSzJYSJnN9Cd1ebA7LHUuRY03Pqhky-F1RGq1Jk"/>
+<div>
+<h3 class="font-body-lg text-body-lg font-semibold text-on-surface">@TechInnovator</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-xs">Threads Primary</p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-label-caps text-label-caps bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                ACTIVE
+                            </span>
+</div>
+<div class="flex items-center justify-between mt-4 pt-4 border-t border-outline-variant/50">
+<div class="flex items-center gap-2 text-on-surface-variant font-table-text text-table-text text-xs">
+<span class="material-symbols-outlined text-[14px]">sync</span>
+                                Last sync: 2m ago
+                            </div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors text-[20px]">chevron_right</span>
+</div>
+<!-- Expandable Details -->
+<div class="hidden mt-4 pt-4 border-t border-outline-variant" id="details-1">
+<div class="space-y-3">
+<div class="flex justify-between items-center bg-surface p-2 rounded-lg border border-surface-variant">
+<span class="font-label-caps text-label-caps text-on-surface-variant">OAuth Status</span>
+<span class="font-table-text text-table-text text-on-surface text-xs font-mono">Valid (Expires 2024-12)</span>
+</div>
+<div class="flex justify-between items-center bg-surface p-2 rounded-lg border border-surface-variant">
+<span class="font-label-caps text-label-caps text-on-surface-variant">API Rate Limit</span>
+<div class="w-1/2 bg-surface-variant rounded-full h-1.5 mt-1 overflow-hidden">
+<div class="bg-primary h-1.5 rounded-full" style="width: 45%"></div>
+</div>
+<span class="font-table-text text-table-text text-on-surface text-xs">45%</span>
+</div>
+<div class="bg-surface p-2 rounded-lg border border-surface-variant">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-2">Permissions</span>
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-1 bg-surface-variant rounded text-[10px] font-mono text-on-surface-variant">read_posts</span>
+<span class="px-2 py-1 bg-surface-variant rounded text-[10px] font-mono text-on-surface-variant">write_posts</span>
+<span class="px-2 py-1 bg-surface-variant rounded text-[10px] font-mono text-on-surface-variant">analytics</span>
+</div>
+</div>
+<button class="w-full mt-2 py-2 border border-error/50 text-error rounded-lg font-body-md text-body-md text-sm hover:bg-error/10 transition-colors">
+                                    Revoke Access
+                                </button>
+</div>
+</div>
+</div>
+<!-- Account Card 2 -->
+<div class="bg-surface-container border border-outline-variant rounded-2xl p-4 cursor-pointer hover:bg-surface-container-high transition-colors group relative overflow-hidden" onclick="toggleDetails('details-2')">
+<div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-error/10 to-transparent rounded-bl-full opacity-50 pointer-events-none"></div>
+<div class="flex items-start justify-between mb-4 relative z-10">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full border border-surface-variant bg-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px] text-on-surface-variant">person</span>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg font-semibold text-on-surface">@Marketing_Daily</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-xs">News Feed</p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-label-caps text-label-caps bg-error-container/20 text-error border border-error/20">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                EXPIRED
+                            </span>
+</div>
+<div class="flex items-center justify-between mt-4 pt-4 border-t border-outline-variant/50">
+<div class="flex items-center gap-2 text-error font-table-text text-table-text text-xs">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                                Re-authentication required
+                            </div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors text-[20px]">chevron_right</span>
+</div>
+<!-- Expandable Details -->
+<div class="hidden mt-4 pt-4 border-t border-outline-variant" id="details-2">
+<div class="space-y-3">
+<div class="flex justify-between items-center bg-surface p-2 rounded-lg border border-surface-variant">
+<span class="font-label-caps text-label-caps text-on-surface-variant">OAuth Status</span>
+<span class="font-table-text text-table-text text-error text-xs font-mono">Expired (2023-10)</span>
+</div>
+<button class="w-full mt-2 py-2 bg-primary text-on-primary rounded-lg font-body-md text-body-md text-sm hover:brightness-110 transition-colors">
+                                    Reconnect Now
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Mobile BottomNavBar (Hidden on md: breakpoint) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface-container-highest border-t border-outline-variant shadow-lg rounded-t-xl pb-safe">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 tap-highlight-none active:bg-surface-variant rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="font-label-caps text-label-caps mt-1 text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 tap-highlight-none active:bg-surface-variant rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">auto_awesome</span>
+<span class="font-label-caps text-label-caps mt-1 text-[10px]">AI</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 tap-highlight-none active:bg-surface-variant rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">calendar_month</span>
+<span class="font-label-caps text-label-caps mt-1 text-[10px]">Calendar</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 tap-highlight-none active:bg-surface-variant rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+<span class="font-label-caps text-label-caps mt-1 text-[10px]">Alerts</span>
+</a>
+<!-- Active State applied to Settings as it's the closest semantic match to Account Management -->
+<a class="flex flex-col items-center justify-center text-primary bg-primary-container/20 rounded-xl p-2 tap-highlight-none transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-label-caps text-label-caps mt-1 text-[10px]">Settings</span>
+</a>
+</nav>
+<script>
+        function toggleDetails(id) {
+            const el = document.getElementById(id);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                // Optional: add a subtle slide down animation class here
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+    </script>
+</body></html>

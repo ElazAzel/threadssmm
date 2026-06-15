@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Billing &amp; Usage - Threads SMM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#24005b",
+                        "on-background": "#dfe2ec",
+                        "on-tertiary-fixed": "#321300",
+                        "surface-dim": "#0f141a",
+                        "inverse-on-surface": "#2c3138",
+                        "secondary-container": "#5919c1",
+                        "on-tertiary": "#512300",
+                        "error": "#ffb4ab",
+                        "surface-container": "#1c2027",
+                        "on-primary-fixed": "#001c39",
+                        "surface-bright": "#353941",
+                        "primary": "#a3c9ff",
+                        "secondary-fixed-dim": "#d1bcff",
+                        "on-tertiary-fixed-variant": "#743500",
+                        "on-surface-variant": "#c0c7d5",
+                        "surface-container-lowest": "#0a0e15",
+                        "on-tertiary-container": "#471e00",
+                        "on-secondary": "#3d0090",
+                        "outline": "#8a919f",
+                        "surface-container-high": "#262a31",
+                        "inverse-surface": "#dfe2ec",
+                        "surface-variant": "#31353c",
+                        "tertiary-fixed-dim": "#ffb689",
+                        "surface-tint": "#a3c9ff",
+                        "on-primary-container": "#002a51",
+                        "error-container": "#93000a",
+                        "surface": "#0f141a",
+                        "primary-container": "#1493ff",
+                        "on-surface": "#dfe2ec",
+                        "surface-container-low": "#181c22",
+                        "secondary-fixed": "#eaddff",
+                        "background": "#0f141a",
+                        "tertiary-container": "#e56f03",
+                        "primary-fixed": "#d3e3ff",
+                        "on-secondary-fixed-variant": "#5714be",
+                        "on-secondary-container": "#c5abff",
+                        "outline-variant": "#404753",
+                        "tertiary": "#ffb689",
+                        "on-primary-fixed-variant": "#004883",
+                        "on-error-container": "#ffdad6",
+                        "on-error": "#690005",
+                        "tertiary-fixed": "#ffdbc8",
+                        "surface-container-highest": "#31353c",
+                        "primary-fixed-dim": "#a3c9ff",
+                        "inverse-primary": "#0060ab",
+                        "secondary": "#d1bcff",
+                        "on-primary": "#00315d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1rem"
+                    },
+                    "spacing": {
+                        "sidebar-width": "240px",
+                        "base": "8px",
+                        "lg": "48px",
+                        "container-max": "1440px",
+                        "xl": "80px",
+                        "gutter": "24px",
+                        "sm": "12px",
+                        "md": "24px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "table-text": ["Inter", "sans-serif"],
+                        "headline-md": ["Inter", "sans-serif"],
+                        "headline-lg": ["Inter", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "label-caps": ["JetBrains Mono", "monospace"],
+                        "display": ["Inter", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "table-text": ["13px", { "lineHeight": "1.4", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-caps": ["11px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .glass-panel {
+                @apply bg-surface/80 backdrop-blur-[12px] border-b border-outline-variant;
+            }
+            .card-base {
+                @apply bg-surface border border-outline-variant rounded-2xl p-md;
+            }
+            .btn-primary {
+                @apply bg-primary-container text-on-primary-container font-body-md font-medium px-md py-[10px] rounded-lg hover:brightness-110 active:scale-95 transition-all inline-flex items-center justify-center gap-2;
+            }
+            .btn-secondary {
+                @apply bg-transparent border border-outline-variant text-on-surface font-body-md font-medium px-md py-[10px] rounded-lg hover:bg-surface-variant active:scale-95 transition-all inline-flex items-center justify-center gap-2;
+            }
+            .nav-item-active {
+                @apply bg-secondary-container dark:bg-secondary-container text-on-secondary-container font-semibold;
+            }
+            .nav-item-inactive {
+                @apply text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors duration-200;
+            }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased flex flex-col md:flex-row min-h-screen selection:bg-primary-container/30">
+<!-- Desktop SideNavBar -->
+<nav class="hidden md:flex flex-col h-screen w-sidebar-width py-md px-sm bg-surface-container-low border-r border-outline-variant sticky top-0 shrink-0 z-40">
+<div class="px-sm mb-lg">
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface tracking-tight">Threads SMM</h1>
+<p class="text-on-surface-variant text-sm mt-1">Pro Workspace</p>
+</div>
+<button class="mx-sm mb-md bg-primary-container text-on-primary-container font-body-md font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 hover:brightness-110 transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span> Create Post
+        </button>
+<div class="flex-1 overflow-y-auto pr-2 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg nav-item-inactive scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg nav-item-inactive scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">group</span> Accounts
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg nav-item-inactive scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">identity_platform</span> Brand Profiles
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg nav-item-inactive scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">auto_awesome</span> AI Studio
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg nav-item-inactive scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">calendar_today</span> Calendar
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg nav-item-inactive scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">monitoring</span> Monitoring
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg nav-item-inactive scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">fact_check</span> Approvals
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg nav-item-inactive scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">analytics</span> Analytics
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg nav-item-inactive scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">photo_library</span> Media Library
+            </a>
+<!-- Active Tab -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg nav-item-active scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">payments</span> Billing
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg nav-item-inactive scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">settings</span> Settings
+            </a>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg nav-item-inactive" href="#">
+<span class="material-symbols-outlined">help</span> Support
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg nav-item-inactive" href="#">
+<span class="material-symbols-outlined">campaign</span> What's New
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col min-w-0 pb-[88px] md:pb-0">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center h-16 px-md w-full z-30 glass-panel sticky top-0">
+<div class="font-headline-md text-headline-md font-black text-on-surface truncate">Threads SMM Agent</div>
+<div class="flex items-center space-x-4 opacity-90 hover:opacity-100 transition-opacity">
+<div class="hidden sm:flex items-center gap-2 bg-surface-variant text-on-surface px-3 py-1.5 rounded-full border border-outline-variant text-sm font-medium">
+<span class="material-symbols-outlined text-[16px] text-tertiary">generating_tokens</span>
+                    650 Credits
+                </div>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<main class="flex-1 p-md lg:p-lg max-w-[1000px] mx-auto w-full space-y-lg">
+<!-- Header -->
+<div class="mb-lg">
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight">Billing &amp; Usage</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-2">Monitor your resource consumption and manage your subscription plan.</p>
+</div>
+<!-- Prominent Current Subscription -->
+<section class="card-base bg-surface-container-high relative overflow-hidden group">
+<!-- Abstract BG Pattern -->
+<div class="absolute right-0 top-0 w-1/2 h-full opacity-10 pointer-events-none transition-transform duration-700 group-hover:scale-105" style="background: radial-gradient(circle at top right, var(--tw-colors-primary-container), transparent 70%);"></div>
+<div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<h3 class="font-display text-[32px] leading-none font-bold text-on-surface tracking-tight">Pro Plan</h3>
+<span class="bg-primary/10 text-primary font-label-caps text-[10px] px-2 py-1 rounded-full border border-primary/20">ACTIVE</span>
+</div>
+<p class="text-on-surface-variant font-body-md">Your plan renews on <strong class="text-on-surface">Oct 24, 2023</strong> for $49.00.</p>
+</div>
+<div class="flex gap-3 w-full md:w-auto">
+<button class="btn-secondary w-full md:w-auto">Invoices</button>
+<button class="btn-primary w-full md:w-auto">Manage Plan</button>
+</div>
+</div>
+</section>
+<!-- Usage Meters Grid -->
+<section>
+<h3 class="font-body-lg text-body-lg font-semibold text-on-surface mb-4">Current Usage</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md">
+<!-- Credits Meter -->
+<div class="card-base flex flex-col justify-between h-[140px]">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<div class="p-2 bg-surface-variant rounded-lg">
+<span class="material-symbols-outlined text-[20px] text-primary">generating_tokens</span>
+</div>
+<span class="font-label-caps text-label-caps">AI CREDITS</span>
+</div>
+<span class="font-label-caps text-[10px] text-on-surface-variant bg-surface-container py-1 px-2 rounded">MONTHLY</span>
+</div>
+<div>
+<div class="flex justify-between items-end mb-2">
+<span class="font-headline-md text-headline-md font-bold text-on-surface">650</span>
+<span class="text-on-surface-variant text-sm">/ 1,000</span>
+</div>
+<div class="h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-1000" style="width: 65%"></div>
+</div>
+</div>
+</div>
+<!-- Tokens Meter -->
+<div class="card-base flex flex-col justify-between h-[140px]">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<div class="p-2 bg-surface-variant rounded-lg">
+<span class="material-symbols-outlined text-[20px] text-tertiary">segment</span>
+</div>
+<span class="font-label-caps text-label-caps">TEXT TOKENS</span>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-end mb-2">
+<span class="font-headline-md text-headline-md font-bold text-on-surface">1.2M</span>
+<span class="text-on-surface-variant text-sm">/ 2M</span>
+</div>
+<div class="h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-tertiary rounded-full transition-all duration-1000" style="width: 60%"></div>
+</div>
+</div>
+</div>
+<!-- Images Meter -->
+<div class="card-base flex flex-col justify-between h-[140px] sm:col-span-2 lg:col-span-1">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<div class="p-2 bg-surface-variant rounded-lg">
+<span class="material-symbols-outlined text-[20px] text-secondary">image</span>
+</div>
+<span class="font-label-caps text-label-caps">IMAGE GEN</span>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-end mb-2">
+<span class="font-headline-md text-headline-md font-bold text-on-surface">184</span>
+<span class="text-on-surface-variant text-sm">/ 500</span>
+</div>
+<div class="h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full transition-all duration-1000" style="width: 36.8%"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Vertical List of Available Plans -->
+<section>
+<h3 class="font-body-lg text-body-lg font-semibold text-on-surface mb-4">Available Plans</h3>
+<div class="flex flex-col space-y-4">
+<!-- Basic Plan -->
+<div class="card-base flex flex-col md:flex-row justify-between items-start md:items-center gap-6 hover:border-outline transition-colors">
+<div class="flex-1">
+<h4 class="font-headline-md text-xl font-bold text-on-surface">Basic</h4>
+<p class="text-on-surface-variant text-sm mt-1 mb-3">Essential tools for solo creators.</p>
+<ul class="space-y-1">
+<li class="flex items-center gap-2 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-[16px] text-primary">check</span> 3 Brand Profiles</li>
+<li class="flex items-center gap-2 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-[16px] text-primary">check</span> 500 AI Credits/mo</li>
+</ul>
+</div>
+<div class="w-full md:w-auto text-left md:text-right border-t border-outline-variant md:border-t-0 pt-4 md:pt-0">
+<div class="font-display text-[28px] font-bold text-on-surface leading-none">$19<span class="text-sm font-normal text-on-surface-variant">/mo</span></div>
+<button class="btn-secondary w-full md:w-auto mt-3">Downgrade</button>
+</div>
+</div>
+<!-- Pro Plan (Current) -->
+<div class="card-base flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-primary/50 bg-primary/5 relative">
+<div class="absolute top-0 right-0 bg-primary text-on-primary font-label-caps text-[10px] px-3 py-1 rounded-bl-lg rounded-tr-xl">CURRENT PLAN</div>
+<div class="flex-1 mt-2 md:mt-0">
+<h4 class="font-headline-md text-xl font-bold text-on-surface">Pro</h4>
+<p class="text-on-surface-variant text-sm mt-1 mb-3">Advanced features for growing teams.</p>
+<ul class="space-y-1">
+<li class="flex items-center gap-2 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-[16px] text-primary">check</span> 10 Brand Profiles</li>
+<li class="flex items-center gap-2 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-[16px] text-primary">check</span> 1,000 AI Credits/mo</li>
+<li class="flex items-center gap-2 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-[16px] text-primary">check</span> Advanced Analytics</li>
+</ul>
+</div>
+<div class="w-full md:w-auto text-left md:text-right border-t border-outline-variant md:border-t-0 pt-4 md:pt-0">
+<div class="font-display text-[28px] font-bold text-on-surface leading-none">$49<span class="text-sm font-normal text-on-surface-variant">/mo</span></div>
+<button class="btn-secondary w-full md:w-auto mt-3 opacity-50 cursor-default" disabled="">Current Plan</button>
+</div>
+</div>
+<!-- Enterprise Plan -->
+<div class="card-base flex flex-col md:flex-row justify-between items-start md:items-center gap-6 hover:border-outline transition-colors">
+<div class="flex-1">
+<h4 class="font-headline-md text-xl font-bold text-on-surface flex items-center gap-2">Enterprise <span class="material-symbols-outlined text-[18px] text-tertiary">bolt</span></h4>
+<p class="text-on-surface-variant text-sm mt-1 mb-3">Unlimited power for large agencies.</p>
+<ul class="space-y-1">
+<li class="flex items-center gap-2 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-[16px] text-primary">check</span> Unlimited Profiles</li>
+<li class="flex items-center gap-2 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-[16px] text-primary">check</span> Custom AI Models</li>
+<li class="flex items-center gap-2 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-[16px] text-primary">check</span> Dedicated Support</li>
+</ul>
+</div>
+<div class="w-full md:w-auto text-left md:text-right border-t border-outline-variant md:border-t-0 pt-4 md:pt-0">
+<div class="font-display text-[28px] font-bold text-on-surface leading-none">$199<span class="text-sm font-normal text-on-surface-variant">/mo</span></div>
+<button class="btn-primary w-full md:w-auto mt-3">Upgrade</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Mobile BottomNavBar -->
+<!-- Applying Active State logic: Billing falls under Settings usually on mobile if not present. The active tab is index 4 (Settings) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface-container-highest border-t border-outline-variant rounded-t-xl shadow-lg pb-safe">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 tap-highlight-none active:bg-surface-variant rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-caps text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 tap-highlight-none active:bg-surface-variant rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">auto_awesome</span>
+<span class="font-label-caps text-[10px]">AI</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 tap-highlight-none active:bg-surface-variant rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">calendar_month</span>
+<span class="font-label-caps text-[10px]">Calendar</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 tap-highlight-none active:bg-surface-variant rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">notifications</span>
+<span class="font-label-caps text-[10px]">Alerts</span>
+</a>
+<!-- Active Tab: Settings -->
+<a class="flex flex-col items-center justify-center text-primary bg-primary-container/20 rounded-xl p-2 tap-highlight-none" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-label-caps text-[10px] font-bold">Settings</span>
+</a>
+</nav>
+</body></html>

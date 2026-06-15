@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Approvals Inbox - Threads SMM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface": "#dfe2ec",
+                      "surface-container-high": "#262a31",
+                      "surface-variant": "#31353c",
+                      "on-tertiary-fixed-variant": "#743500",
+                      "on-secondary-fixed-variant": "#5714be",
+                      "inverse-primary": "#0060ab",
+                      "on-tertiary-fixed": "#321300",
+                      "outline-variant": "#404753",
+                      "on-error": "#690005",
+                      "on-background": "#dfe2ec",
+                      "background": "#0f141a",
+                      "outline": "#8a919f",
+                      "primary": "#a3c9ff",
+                      "on-secondary-container": "#c5abff",
+                      "inverse-on-surface": "#2c3138",
+                      "primary-fixed-dim": "#a3c9ff",
+                      "surface-container": "#1c2027",
+                      "primary-container": "#1493ff",
+                      "on-tertiary-container": "#471e00",
+                      "tertiary": "#ffb689",
+                      "surface-container-low": "#181c22",
+                      "surface-container-highest": "#31353c",
+                      "primary-fixed": "#d3e3ff",
+                      "tertiary-fixed": "#ffdbc8",
+                      "on-primary-fixed": "#001c39",
+                      "secondary-container": "#5919c1",
+                      "tertiary-fixed-dim": "#ffb689",
+                      "surface": "#0f141a",
+                      "inverse-surface": "#dfe2ec",
+                      "secondary-fixed": "#eaddff",
+                      "on-primary": "#00315d",
+                      "on-error-container": "#ffdad6",
+                      "surface-container-lowest": "#0a0e15",
+                      "on-surface-variant": "#c0c7d5",
+                      "error": "#ffb4ab",
+                      "surface-tint": "#a3c9ff",
+                      "on-primary-container": "#002a51",
+                      "on-tertiary": "#512300",
+                      "secondary-fixed-dim": "#d1bcff",
+                      "error-container": "#93000a",
+                      "tertiary-container": "#e56f03",
+                      "on-secondary": "#3d0090",
+                      "secondary": "#d1bcff",
+                      "surface-dim": "#0f141a",
+                      "surface-bright": "#353941",
+                      "on-primary-fixed-variant": "#004883",
+                      "on-secondary-fixed": "#24005b"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-max": "1440px",
+                      "sm": "12px",
+                      "md": "24px",
+                      "base": "8px",
+                      "lg": "48px",
+                      "sidebar-width": "240px",
+                      "xl": "80px",
+                      "gutter": "24px",
+                      "xs": "4px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "label-caps": [
+                              "JetBrains Mono"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "table-text": [
+                              "Inter"
+                      ],
+                      "display": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-caps": [
+                              "11px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "table-text": [
+                              "13px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: #0A0A0C;
+        }
+        
+        .glass-panel {
+            background: rgba(31, 31, 35, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid #2D2D33;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #31353c;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="text-on-surface font-body-md bg-background min-h-screen flex overflow-hidden">
+<!-- SideNavBar (Desktop) -->
+<aside class="hidden md:flex bg-surface-container-low dark:bg-surface-container-low text-primary dark:text-primary font-body-md text-body-md fixed left-0 h-screen w-sidebar-width border-r border-outline-variant dark:border-outline-variant flex-col py-md px-sm z-50">
+<div class="mb-lg px-sm">
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface dark:text-on-surface truncate">Threads SMM</h1>
+<p class="text-on-surface-variant font-label-caps text-label-caps mt-1 truncate">Pro Workspace</p>
+</div>
+<nav class="flex-1 overflow-y-auto custom-scrollbar space-y-1">
+<a class="flex items-center gap-3 px-sm py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-sm py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+                Accounts
+            </a>
+<a class="flex items-center gap-3 px-sm py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">identity_platform</span>
+                Brand Profiles
+            </a>
+<a class="flex items-center gap-3 px-sm py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+                AI Studio
+            </a>
+<a class="flex items-center gap-3 px-sm py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+                Calendar
+            </a>
+<a class="flex items-center gap-3 px-sm py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">monitoring</span>
+                Monitoring
+            </a>
+<a class="flex items-center gap-3 px-sm py-2 rounded-lg bg-secondary-container dark:bg-secondary-container text-on-secondary-container font-semibold scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">fact_check</span>
+                Approvals
+            </a>
+<a class="flex items-center gap-3 px-sm py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-3 px-sm py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">photo_library</span>
+                Media Library
+            </a>
+<a class="flex items-center gap-3 px-sm py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+                Billing
+            </a>
+<a class="flex items-center gap-3 px-sm py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+                Settings
+            </a>
+</nav>
+<div class="mt-auto pt-md border-t border-outline-variant space-y-2">
+<button class="w-full bg-primary-container text-on-primary-container py-2 rounded-lg font-semibold hover:bg-primary transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                Create Post
+            </button>
+<div class="flex gap-2 mt-4">
+<button class="flex-1 flex flex-col items-center justify-center p-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">help</span>
+<span class="font-label-caps text-[9px] mt-1">Support</span>
+</button>
+<button class="flex-1 flex flex-col items-center justify-center p-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">campaign</span>
+<span class="font-label-caps text-[9px] mt-1">What's New</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col md:ml-sidebar-width h-screen overflow-hidden">
+<!-- TopNavBar -->
+<header class="bg-surface/80 dark:bg-surface/80 backdrop-blur-md text-primary dark:text-primary font-body-md text-body-md full-width top-0 sticky border-b border-outline-variant dark:border-outline-variant flex justify-between items-center h-16 px-md w-full z-40">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-md text-headline-md font-black text-on-surface hidden md:block">Threads SMM Agent</h2>
+<div class="relative hidden md:block w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full bg-[#1F1F23] border border-[#2D2D33] rounded-full py-1.5 pl-9 pr-4 text-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="Search approvals..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="font-label-caps text-label-caps text-tertiary px-3 py-1 rounded-full border border-tertiary/30 bg-tertiary/10">
+                    650 Credits
+                </div>
+<button class="bg-primary-container text-on-primary-container px-4 py-1.5 rounded-lg font-semibold hover:bg-primary transition-colors text-sm">
+                    Create
+                </button>
+<div class="flex gap-2">
+<button class="p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-variant transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="flex-1 overflow-hidden flex flex-col md:flex-row p-4 md:p-md gap-4 md:gap-md">
+<!-- Left List: Inbox -->
+<div class="w-full md:w-1/3 lg:w-1/4 flex flex-col gap-4 h-full">
+<div class="flex justify-between items-center">
+<h3 class="font-headline-md text-[18px] font-semibold">Inbox</h3>
+<button class="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-variant border border-outline-variant/50">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+</button>
+</div>
+<div class="flex gap-2 font-label-caps text-[10px]">
+<button class="px-3 py-1 rounded-full bg-surface-variant text-on-surface">All (12)</button>
+<button class="px-3 py-1 rounded-full border border-outline-variant text-on-surface-variant hover:bg-surface-variant">High Risk (3)</button>
+<button class="px-3 py-1 rounded-full border border-outline-variant text-on-surface-variant hover:bg-surface-variant">Drafts</button>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
+<!-- Item 1 (Active) -->
+<div class="bg-[#1F1F23] border border-primary/50 rounded-[16px] p-4 cursor-pointer relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-caps text-label-caps text-primary px-2 py-0.5 rounded-full bg-primary/10">Thread Draft</span>
+<span class="text-on-surface-variant text-xs">10m ago</span>
+</div>
+<h4 class="font-body-md text-on-surface font-medium line-clamp-2 mb-2">Q3 Product Launch Announcement Sequence</h4>
+<div class="flex items-center gap-3 text-xs">
+<div class="flex items-center gap-1 text-error">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+<span>High Risk</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">psychology</span>
+<span>AI Gen</span>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="bg-[#141416] border border-[#2D2D33] rounded-[16px] p-4 cursor-pointer hover:bg-[#1F1F23] transition-colors group">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-caps text-label-caps text-tertiary px-2 py-0.5 rounded-full bg-tertiary/10">Brand Change</span>
+<span class="text-on-surface-variant text-xs">1h ago</span>
+</div>
+<h4 class="font-body-md text-on-surface font-medium line-clamp-2 mb-2">Update bio link to new campaign landing page</h4>
+<div class="flex items-center gap-3 text-xs">
+<div class="flex items-center gap-1 text-[#4ade80]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>Low Risk</span>
+</div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="bg-[#141416] border border-[#2D2D33] rounded-[16px] p-4 cursor-pointer hover:bg-[#1F1F23] transition-colors group">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-caps text-label-caps text-secondary px-2 py-0.5 rounded-full bg-secondary/10">Single Post</span>
+<span class="text-on-surface-variant text-xs">3h ago</span>
+</div>
+<h4 class="font-body-md text-on-surface font-medium line-clamp-2 mb-2">Weekly community spotlight featuring @creatorxyz</h4>
+<div class="flex items-center gap-3 text-xs">
+<div class="flex items-center gap-1 text-[#facc15]">
+<span class="material-symbols-outlined text-[14px]">info</span>
+<span>Medium Risk</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Detail View Workspace -->
+<div class="flex-1 bg-[#1F1F23] border border-[#2D2D33] rounded-[16px] flex flex-col overflow-hidden relative">
+<!-- Detail Header -->
+<div class="p-4 md:p-6 border-b border-[#2D2D33] flex justify-between items-start bg-[#141416]/50">
+<div>
+<h2 class="font-headline-md text-headline-md mb-2">Q3 Product Launch Announcement Sequence</h2>
+<div class="flex items-center gap-4 text-sm text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> Scheduled: Today, 14:00 EST</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">person</span> Author: AI Agent Alpha</span>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="p-2 border border-[#2D2D33] rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors" title="Copy">
+<span class="material-symbols-outlined">content_copy</span>
+</button>
+<button class="p-2 border border-[#2D2D33] rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors" title="Regenerate">
+<span class="material-symbols-outlined">autorenew</span>
+</button>
+</div>
+</div>
+<!-- Detail Content Scrollable -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Left Col: Content Preview -->
+<div class="lg:col-span-2 space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant">Thread Preview (3 Parts)</h3>
+<button class="text-primary text-sm flex items-center gap-1 hover:underline">
+<span class="material-symbols-outlined text-[16px]">edit</span> Edit Content
+                            </button>
+</div>
+<!-- Thread Item 1 -->
+<div class="bg-[#141416] p-4 rounded-[12px] border border-[#2D2D33] relative">
+<div class="absolute -left-3 top-6 bottom-[-30px] w-0.5 bg-[#2D2D33] z-0 hidden lg:block"></div>
+<div class="flex gap-3 relative z-10">
+<div class="w-8 h-8 rounded-full bg-surface-variant flex-shrink-0 border-2 border-[#1F1F23]">
+<img alt="Brand Avatar" class="w-full h-full rounded-full opacity-80" data-alt="A small, stylized circular avatar placeholder image for a tech company social media profile, dark theme." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAk2V68yUU1EBA2kdtO-d-STeOEKt6_qyUVEfyBjlmyOP9AVIBS-KqOLpAdnJ8jRSERlQ7yJo5BfHNfHG2xAu36IcNPKTvaHtmK0V14Lgna-kDiiUghMF6FNXMSGqldn2JwZFfyF2nmY5XMOtb8iPpUutRdwosIOzP_MMjsOeMneWsUp0UTzuoK2Sz2DekGBNPewBRe3Hzr4TmH5TTH1aH8C0hQXASG6UyB6J9RW5g1PBCnjVNAdPtB2nPC44i0349epjygizXjyYA"/>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-1">
+<span class="font-semibold text-sm">TechCorp</span>
+<span class="text-xs text-on-surface-variant">@techcorp</span>
+</div>
+<p class="text-sm leading-relaxed text-on-surface/90 mb-3">
+                                        The wait is over. Introducing Nexus v3. 🚀 <br/><br/>We've completely rewritten the engine from the ground up to be 40% faster, leaner, and ready for enterprise scale. Here's what you need to know:
+                                    </p>
+<div class="w-full h-40 bg-surface-variant rounded-lg border border-[#2D2D33] overflow-hidden">
+<!-- Placeholder for attached media -->
+<div class="w-full h-full flex items-center justify-center text-on-surface-variant flex-col">
+<span class="material-symbols-outlined mb-2 opacity-50">image</span>
+<span class="text-xs font-label-caps opacity-50">nexus_v3_hero.png</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Thread Item 2 -->
+<div class="bg-[#141416] p-4 rounded-[12px] border border-[#2D2D33] relative">
+<div class="absolute -left-3 top-6 bottom-[-30px] w-0.5 bg-[#2D2D33] z-0 hidden lg:block"></div>
+<div class="flex gap-3 relative z-10">
+<div class="w-8 h-8 rounded-full bg-surface-variant flex-shrink-0 border-2 border-[#1F1F23] flex items-center justify-center text-xs">
+<span class="material-symbols-outlined text-[16px]">person</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-1">
+<span class="font-semibold text-sm">TechCorp</span>
+<span class="text-xs text-on-surface-variant">@techcorp</span>
+</div>
+<p class="text-sm leading-relaxed text-on-surface/90">
+                                        1/ Security First: We implemented military-grade encryption standard across all endpoints. Your data has never been safer. <span class="bg-error/20 text-error px-1 rounded inline-block border border-error/30" title="Flagged: Hyperbolic claim">military-grade encryption</span>
+</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Col: Analysis & Risk -->
+<div class="space-y-6">
+<div class="bg-error-container/10 border border-error/30 rounded-[12px] p-4">
+<div class="flex items-center gap-2 text-error mb-3">
+<span class="material-symbols-outlined">warning</span>
+<h3 class="font-semibold">Compliance Risk: High</h3>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-end">
+<span class="text-sm text-on-surface-variant">Policy Violation Probability</span>
+<span class="text-xl font-bold text-error">78%</span>
+</div>
+<div class="h-2 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-error w-[78%]"></div>
+</div>
+</div>
+<div class="mt-4 space-y-2">
+<div class="flex justify-between text-xs">
+<span class="text-on-surface-variant">Toxicity</span>
+<span class="text-[#4ade80]">Low (2%)</span>
+</div>
+<div class="flex justify-between text-xs">
+<span class="text-on-surface-variant">Spam</span>
+<span class="text-[#facc15]">Med (15%)</span>
+</div>
+<div class="flex justify-between text-xs">
+<span class="text-on-surface-variant">False Claims</span>
+<span class="text-error font-semibold">High (85%)</span>
+</div>
+</div>
+</div>
+<div class="bg-[#141416] border border-[#2D2D33] rounded-[12px] p-4">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">psychology</span> AI Reasoning
+                            </h3>
+<p class="text-sm text-on-surface/80 leading-relaxed">
+                                The phrase "military-grade encryption standard" in Thread 2 is flagged by legal compliance rule #42 (Exaggerated Security Claims). We recommend changing this to "industry-standard AES-256 encryption" to comply with SEC marketing guidelines for tech products.
+                            </p>
+</div>
+</div>
+</div>
+<!-- Bottom Actions -->
+<div class="p-4 border-t border-[#2D2D33] bg-[#141416] flex justify-end gap-3 mt-auto z-10">
+<button class="px-6 py-2 rounded-lg border border-[#2D2D33] text-on-surface hover:bg-surface-variant transition-colors text-sm font-medium">
+                        Reject
+                    </button>
+<button class="px-6 py-2 rounded-lg bg-surface-variant text-on-surface hover:bg-[#3F3F46] transition-colors text-sm font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">edit_note</span> Fix Issues
+                    </button>
+<!-- Trigger Modal -->
+<button class="px-6 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-colors text-sm font-bold shadow-[0_0_15px_rgba(20,147,255,0.3)]" onclick="document.getElementById('confirmation-modal').classList.remove('hidden')">
+                        Approve &amp; Schedule
+                    </button>
+</div>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Mobile) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface-container-highest dark:bg-surface-container-highest border-t border-outline-variant rounded-t-xl shadow-lg font-label-caps text-label-caps-mobile">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:bg-surface-variant tap-highlight-none" href="#">
+<span class="material-symbols-outlined">home</span>
+<span>Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:bg-surface-variant tap-highlight-none" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span>AI</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary bg-primary-container/20 rounded-xl p-2 active:bg-surface-variant tap-highlight-none" href="#">
+<span class="material-symbols-outlined">fact_check</span>
+<span>Alerts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:bg-surface-variant tap-highlight-none" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<!-- Confirmation Modal (Hidden by default) -->
+<div class="hidden fixed inset-0 z-[100] flex items-center justify-center" id="confirmation-modal">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-background/80 backdrop-blur-sm" onclick="document.getElementById('confirmation-modal').classList.add('hidden')"></div>
+<!-- Modal Content -->
+<div class="relative w-full max-w-md mx-4 bg-[#1F1F23] border border-[#3F3F46] rounded-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] overflow-hidden">
+<div class="p-6">
+<div class="w-12 h-12 rounded-full bg-error/10 flex items-center justify-center text-error mb-4">
+<span class="material-symbols-outlined text-[24px]">gavel</span>
+</div>
+<h3 class="font-headline-md text-xl mb-2">Confirm High-Risk Publication</h3>
+<p class="text-sm text-on-surface-variant mb-6">
+                    Approving this action will schedule content to Threads that currently has a <strong>78% Compliance Risk</strong> score. Are you absolutely sure you want to override the AI safety flags?
+                </p>
+<div class="flex gap-3 justify-end mt-8">
+<button class="px-4 py-2 rounded-lg border border-[#2D2D33] text-on-surface hover:bg-surface-variant transition-colors text-sm font-medium" onclick="document.getElementById('confirmation-modal').classList.add('hidden')">
+                        Cancel
+                    </button>
+<button class="px-4 py-2 rounded-lg bg-error text-on-error hover:bg-error/90 transition-colors text-sm font-bold" onclick="document.getElementById('confirmation-modal').classList.add('hidden')">
+                        Force Approve
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>
