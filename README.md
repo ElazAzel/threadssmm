@@ -2,6 +2,8 @@
 
 Интерактивный frontend-прототип SaaS-платформы для управления Threads-контентом: стратегия бренда, AI Studio, согласование, календарь, мониторинг, аналитика и лимиты.
 
+Production: [threadssmm.vercel.app](https://threadssmm.vercel.app)
+
 ## Локальный запуск
 
 ```bash
@@ -28,6 +30,8 @@ npm run verify
 `vercel.json` уже содержит SPA rewrite для прямого открытия маршрутов `/app/*`.
 
 GitHub Actions workflow `.github/workflows/ci.yml` выполняет те же проверки при каждом push в `main` и в pull request.
+
+Проект Vercel связан с репозиторием `ElazAzel/threadssmm`: изменения в `main` автоматически публикуются в production после push.
 
 ## Текущее состояние
 
