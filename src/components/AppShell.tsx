@@ -21,6 +21,9 @@ import {
   X,
 } from 'lucide-react'
 import { Button, Modal } from './ui'
+import { useAuth } from '../contexts/AuthContext'
+import { useWorkspace } from '../contexts/WorkspaceContext'
+import type { ContentFormat } from '../lib/domain'
 
 const navigation = [
   { to: '/app/dashboard', label: 'Обзор', icon: LayoutDashboard },
@@ -40,7 +43,11 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   const [menuOpen, setMenuOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
   const [draft, setDraft] = useState('')
+  const [draftFormat, setDraftFormat] = useState<ContentFormat>('post')
+  const [savingDraft, setSavingDraft] = useState(false)
   const [notice, setNotice] = useState('')
+  const { signOut } = useAuth()
+  const { workspace, approvals, createQuickDraft, requestApproval } = useWorkspace()
   const navigate = useNavigate()
   const location = useLocation()
   const mobileTitles: Record<string, string> = {
@@ -58,12 +65,21 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   }
   const routeClass = `route-${location.pathname.split('/').pop()}`
 
-  const saveQuickDraft = () => {
+  const saveQuickDraft = async () => {
     if (!draft.trim()) return
-    setCreateOpen(false)
-    setDraft('')
-    setNotice('Черновик создан и отправлен на проверку')
-    window.setTimeout(() => setNotice(''), 3200)
+    setSavingDraft(true)
+    try {
+      const created = await createQuickDraft(draft, draftFormat)
+      await requestApproval(created.id, 'Быстрый черновик')
+      setCreateOpen(false)
+      setDraft('')
+      setNotice('Черновик создан и отправлен на согласование')
+    } catch (caught) {
+      setNotice(caught instanceof Error ? caught.message : 'Не удалось создать черновик')
+    } finally {
+      setSavingDraft(false)
+      window.setTimeout(() => setNotice(''), 3200)
+    }
   }
 
   return (
@@ -73,7 +89,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
           <div className="brand-mark">✦</div>
           <div>
             <strong>Threads SMM</strong>
-            <span>Pro Workspace</span>
+            <span>{workspace?.name ?? 'Workspace'}</span>
           </div>
           <button className="sidebar-close" onClick={() => setMenuOpen(false)} aria-label="Закрыть меню">
             <X size={20} />
@@ -89,7 +105,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             <NavLink key={to} to={to} onClick={() => setMenuOpen(false)}>
               <Icon size={19} />
               <span>{label}</span>
-              {count ? <b>{count}</b> : null}
+              {(to === '/app/approvals' ? approvals.filter((item) => item.status === 'pending').length : count) ? <b>{to === '/app/approvals' ? approvals.filter((item) => item.status === 'pending').length : count}</b> : null}
             </NavLink>
           ))}
         </nav>
@@ -111,9 +127,9 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             <Search size={19} />
             <input aria-label="Поиск" placeholder="Поиск по аккаунтам, постам, темам..." />
           </label>
-          <button className="credits" onClick={() => navigate('/app/billing')}><Sparkles size={16} /> 650 кредитов</button>
+          <button className="credits" onClick={() => navigate('/app/billing')}><Sparkles size={16} /> {workspace?.ai_credits ?? 0} кредитов</button>
           <button className="icon-button" aria-label="Уведомления"><Bell size={20} /></button>
-          <button className="avatar-button" aria-label="Профиль"><UserRound size={20} /></button>
+          <button className="avatar-button" aria-label="Выйти" title="Выйти" onClick={() => void signOut().then(() => navigate('/login'))}><UserRound size={20} /></button>
           <Button className="topbar-create" onClick={() => setCreateOpen(true)}>Создать</Button>
         </header>
         <main className="app-content">{children}</main>
@@ -132,7 +148,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
           <div className="form-stack">
             <label>
               Тип публикации
-              <select defaultValue="post"><option value="post">Пост</option><option value="thread">Тред</option><option value="reply">Ответ</option></select>
+              <select value={draftFormat} onChange={(event) => setDraftFormat(event.target.value as ContentFormat)}><option value="post">Пост</option><option value="thread">Тред</option><option value="reply">Ответ</option></select>
             </label>
             <label>
               Основная мысль
@@ -140,7 +156,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             </label>
             <div className="modal-actions">
               <Button variant="secondary" onClick={() => setCreateOpen(false)}>Отмена</Button>
-              <Button onClick={saveQuickDraft} disabled={!draft.trim()}>Создать черновик</Button>
+              <Button onClick={() => void saveQuickDraft()} disabled={!draft.trim() || savingDraft}>{savingDraft ? 'Сохраняем...' : 'Создать черновик'}</Button>
             </div>
           </div>
         </Modal>

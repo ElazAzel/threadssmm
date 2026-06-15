@@ -1,62 +1,116 @@
-import { useState } from 'react'
-import { AlertTriangle, BarChart3, Bell, Bot, Check, CheckCircle2, Copy, Download, Eye, FileText, Image as ImageIcon, KeyRound, Plus, Save, ShieldCheck, Sparkles, Trash2, Upload, Webhook } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { AlertTriangle, BarChart3, Bell, Bot, Check, CheckCircle2, Copy, Download, Eye, FileText, Image as ImageIcon, KeyRound, ShieldCheck, Sparkles, Trash2, Upload } from 'lucide-react'
 import { AppShell } from '../components/AppShell'
 import { Badge, Button, Card, Progress, SectionTitle } from '../components/ui'
 import { mediaAssets } from '../data'
+import { useAuth } from '../contexts/AuthContext'
+import { useWorkspace } from '../contexts/WorkspaceContext'
 
 export function AnalyticsPage() {
+  const { demo } = useAuth()
+  const { workspace, drafts } = useWorkspace()
   const [period, setPeriod] = useState('30Д')
   const [notice, setNotice] = useState('')
-  const bars = [38, 52, 34, 65, 47, 61, 86]
+  const published = drafts.filter((draft) => draft.status === 'published')
+  const bars = demo ? [38, 52, 34, 65, 47, 61, 86] : [0, 0, 0, 0, 0, 0, Math.min(100, published.length * 10)]
+
+  const exportReport = () => {
+    const rows = [['Название', 'Статус', 'Запланировано', 'Опубликовано'], ...drafts.map((draft) => [draft.title, draft.status, draft.scheduled_at ?? '', draft.published_at ?? ''])]
+    const csv = rows.map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(',')).join('\n')
+    const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }))
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = 'threads-smm-report.csv'
+    anchor.click()
+    URL.revokeObjectURL(url)
+    setNotice('CSV-отчёт скачан')
+    window.setTimeout(() => setNotice(''), 2400)
+  }
   return (
     <AppShell title="Обзор аналитики">
-      <div className="analytics-toolbar"><div className="segmented">{['7Д', '30Д', '90Д', 'Год'].map((item) => <button key={item} className={period === item ? 'active' : ''} onClick={() => setPeriod(item)}>{item}</button>)}</div><Button variant="secondary" onClick={() => { setNotice('Отчёт подготовлен к экспорту'); window.setTimeout(() => setNotice(''), 2400) }}><Download size={17} /> Экспорт отчёта</Button></div>
-      <div className="metric-grid analytics-metrics"><Card className="metric-card"><span>Всего постов <FileText /></span><strong>342 <small>↑12%</small></strong></Card><Card className="metric-card"><span>Вовлечённость <BarChart3 /></span><strong>4.8% <small>↑0.5%</small></strong></Card><Card className="metric-card"><span>Просмотры <Eye /></span><strong>1.2M <small className="negative">↓3%</small></strong></Card><Card className="metric-card"><span>AI-кредиты <Sparkles /></span><strong>850 <small>/1500</small></strong><Progress value={57} /></Card></div>
-      <div className="analytics-layout"><div><Card className="chart-card"><SectionTitle title="Динамика вовлечённости" /><div className="bar-chart">{bars.map((height, index) => <span key={index} className={index === bars.length - 1 ? 'active' : ''} style={{ height: `${height}%` }} />)}</div></Card><div className="analytics-lower"><Card><SectionTitle title="Лучшие темы" />{[['AI-инструменты', 42], ['Дизайн-системы', 28], ['Рост агентства', 15]].map(([label, value]) => <div className="topic-progress" key={label as string}><span>{label}<b>{value}%</b></span><Progress value={value as number} tone={(value as number) > 35 ? 'violet' : 'blue'} /></div>)}</Card><Card><SectionTitle title="Контент-пиллары" /><div className="donut" /><div className="donut-legend"><span>Обучение</span><span>Продукт</span><span>Культура</span></div></Card></div></div><Card className="ai-insights"><SectionTitle icon={<Bot />} title="AI-выводы" /><div className="insight-note success"><b>Что сработало</b><p>Контрарные хуки в первых 50 символах увеличили удержание на 45%.</p></div><div className="insight-note danger"><b>Что не сработало</b><p>Промо-посты после 16:00 получили на 60% меньше органической видимости.</p></div><div className="insight-note next"><b>Что публиковать дальше</b><p>Сделайте серию из пяти коротких разборов и поставьте следующий продуктовый пост на 09:00.</p><Button>Создать черновики</Button></div></Card></div>
-      <Card className="table-wrap"><SectionTitle title="Лучшие публикации" /><table><thead><tr><th>Публикация</th><th>Тема</th><th>Вовлечённость</th><th>Ответы</th><th>Статус</th></tr></thead><tbody><tr><td><b>Почему ваш контент-план не работает...</b><small>12 июня · 09:30</small></td><td>Стратегия</td><td>12.4%</td><td>428</td><td><Badge tone="green">Viral</Badge></td></tr><tr><td><b>Системность важнее мотивации...</b><small>9 июня · 14:15</small></td><td>Продуктивность</td><td>8.1%</td><td>156</td><td><Badge tone="blue">Good</Badge></td></tr><tr><td><b>AI не заменит агентство, но...</b><small>2 июня · 11:00</small></td><td>AI Trends</td><td>15.2%</td><td>892</td><td><Badge tone="green">Viral</Badge></td></tr></tbody></table></Card>
+      <div className="analytics-toolbar"><div className="segmented">{['7Д', '30Д', '90Д', 'Год'].map((item) => <button key={item} className={period === item ? 'active' : ''} onClick={() => setPeriod(item)}>{item}</button>)}</div><Button variant="secondary" onClick={exportReport}><Download size={17} /> Экспорт CSV</Button></div>
+      <div className="metric-grid analytics-metrics"><Card className="metric-card"><span>Всего черновиков <FileText /></span><strong>{demo ? 342 : drafts.length}</strong></Card><Card className="metric-card"><span>Опубликовано <BarChart3 /></span><strong>{demo ? '4.8%' : published.length}</strong></Card><Card className="metric-card"><span>Просмотры <Eye /></span><strong>{demo ? '1.2M' : '—'} <small>{demo ? 'демо' : 'после Meta Insights'}</small></strong></Card><Card className="metric-card"><span>AI-кредиты <Sparkles /></span><strong>{workspace?.ai_credits ?? 0} <small>/200</small></strong><Progress value={Math.min(100, ((workspace?.ai_credits ?? 0) / 200) * 100)} /></Card></div>
+      <div className="analytics-layout"><div><Card className="chart-card"><SectionTitle title="Активность публикаций" /><div className="bar-chart">{bars.map((height, index) => <span key={index} className={index === bars.length - 1 ? 'active' : ''} style={{ height: `${Math.max(3, height)}%` }} />)}</div></Card><div className="analytics-lower"><Card><SectionTitle title="Статусы" />{[['Черновики', drafts.filter((draft) => draft.status === 'draft').length], ['Согласование', drafts.filter((draft) => draft.status === 'pending_approval').length], ['Опубликовано', published.length]].map(([label, value]) => <div className="topic-progress" key={label as string}><span>{label}<b>{value}</b></span><Progress value={drafts.length ? ((value as number) / drafts.length) * 100 : 0} /></div>)}</Card><Card><SectionTitle title="Данные Meta" /><p>{demo ? 'В демо показаны примерные графики.' : 'Просмотры и вовлечённость появятся после подключения Threads Insights и первой публикации.'}</p></Card></div></div><Card className="ai-insights"><SectionTitle icon={<Bot />} title="Состояние контента" /><div className="insight-note success"><b>Готово</b><p>{published.length} публикаций отправлено в Threads.</p></div><div className="insight-note danger"><b>Требует внимания</b><p>{drafts.filter((draft) => draft.status === 'failed').length} публикаций завершились ошибкой.</p></div><div className="insight-note next"><b>Следующий шаг</b><p>{drafts.length ? 'Проверьте очередь согласований и расписание.' : 'Создайте первый черновик в AI Studio.'}</p></div></Card></div>
+      <Card className="table-wrap"><SectionTitle title="Публикации" />{drafts.length ? <table><thead><tr><th>Публикация</th><th>Формат</th><th>Дата</th><th>Threads ID</th><th>Статус</th></tr></thead><tbody>{drafts.slice(0, 20).map((draft) => <tr key={draft.id}><td><b>{draft.title || 'Без названия'}</b></td><td>{draft.format}</td><td>{new Date(draft.published_at || draft.scheduled_at || draft.created_at).toLocaleString('ru-RU')}</td><td>{draft.threads_post_id || '—'}</td><td><Badge tone={draft.status === 'published' ? 'green' : draft.status === 'failed' ? 'red' : 'blue'}>{draft.status}</Badge></td></tr>)}</tbody></table> : <div className="empty-state"><h2>Данных пока нет</h2><p>Аналитика начнёт заполняться после создания и публикации контента.</p></div>}</Card>
       {notice ? <div className="toast">{notice}</div> : null}
     </AppShell>
   )
 }
 
 export function MediaPage() {
-  const [selected, setSelected] = useState(0)
+  const { demo } = useAuth()
+  const { mediaAssets: storedAssets, brands, uploadMedia, deleteMedia } = useWorkspace()
+  const assets = demo ? mediaAssets.map((item) => ({ id: String(item.id), title: item.title, url: item.image, prompt: item.prompt, created_at: new Date().toISOString(), mime_type: 'image/png', size_bytes: 0, storage_path: '', workspace_id: '', brand_id: null, created_by: '', width: 1024, height: 1024, source: 'demo', metadata: {} })) : storedAssets
+  const [selectedId, setSelectedId] = useState<string | null>(assets[0]?.id ?? null)
   const [copied, setCopied] = useState(false)
-  const asset = mediaAssets[selected]
+  const [uploading, setUploading] = useState(false)
+  const [notice, setNotice] = useState('')
+  const fileInput = useRef<HTMLInputElement>(null)
+  const asset = assets.find((item) => item.id === selectedId) ?? assets[0] ?? null
+
+  useEffect(() => {
+    if (!asset && assets[0]) setSelectedId(assets[0].id)
+  }, [asset, assets])
+
+  const handleUpload = async (file: File | undefined) => {
+    if (!file) return
+    setUploading(true)
+    try {
+      const created = await uploadMedia(file)
+      setSelectedId(created.id)
+      setNotice('Файл загружен в медиатеку')
+    } catch (caught) {
+      setNotice(caught instanceof Error ? caught.message : 'Не удалось загрузить файл')
+    } finally {
+      setUploading(false)
+      if (fileInput.current) fileInput.current.value = ''
+      window.setTimeout(() => setNotice(''), 3000)
+    }
+  }
+
+  const removeAsset = async () => {
+    if (!asset) return
+    try {
+      await deleteMedia(asset)
+      setSelectedId(null)
+      setNotice('Материал удалён')
+    } catch (caught) {
+      setNotice(caught instanceof Error ? caught.message : 'Не удалось удалить материал')
+    }
+    window.setTimeout(() => setNotice(''), 3000)
+  }
+
   return (
     <AppShell>
-      <div className="page-head"><div><h1>Медиатека</h1><p>Созданные AI-материалы и загруженные файлы.</p></div><div className="inline-form"><Button variant="secondary">Бренд: TechNova</Button><Button variant="secondary">Стиль: Cyberpunk</Button><Button><Upload size={17} /> Загрузить</Button></div></div>
-      <div className="media-layout"><div className="media-grid">{mediaAssets.map((item, index) => <button key={item.id} className={`media-tile ${selected === index ? 'active' : ''} ${index === 0 ? 'media-featured' : ''}`} onClick={() => setSelected(index)}><img src={item.image} alt={item.title} /><span><Badge tone="blue">AI</Badge><b>{item.title}</b><small>{item.meta}</small></span></button>)}</div><aside className="asset-details"><h2>Детали материала</h2><img src={asset.image} alt={asset.title} /><h3>{asset.title}</h3><p>1024 × 1024 · 2.4 MB · PNG</p><dl><div><dt>Бренд</dt><dd>TechNova</dd></div><div><dt>Движок</dt><dd>Image model</dd></div><div><dt>Создано</dt><dd>15 июня 2026</dd></div></dl><Card className="prompt-box"><span>Промпт <button onClick={() => { navigator.clipboard?.writeText(asset.prompt); setCopied(true); window.setTimeout(() => setCopied(false), 2000) }}><Copy size={15} /> {copied ? 'Скопировано' : 'Копировать'}</button></span><p>{asset.prompt}</p></Card><Button className="full-button"><FileText size={17} /> Прикрепить к черновику</Button><div className="split-actions"><Button variant="secondary"><Sparkles size={17} /> Похожий</Button><Button variant="danger"><Trash2 size={17} /></Button></div></aside></div>
+      <div className="page-head"><div><h1>Медиатека</h1><p>Изображения хранятся в закрытом Supabase Storage и выдаются по временным ссылкам.</p></div><div className="inline-form"><Button variant="secondary">Бренд: {brands[0]?.name ?? 'не выбран'}</Button><input ref={fileInput} type="file" accept="image/*" hidden onChange={(event) => void handleUpload(event.target.files?.[0])} /><Button onClick={() => fileInput.current?.click()} disabled={uploading}><Upload size={17} /> {uploading ? 'Загрузка...' : 'Загрузить'}</Button></div></div>
+      <div className="media-layout"><div className="media-grid">{assets.map((item, index) => <button key={item.id} className={`media-tile ${asset?.id === item.id ? 'active' : ''} ${index === 0 ? 'media-featured' : ''}`} onClick={() => setSelectedId(item.id)}><img src={item.url} alt={item.title} /><span><Badge tone="blue">{item.source === 'upload' ? 'Файл' : 'AI'}</Badge><b>{item.title}</b><small>{new Date(item.created_at).toLocaleDateString('ru-RU')}</small></span></button>)}{!assets.length ? <Card className="empty-state"><ImageIcon /><h2>Медиатека пуста</h2><p>Загрузите первое изображение до 10 МБ.</p></Card> : null}</div>{asset ? <aside className="asset-details"><h2>Детали материала</h2><img src={asset.url} alt={asset.title} /><h3>{asset.title}</h3><p>{asset.width ?? '—'} × {asset.height ?? '—'} · {(asset.size_bytes / 1024 / 1024).toFixed(2)} МБ · {asset.mime_type}</p><dl><div><dt>Бренд</dt><dd>{brands.find((brand) => brand.id === asset.brand_id)?.name ?? 'Без бренда'}</dd></div><div><dt>Источник</dt><dd>{asset.source}</dd></div><div><dt>Создано</dt><dd>{new Date(asset.created_at).toLocaleDateString('ru-RU')}</dd></div></dl>{asset.prompt ? <Card className="prompt-box"><span>Промпт <button onClick={() => { void navigator.clipboard.writeText(asset.prompt); setCopied(true); window.setTimeout(() => setCopied(false), 2000) }}><Copy size={15} /> {copied ? 'Скопировано' : 'Копировать'}</button></span><p>{asset.prompt}</p></Card> : null}<Button className="full-button" onClick={() => window.open(asset.url, '_blank', 'noopener,noreferrer')}><Download size={17} /> Открыть оригинал</Button><div className="split-actions"><Button variant="secondary" onClick={() => { void navigator.clipboard.writeText(asset.url); setNotice('Временная ссылка скопирована') }}><Copy size={17} /> Ссылка</Button><Button variant="danger" aria-label="Удалить" onClick={() => void removeAsset()}><Trash2 size={17} /></Button></div></aside> : <aside className="asset-details empty-state"><h2>Выберите материал</h2></aside>}</div>
+      {notice ? <div className="toast">{notice}</div> : null}
     </AppShell>
   )
 }
 
-const plans = [
-  { name: 'Starter', price: '$19', text: 'Для соло-экспертов', features: ['1 профиль бренда', '100 AI-кредитов', 'Базовая аналитика'] },
-  { name: 'Pro', price: '$49', text: 'Для профессиональных команд', features: ['5 профилей бренда', '1000 AI-кредитов', 'Согласование и отчёты'] },
-  { name: 'Growth', price: '$99', text: 'Для агентств и растущих брендов', features: ['Безлимитные профили', '5000 AI-кредитов', 'Расширенный мониторинг'] },
-]
-
 export function BillingPage() {
-  const [plan, setPlan] = useState('Pro')
+  const { workspace, brands, accounts, mediaAssets: assets, monitorSources } = useWorkspace()
   return (
     <AppShell title="Тариф и использование">
-      <div className="usage-grid"><Card><span>Осталось AI-кредитов <Sparkles /></span><strong>650 <small>/1000</small></strong><Progress value={65} /><Button variant="secondary">Купить кредиты</Button></Card><Card><span>Текстовые токены <FileText /></span><strong className="violet-text">42k <small>/50k</small></strong><Progress value={84} tone="violet" /><p>Сброс через 12 дней</p></Card><Card><span>Генерации изображений <ImageIcon /></span><strong className="orange-text">12 <small>/50</small></strong><Progress value={24} tone="orange" /><p>Сброс через 12 дней</p></Card></div>
-      <Card className="current-plan"><div><span className="mono-label">Текущая подписка</span><h2>{plan} Plan <Badge tone="blue">Активен</Badge></h2><p>{plans.find((item) => item.name === plan)?.price}/месяц · следующий платёж 15 июля 2026</p></div><div><Button variant="secondary">Счета</Button><Button variant="secondary">Управление подпиской</Button></div></Card>
-      <h2 className="standalone-title">Доступные тарифы</h2><div className="plans-grid">{plans.map((item) => <Card key={item.name} className={plan === item.name ? 'active-plan' : ''}>{plan === item.name ? <Badge tone="blue">Текущий тариф</Badge> : null}<h2>{item.name}</h2><strong>{item.price}<small>/мес.</small></strong><p>{item.text}</p><ul>{item.features.map((feature) => <li key={feature}><Check size={17} /> {feature}</li>)}</ul><Button variant={plan === item.name ? 'secondary' : 'primary'} onClick={() => setPlan(item.name)}>{plan === item.name ? 'Текущий тариф' : `Выбрать ${item.name}`}</Button></Card>)}</div>
+      <div className="usage-grid"><Card><span>Осталось AI-кредитов <Sparkles /></span><strong>{workspace?.ai_credits ?? 0} <small>/200</small></strong><Progress value={Math.min(100, ((workspace?.ai_credits ?? 0) / 200) * 100)} /><p>Одна генерация вариантов = 1 кредит</p></Card><Card><span>Профили бренда <Bot /></span><strong className="violet-text">{brands.length}</strong><p>Хранятся в Supabase Postgres</p></Card><Card><span>Медиафайлы <ImageIcon /></span><strong className="orange-text">{assets.length}</strong><p>Закрытый Supabase Storage</p></Card></div>
+      <Card className="current-plan"><div><span className="mono-label">Текущая конфигурация</span><h2>Free MVP <Badge tone="green">Без оплаты</Badge></h2><p>Vercel Hobby + Supabase Free + Gemini Free Tier + официальный Threads API</p></div></Card>
+      <h2 className="standalone-title">Подключённые бесплатные сервисы</h2><div className="plans-grid"><Card><Badge tone="blue">Frontend/API</Badge><h2>Vercel Hobby</h2><p>Хостинг SPA, serverless endpoints и один ежедневный cron.</p><ul><li><Check size={17} /> GitHub автодеплой</li><li><Check size={17} /> HTTPS</li><li><Check size={17} /> Serverless Functions</li></ul></Card><Card><Badge tone="blue">Данные</Badge><h2>Supabase Free</h2><p>{brands.length} брендов · {accounts.length} аккаунтов · {monitorSources.length} RSS-источников</p><ul><li><Check size={17} /> Auth и RLS</li><li><Check size={17} /> Postgres</li><li><Check size={17} /> Private Storage</li></ul></Card><Card><Badge tone="blue">AI и публикация</Badge><h2>Gemini + Meta</h2><p>Оплата в приложении не подключена. Используются только доступные бесплатные квоты внешних сервисов.</p><ul><li><Check size={17} /> Gemini Flash</li><li><Check size={17} /> Threads OAuth</li><li><Check size={17} /> Ручной fallback</li></ul></Card></div>
     </AppShell>
   )
 }
 
 export function SettingsPage() {
+  const { workspace, accounts } = useWorkspace()
+  const activeAccount = accounts.find((account) => account.status === 'active')
   const [tab, setTab] = useState(() => window.matchMedia('(max-width: 720px)').matches ? 'Workspace' : 'Threads API')
   const [secretVisible, setSecretVisible] = useState(false)
   const [saved, setSaved] = useState(false)
   const tabs = ['Workspace', 'Безопасность', 'AI-провайдеры', 'Threads API', 'Уведомления', 'Аудит']
   return (
     <AppShell>
-      <div className="page-head"><div><h1>Настройки workspace</h1><p>Административные параметры, API-интеграции и политики безопасности.</p></div></div><div className="tabs settings-tabs">{tabs.map((item) => <button key={item} className={tab === item ? 'active' : ''} onClick={() => setTab(item)}>{item}</button>)}</div>
-      {tab === 'Threads API' ? <div className="settings-layout"><div><Card className="integration-card"><div className="integration-title"><div><h2>Интеграция Threads</h2><p>Meta App для публикации и чтения доступных данных.</p></div><Badge tone="green">API Healthy</Badge></div><label>Meta App ID<div className="input-action"><input defaultValue="84930211847392" /><button><Copy size={18} /></button></div></label><label>App Secret<div className="input-action"><input type={secretVisible ? 'text' : 'password'} placeholder="Секрет хранится только на сервере" autoComplete="new-password" /><button onClick={() => setSecretVisible(!secretVisible)}><Eye size={18} /></button></div></label><label>Redirect URI<div className="input-action"><input defaultValue="https://app.threadssmm.com/auth/meta/callback" /><button><Copy size={18} /></button></div></label><div className="integration-actions"><Button variant="secondary"><KeyRound size={17} /> Ротация ключей</Button><Button onClick={() => { setSaved(true); window.setTimeout(() => setSaved(false), 2300) }}><Save size={17} /> Сохранить</Button></div></Card><Card><SectionTitle title="Webhooks" action={<Button variant="secondary"><Plus size={16} /> Endpoint</Button>} /><div className="webhook-row"><Webhook /><span><b>Production Events <Badge tone="blue">Active</Badge></b><code>https://api.threadssmm.com/v1/webhooks/meta</code></span><button><Trash2 size={17} /></button></div></Card></div><div><Card><SectionTitle title="Использование API" /><div className="topic-progress"><span>Публикации <b>45 / 250</b></span><Progress value={18} /></div><div className="topic-progress"><span>Чтение <b>1.2k / 10k</b></span><Progress value={12} tone="green" /></div></Card><Card><SectionTitle title="Статус Meta" /><div className="meta-status"><CheckCircle2 /><div><b>Подключено</b><p>Синхронизация 2 минуты назад. Токен истекает через 45 дней.</p></div></div></Card></div></div> : <SettingsTab tab={tab} />}
+      <div className="page-head"><div><h1>Настройки {workspace?.name ?? 'workspace'}</h1><p>Интеграционные секреты задаются только в Vercel Environment Variables и не отправляются из браузера.</p></div></div><div className="tabs settings-tabs">{tabs.map((item) => <button key={item} className={tab === item ? 'active' : ''} onClick={() => setTab(item)}>{item}</button>)}</div>
+      {tab === 'Threads API' ? <div className="settings-layout"><div><Card className="integration-card"><div className="integration-title"><div><h2>Интеграция Threads</h2><p>Добавьте переменные в Vercel, затем подключите аккаунт на странице «Аккаунты».</p></div><Badge tone={activeAccount ? 'green' : 'orange'}>{activeAccount ? 'OAuth подключён' : 'Нужна настройка'}</Badge></div><label>THREADS_APP_ID<div className="input-action"><input value="Задаётся в Vercel" readOnly /><button onClick={() => void navigator.clipboard.writeText('THREADS_APP_ID')}><Copy size={18} /></button></div></label><label>THREADS_APP_SECRET<div className="input-action"><input type={secretVisible ? 'text' : 'password'} value="server-only" readOnly /><button onClick={() => setSecretVisible(!secretVisible)}><Eye size={18} /></button></div></label><label>Redirect URI<div className="input-action"><input value="https://threadssmm.vercel.app/api/threads/callback" readOnly /><button onClick={() => void navigator.clipboard.writeText('https://threadssmm.vercel.app/api/threads/callback')}><Copy size={18} /></button></div></label><div className="integration-actions"><Button onClick={() => { setSaved(true); window.setTimeout(() => setSaved(false), 2300) }}><KeyRound size={17} /> Показать инструкцию</Button></div></Card><Card><SectionTitle title="Обязательные переменные" /><div className="permission-list"><code>THREADS_APP_ID</code><code>THREADS_APP_SECRET</code><code>THREADS_REDIRECT_URI</code><code>TOKEN_ENCRYPTION_KEY</code><code>CRON_SECRET</code></div></Card></div><div><Card><SectionTitle title="Подключённый профиль" />{activeAccount ? <div className="meta-status"><CheckCircle2 /><div><b>@{activeAccount.username}</b><p>Токен хранится зашифрованно в private schema.</p></div></div> : <p>Официальный аккаунт ещё не подключён.</p>}</Card><Card><SectionTitle title="Лимит Meta" /><p>Threads ограничивает профиль до 250 публикаций за 24 часа. Приложение не обходит это ограничение.</p></Card></div></div> : <SettingsTab tab={tab} />}
       <Card className="audit-table table-wrap"><SectionTitle title="Последние события аудита" action={<Button variant="secondary"><Download size={16} /> CSV</Button>} /><table><thead><tr><th>Время</th><th>Кто</th><th>Действие</th><th>Ресурс</th><th>Риск</th></tr></thead><tbody><tr><td>15 июня, 12:32</td><td>System</td><td>Token Refresh</td><td><code>oauth/access_token</code></td><td><Badge tone="green">Успех</Badge></td></tr><tr><td>15 июня, 11:15</td><td>Sarah J.</td><td>Webhook обновлён</td><td><code>api/settings/webhook</code></td><td><Badge tone="orange">Повышенный</Badge></td></tr><tr><td>14 июня, 18:09</td><td>Mike T.</td><td>Неудачный вход</td><td><code>oauth/authorize</code></td><td><Badge tone="red">Высокий</Badge></td></tr></tbody></table></Card>
       {saved ? <div className="toast">Настройки интеграции сохранены</div> : null}
     </AppShell>
@@ -64,8 +118,28 @@ export function SettingsPage() {
 }
 
 function SettingsTab({ tab }: { tab: string }) {
+  const { workspace, updateWorkspace } = useWorkspace()
+  const [name, setName] = useState(workspace?.name ?? '')
+  const [timezone, setTimezone] = useState(workspace?.timezone ?? 'UTC')
+  const [notice, setNotice] = useState('')
+
+  useEffect(() => {
+    setName(workspace?.name ?? '')
+    setTimezone(workspace?.timezone ?? 'UTC')
+  }, [workspace])
+
+  const saveWorkspace = async () => {
+    try {
+      await updateWorkspace({ name, timezone })
+      setNotice('Настройки workspace сохранены')
+    } catch (caught) {
+      setNotice(caught instanceof Error ? caught.message : 'Не удалось сохранить настройки')
+    }
+    window.setTimeout(() => setNotice(''), 2500)
+  }
+
   if (tab === 'Workspace') {
-    return <div className="mobile-workspace-settings"><Card className="general-info"><h2>Основные данные</h2><label>Название workspace<input defaultValue="Threads SMM Pro" /></label><label>Часовой пояс<select><option>UTC — Всемирное координированное время</option><option>Asia/Qyzylorda</option></select></label><div><button className="text-button">Отменить изменения</button><Button>Сохранить</Button></div></Card><div className="activity-title"><h2>Последняя активность</h2><button className="text-button">Все →</button></div>{[['Новый вход с неизвестного устройства', 'Chrome · 2 минуты назад', 'Внимание'], ['Обновлён часовой пояс', 'Изменено администратором · 1 час назад', 'Инфо'], ['API-ключ отозван', 'Prod_Services_Alpha · вчера', 'Критично']].map(([title, text, status], index) => <Card className="activity-card" key={title}><span>{index + 1}</span><div><h3>{title}</h3><p>{text}</p></div><Badge tone={index === 1 ? 'blue' : index === 2 ? 'red' : 'orange'}>{status}</Badge></Card>)}</div>
+    return <div className="mobile-workspace-settings"><Card className="general-info"><h2>Основные данные</h2><label>Название workspace<input value={name} onChange={(event) => setName(event.target.value)} /></label><label>Часовой пояс<input value={timezone} onChange={(event) => setTimezone(event.target.value)} placeholder="Asia/Qyzylorda" /></label><div><button className="text-button" onClick={() => { setName(workspace?.name ?? ''); setTimezone(workspace?.timezone ?? 'UTC') }}>Отменить изменения</button><Button onClick={() => void saveWorkspace()} disabled={!name.trim()}>Сохранить</Button></div></Card><Card><SectionTitle title="Хранение данных" /><p>Workspace, бренды, черновики и права доступа защищены Supabase RLS.</p></Card>{notice ? <div className="toast">{notice}</div> : null}</div>
   }
   const blocks: Record<string, { icon: typeof ShieldCheck; title: string; text: string }> = {
     'Безопасность': { icon: ShieldCheck, title: 'Политики безопасности', text: 'Сессии, двухфакторная аутентификация, журнал действий и ротация ключей.' },

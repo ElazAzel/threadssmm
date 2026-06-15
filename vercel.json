@@ -1,3 +1,11 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/app/:path*", "destination": "/index.html" },
+    { "source": "/login", "destination": "/index.html" },
+    { "source": "/setup", "destination": "/index.html" },
+    { "source": "/onboarding", "destination": "/index.html" }
+  ],
+  "crons": [
+    { "path": "/api/cron/publish", "schedule": "0 8 * * *" }
+  ]
 }

@@ -72,3 +72,53 @@ test('key screens fit a mobile viewport without horizontal overflow', async ({ p
 
   expect(errors).toEqual([])
 })
+
+test('AI Studio remains inside the viewport at desktop zoom breakpoints', async ({ page }) => {
+  const errors = collectRuntimeErrors(page)
+
+  for (const width of [1920, 1280, 1100]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/app/studio')
+    await expect(page.locator('.variant-grid')).toBeVisible()
+
+    const layout = await page.evaluate(() => {
+      const cards = [...document.querySelectorAll<HTMLElement>('.variant-card')]
+      return {
+        overflow: document.documentElement.scrollWidth - window.innerWidth,
+        cardsOutsideViewport: cards.filter((card) => {
+          const box = card.getBoundingClientRect()
+          return box.left < 0 || box.right > window.innerWidth + 1
+        }).length,
+        actionOverflow: [...document.querySelectorAll<HTMLElement>('.variant-card .split-actions')]
+          .some((actions) => actions.scrollWidth > actions.clientWidth + 1),
+      }
+    })
+
+    expect(layout.overflow, `Horizontal overflow at ${width}px`).toBeLessThanOrEqual(1)
+    expect(layout.cardsOutsideViewport, `Cards outside viewport at ${width}px`).toBe(0)
+    expect(layout.actionOverflow, `Card actions overflow at ${width}px`).toBe(false)
+  }
+
+  expect(errors).toEqual([])
+})
+
+test('dashboard remains inside the viewport with the desktop sidebar', async ({ page }) => {
+  const errors = collectRuntimeErrors(page)
+
+  for (const width of [1440, 1280, 1100]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/app/dashboard')
+    await expect(page.locator('.desktop-dashboard')).toBeVisible()
+
+    const layout = await page.evaluate(() => ({
+      overflow: document.documentElement.scrollWidth - window.innerWidth,
+      cardsOutsideViewport: [...document.querySelectorAll<HTMLElement>('.desktop-dashboard .card')]
+        .filter((card) => card.getBoundingClientRect().right > window.innerWidth + 1).length,
+    }))
+
+    expect(layout.overflow, `Dashboard horizontal overflow at ${width}px`).toBeLessThanOrEqual(1)
+    expect(layout.cardsOutsideViewport, `Dashboard cards outside viewport at ${width}px`).toBe(0)
+  }
+
+  expect(errors).toEqual([])
+})

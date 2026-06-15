@@ -16,7 +16,7 @@ export function LandingPage() {
       <header className="landing-header">
         <Link to="/" className="landing-logo"><Sparkles size={20} /> Threads SMM Agent</Link>
         <nav><a href="#features">Возможности</a><a href="#pricing">Тарифы</a><a href="#security">Безопасность</a></nav>
-        <div><Link className="text-link" to="/app/dashboard">Войти</Link><Link className="button button-primary" to="/onboarding">Начать</Link></div>
+        <div><Link className="text-link" to="/login">Войти</Link><Link className="button button-primary" to="/login">Начать</Link></div>
       </header>
 
       <main>
@@ -25,8 +25,8 @@ export function LandingPage() {
           <h1>Ваш <span>AI SMM-агент</span> для Threads</h1>
           <p>Планируйте, пишите, согласовывайте и анализируйте контент в единой системе, которая понимает голос бренда и оставляет контроль человеку.</p>
           <div className="hero-actions">
-            <Link className="button button-primary" to="/onboarding">Попробовать бесплатно <ArrowRight size={17} /></Link>
-            <Link className="button button-secondary" to="/app/dashboard">Открыть демо</Link>
+            <Link className="button button-primary" to="/login">Попробовать бесплатно <ArrowRight size={17} /></Link>
+            <Link className="button button-secondary" to="/login">Войти в кабинет</Link>
           </div>
           <div className="hero-browser">
             <div className="browser-dots"><i /><i /><i /></div>
@@ -43,7 +43,7 @@ export function LandingPage() {
 
         <section className="mobile-dashboard-preview">
           <div className="mobile-window-bar"><i /><i /><i /></div>
-          <div className="mobile-window-content"><span /><span /><span /><Link className="button button-primary" to="/app/dashboard">Открыть полную панель</Link></div>
+          <div className="mobile-window-content"><span /><span /><span /><Link className="button button-primary" to="/login">Открыть полную панель</Link></div>
         </section>
 
         <section id="security" className="trust-strip">
@@ -53,11 +53,11 @@ export function LandingPage() {
         </section>
 
         <section id="pricing" className="landing-section pricing-section">
-          <div className="section-copy"><h2>Прозрачные тарифы</h2><p>Начните с пилота и увеличивайте объём вместе с командой.</p></div>
+          <div className="section-copy"><h2>Бесплатный стек для MVP</h2><p>Платёжная система не нужна: используются бесплатные квоты сервисов.</p></div>
           <div className="pricing-grid">
-            <article><h3>Starter</h3><strong>$19<small>/мес.</small></strong><p>1 профиль бренда<br />100 AI-кредитов<br />Базовая аналитика</p><Link className="button button-secondary" to="/onboarding">Выбрать Starter</Link></article>
-            <article className="featured"><span>Популярный</span><h3>Pro</h3><strong>$49<small>/мес.</small></strong><p>5 профилей бренда<br />1000 AI-кредитов<br />Согласование и аналитика</p><Link className="button button-primary" to="/onboarding">Выбрать Pro</Link></article>
-            <article><h3>Growth</h3><strong>$99<small>/мес.</small></strong><p>Безлимитные профили<br />5000 AI-кредитов<br />Расширенный мониторинг</p><Link className="button button-secondary" to="/onboarding">Выбрать Growth</Link></article>
+            <article><h3>Supabase</h3><strong>$0<small>/мес.</small></strong><p>Авторизация и RLS<br />Postgres<br />Закрытое хранилище</p><Link className="button button-secondary" to="/login">Настроить</Link></article>
+            <article className="featured"><span>Основа</span><h3>Vercel</h3><strong>$0<small>/мес.</small></strong><p>GitHub автодеплой<br />Serverless API<br />HTTPS и cron</p><Link className="button button-primary" to="/login">Запустить MVP</Link></article>
+            <article><h3>Gemini + Meta</h3><strong>$0<small>/мес.</small></strong><p>AI Free Tier<br />Threads OAuth<br />Ручной fallback</p><Link className="button button-secondary" to="/login">Подключить</Link></article>
           </div>
         </section>
       </main>

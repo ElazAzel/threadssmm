@@ -2,55 +2,50 @@ import { ArrowUpRight, BarChart3, CalendarDays, CheckSquare, Clock3, Lightbulb, 
 import { useNavigate } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
 import { Badge, Button, Card, Progress, SectionTitle } from '../components/ui'
+import { useWorkspace } from '../contexts/WorkspaceContext'
 
 export function DashboardPage() {
   const navigate = useNavigate()
+  const { accounts, approvals, drafts, workspace, monitorItems } = useWorkspace()
+  const pending = approvals.filter((approval) => approval.status === 'pending').length
+  const scheduled = drafts.filter((draft) => draft.status === 'scheduled')
   return (
     <AppShell title="Threads SMM Agent">
       <MobileDashboard />
       <div className="dashboard-grid desktop-dashboard">
         <div className="metric-grid dashboard-metrics">
-          <Card className="metric-card"><span>Подключено аккаунтов <UsersRound size={19} /></span><strong>12 <small>↑2</small></strong></Card>
-          <Card className="metric-card"><span>Ждут согласования <CheckSquare size={19} /></span><strong>4 <small>нужны действия</small></strong></Card>
-          <Card className="metric-card"><span>Осталось AI-кредитов <Sparkles size={19} /></span><strong>650 <small>/ 1000</small></strong><Progress value={65} tone="orange" /></Card>
-          <Card className="metric-card"><span>Средняя вовлечённость <BarChart3 size={19} /></span><strong>4.8% <small>↑0.5%</small></strong></Card>
+          <Card className="metric-card"><span>Подключено аккаунтов <UsersRound size={19} /></span><strong>{accounts.length}</strong></Card>
+          <Card className="metric-card"><span>Ждут согласования <CheckSquare size={19} /></span><strong>{pending} <small>нужны действия</small></strong></Card>
+          <Card className="metric-card"><span>Осталось AI-кредитов <Sparkles size={19} /></span><strong>{workspace?.ai_credits ?? 0} <small>/ 200</small></strong><Progress value={Math.min(100, ((workspace?.ai_credits ?? 0) / 200) * 100)} tone="orange" /></Card>
+          <Card className="metric-card"><span>Опубликовано <BarChart3 size={19} /></span><strong>{drafts.filter((draft) => draft.status === 'published').length}</strong></Card>
         </div>
 
         <section>
           <SectionTitle icon={<CheckSquare />} title="Действия на сегодня" />
           <Card className="action-list">
-            <div><span><CheckSquare /><b>Согласовать 4 черновика</b><small>Созданы в AI Studio</small></span><Button onClick={() => navigate('/app/approvals')}>Проверить</Button></div>
-            <div><span><MessageSquare /><b>Проверить 3 ответа</b><small>Приоритетные упоминания</small></span><Button onClick={() => navigate('/app/monitoring')} variant="secondary">Открыть</Button></div>
-            <div><span><Clock3 /><b>Запланировать 2 поста</b><small>Оптимальные окна сегодня</small></span><Button onClick={() => navigate('/app/calendar')} variant="secondary">К календарю</Button></div>
+            <div><span><CheckSquare /><b>Согласовать {pending} черновиков</b><small>{pending ? 'Материалы ждут решения' : 'Очередь пуста'}</small></span><Button onClick={() => navigate('/app/approvals')}>Проверить</Button></div>
+            <div><span><MessageSquare /><b>Проверить {monitorItems.length} сигналов</b><small>Материалы из RSS-мониторинга</small></span><Button onClick={() => navigate('/app/monitoring')} variant="secondary">Открыть</Button></div>
+            <div><span><Clock3 /><b>В расписании {scheduled.length} постов</b><small>Проверьте время и аккаунт</small></span><Button onClick={() => navigate('/app/calendar')} variant="secondary">К календарю</Button></div>
           </Card>
         </section>
 
         <section className="dashboard-insights">
           <SectionTitle icon={<Sparkles />} title="AI-рекомендации" />
           <div className="insight-grid">
-            <Card className="highlight-card"><Badge tone="orange">Высокий эффект</Badge><h3>Отреагируйте на растущую тему</h3><p>Обсуждение AI-команд набирает обороты. Ваша аудитория лучше всего реагирует на практические контраргументы.</p><button onClick={() => navigate('/app/studio')}>Создать черновик <ArrowUpRight size={17} /></button></Card>
-            <div className="stack-cards"><Card><Lightbulb /><div><h3>Вопросы работают лучше</h3><p>Посты с вопросом в первой строке дают на 42% больше ответов.</p></div></Card><Card className="warning-card"><CalendarDays /><div><h3>Пустое окно в расписании</h3><p>На четверг нет публикаций. Добавьте пост, чтобы сохранить ритм.</p></div></Card></div>
+            <Card className="highlight-card"><Badge tone="orange">Следующий шаг</Badge><h3>{monitorItems[0]?.title || 'Создайте первый системный черновик'}</h3><p>{monitorItems[0]?.summary || 'Заполните профиль бренда и сформулируйте основную мысль в AI Studio.'}</p><button onClick={() => navigate(monitorItems.length ? '/app/monitoring' : '/app/studio')}>{monitorItems.length ? 'Открыть сигнал' : 'Создать черновик'} <ArrowUpRight size={17} /></button></Card>
+            <div className="stack-cards"><Card><Lightbulb /><div><h3>Проверяемые выводы</h3><p>AI не публикует материалы без согласования человека.</p></div></Card><Card className="warning-card"><CalendarDays /><div><h3>Контент-ритм</h3><p>{scheduled.length ? `Запланировано: ${scheduled.length}` : 'Расписание пусто. Добавьте согласованный пост.'}</p></div></Card></div>
           </div>
         </section>
 
         <section>
           <SectionTitle icon={<CalendarDays />} title="Ближайшие публикации" action={<button className="text-button" onClick={() => navigate('/app/calendar')}>Весь календарь</button>} />
-          <Card className="schedule-preview">
-            <div><time>ПН<strong>16</strong></time><span><b>Тред об AI-агентах</b><small>09:00 · запланировано</small></span></div>
-            <div><time>ВТ<strong>17</strong></time><span><b>Разбор обновления продукта</b><small>Черновик</small></span></div>
-            <div><time>СР<strong>18</strong></time><span><b>Практика: контент без выгорания</b><small>14:30 · согласовано</small></span></div>
-            <button onClick={() => navigate('/app/calendar')}>+ Запланировать пост</button>
-          </Card>
+          <Card className="schedule-preview">{scheduled.slice(0, 3).map((draft) => { const date = new Date(draft.scheduled_at || draft.created_at); return <div key={draft.id}><time>{date.toLocaleDateString('ru-RU', { weekday: 'short' })}<strong>{date.getDate()}</strong></time><span><b>{draft.title || 'Без названия'}</b><small>{date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })} · запланировано</small></span></div> })}{!scheduled.length ? <p className="centered-note">Ближайших публикаций нет.</p> : null}<button onClick={() => navigate('/app/calendar')}>+ Запланировать пост</button></Card>
         </section>
 
         <section>
           <SectionTitle icon={<Radar />} title="Мониторинг тем" action={<div className="segmented"><button className="active">Все темы</button><button>Упоминания</button></div>} />
           <Card className="topic-table table-wrap">
-            <table><thead><tr><th>Тема</th><th>Объём</th><th>Тональность</th><th>Релевантность</th></tr></thead><tbody>
-              <tr><td><b>#AIAgents</b><small>Инструменты и процессы</small></td><td>↗ 12.4k</td><td><Badge tone="green">Позитивная</Badge></td><td><strong className="score-ring">98</strong></td></tr>
-              <tr><td><b>React 19</b><small>Релиз технологии</small></td><td>↗ 45.1k</td><td><Badge>Нейтральная</Badge></td><td><strong className="score-ring orange">85</strong></td></tr>
-              <tr><td><b>AI-native SMM</b><small>Маркетинговый тренд</small></td><td>→ 8.2k</td><td><Badge tone="blue">Растёт</Badge></td><td><strong className="score-ring orange">72</strong></td></tr>
-            </tbody></table>
+            {monitorItems.length ? <table><thead><tr><th>Материал</th><th>Источник</th><th>Тональность</th><th>Релевантность</th></tr></thead><tbody>{monitorItems.slice(0, 5).map((item) => <tr key={item.id}><td><b>{item.title}</b><small>{item.summary.slice(0, 80)}</small></td><td>{item.author || new URL(item.url).hostname}</td><td><Badge>{item.sentiment}</Badge></td><td><strong className="score-ring">{item.relevance_score}</strong></td></tr>)}</tbody></table> : <div className="empty-state"><p>Добавьте RSS-источник в мониторинге.</p></div>}
           </Card>
         </section>
       </div>
@@ -60,10 +55,13 @@ export function DashboardPage() {
 
 function MobileDashboard() {
   const navigate = useNavigate()
+  const { accounts, approvals, drafts, workspace, monitorItems } = useWorkspace()
+  const pending = approvals.filter((approval) => approval.status === 'pending').length
+  const scheduled = drafts.filter((draft) => draft.status === 'scheduled')
   return <div className="mobile-dashboard">
-    <div className="mobile-metric-grid"><Card><UsersRound /><strong>12</strong><span>Подключено аккаунтов</span><Badge>+2%</Badge></Card><Card><CheckSquare /><strong>5</strong><span>Ждут согласования</span><i /></Card><Card className="mobile-credit-card"><Sparkles /><strong>650</strong><span>Осталось AI-кредитов</span><Button variant="secondary" onClick={() => navigate('/app/billing')}>Пополнить</Button></Card></div>
-    <section><SectionTitle title="Фокус на сегодня" action={<span className="mono-label">Свайп</span>} /><Card className="mobile-focus-card"><Badge tone="blue">Нужно действие</Badge><p>Проверить черновик для @TechNova: «Новый релиз продукта»</p><Button onClick={() => navigate('/app/approvals')}>Проверить</Button></Card></section>
-    <section><SectionTitle title="Ближайшие публикации" /><div className="mobile-schedule-list"><Card><time>14:00<small>Сегодня</small></time><span><b>Еженедельный тред</b><small>@technova_team</small></span><i className="violet-dot" /></Card><Card><time>09:00<small>Завтра</small></time><span><b>Тизер запуска продукта</b><small>@TechStartup</small></span><i /></Card><Card><time>16:30<small>Чт</small></time><span><b>Вопросы сообщества</b><small>@LuminaBrand</small></span><i /></Card></div><button className="mobile-view-all" onClick={() => navigate('/app/calendar')}>Весь календарь →</button></section>
-    <section><SectionTitle title="Живой мониторинг" /><Card className="mobile-monitor-card"><div className="feed-tabs"><Badge tone="blue">Упоминания</Badge><Badge>Ключевые слова</Badge><Badge>Тональность</Badge></div><article><span className="account-avatar">U</span><p><b>@User123 упомянул @TechNova</b>«Новые функции сегодня выглядят сильно!»<small>2 мин · позитивно</small></p></article><article><span className="account-avatar">D</span><p><b>@DesignCritique упомянул бренд</b>«Покажете последний кейс?»<small>15 мин · ответить с AI</small></p></article></Card></section>
+    <div className="mobile-metric-grid"><Card><UsersRound /><strong>{accounts.length}</strong><span>Подключено аккаунтов</span></Card><Card><CheckSquare /><strong>{pending}</strong><span>Ждут согласования</span><i /></Card><Card className="mobile-credit-card"><Sparkles /><strong>{workspace?.ai_credits ?? 0}</strong><span>Осталось AI-кредитов</span><Button variant="secondary" onClick={() => navigate('/app/billing')}>Лимиты</Button></Card></div>
+    <section><SectionTitle title="Фокус на сегодня" /><Card className="mobile-focus-card"><Badge tone="blue">Нужно действие</Badge><p>{pending ? `Проверить ${pending} материалов` : 'Очередь согласований пуста'}</p><Button onClick={() => navigate(pending ? '/app/approvals' : '/app/studio')}>{pending ? 'Проверить' : 'Создать'}</Button></Card></section>
+    <section><SectionTitle title="Ближайшие публикации" /><div className="mobile-schedule-list">{scheduled.slice(0, 3).map((draft) => { const date = new Date(draft.scheduled_at || draft.created_at); return <Card key={draft.id}><time>{date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}<small>{date.toLocaleDateString('ru-RU')}</small></time><span><b>{draft.title || 'Без названия'}</b><small>Threads</small></span><i /></Card> })}{!scheduled.length ? <Card><p>Расписание пусто</p></Card> : null}</div><button className="mobile-view-all" onClick={() => navigate('/app/calendar')}>Весь календарь →</button></section>
+    <section><SectionTitle title="Живой мониторинг" /><Card className="mobile-monitor-card"><div className="feed-tabs"><Badge tone="blue">RSS</Badge><Badge>{monitorItems.length} материалов</Badge></div>{monitorItems.slice(0, 2).map((item) => <article key={item.id}><span className="account-avatar">R</span><p><b>{item.title}</b>{item.summary.slice(0, 100)}<small>{item.published_at ? new Date(item.published_at).toLocaleString('ru-RU') : 'без даты'}</small></p></article>)}{!monitorItems.length ? <p>Добавьте RSS-источник.</p> : null}</Card></section>
   </div>
 }
