@@ -24,6 +24,22 @@ test('landing and direct SPA routes render without runtime errors', async ({ pag
   expect(errors).toEqual([])
 })
 
+test('setup screen shows production readiness checklist', async ({ page }) => {
+  const errors = collectRuntimeErrors(page)
+
+  await page.goto('/setup')
+  await expect(page.getByRole('heading', { name: 'Требуется подключить production окружение' })).toBeVisible()
+  const status = page.getByLabel('Статус окружения')
+  await expect(status.getByText('Frontend Supabase')).toBeVisible()
+  await expect(status.getByText('Server functions')).toBeVisible()
+  await expect(status.getByText('VITE_SUPABASE_URL', { exact: true })).toBeVisible()
+  await expect(status.getByText('Gemini AI')).toBeVisible()
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+  expect(overflow).toBeLessThanOrEqual(1)
+  expect(errors).toEqual([])
+})
+
 test('content can be generated, reviewed and approved', async ({ page }) => {
   const errors = collectRuntimeErrors(page)
 
@@ -50,6 +66,7 @@ test('key screens fit a mobile viewport without horizontal overflow', async ({ p
 
   const routes = [
     '/',
+    '/setup',
     '/app/dashboard',
     '/app/studio',
     '/app/calendar',
