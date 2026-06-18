@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai'
 import type { ApiRequest, ApiResponse } from '../_lib/http.js'
-import { requireUser } from '../_lib/supabaseServer.js'
+import { enforceRateLimit, RateLimitError, requireUser } from '../_lib/supabaseServer.js'
 
 interface GenerateBody {
   workspaceId: string
@@ -41,6 +41,8 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     return
   }
 
+  let reservedWorkspaceId: string | null = null
+  let adminClient: Awaited<ReturnType<typeof requireUser>>['admin'] | null = null
   try {
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
@@ -49,6 +51,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     }
 
     const { user, admin } = await requireUser(request)
+    adminClient = admin
     const { data: membership } = await admin
       .from('workspace_members')
       .select('role')
@@ -59,6 +62,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       response.status(403).json({ error: 'Нет доступа к рабочему пространству' })
       return
     }
+    await enforceRateLimit(admin, 'ai.generate', user.id, 10, 60)
 
     const [{ data: workspace }, { data: brand }] = await Promise.all([
       admin.from('workspaces').select('id, name, ai_credits').eq('id', request.body.workspaceId).single(),
@@ -68,10 +72,9 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       response.status(404).json({ error: 'Рабочее пространство не найдено' })
       return
     }
-    if (workspace.ai_credits < 1) {
-      response.status(402).json({ error: 'Лимит AI-кредитов исчерпан' })
-      return
-    }
+    const { data: creditsRemaining, error: creditError } = await admin.rpc('reserve_ai_credit', { p_workspace_id: workspace.id })
+    if (creditError) throw creditError
+    reservedWorkspaceId = workspace.id
 
     const model = process.env.GEMINI_MODEL || 'gemini-3.5-flash'
     const ai = new GoogleGenAI({ apiKey })
@@ -126,9 +129,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       complianceNote: String(item.complianceNote || 'Проверено').slice(0, 180),
     }))
 
-    await Promise.all([
-      admin.from('workspaces').update({ ai_credits: workspace.ai_credits - 1 }).eq('id', workspace.id),
-      admin.from('usage_events').insert({
+    const { error: usageError } = await admin.from('usage_events').insert({
         workspace_id: workspace.id,
         user_id: user.id,
         provider: 'gemini',
@@ -138,14 +139,32 @@ export default async function handler(request: ApiRequest, response: ApiResponse
         output_tokens: generation.usageMetadata?.candidatesTokenCount ?? 0,
         credits: 1,
         metadata: { format: request.body.format },
-      }),
-    ])
+      })
+    if (usageError) {
+      await admin.from('audit_logs').insert({
+        workspace_id: workspace.id,
+        actor_id: user.id,
+        action: 'ai.usage_record_failed',
+        resource_type: 'workspace',
+        resource_id: workspace.id,
+        risk: 'medium',
+        details: { code: usageError.code },
+      })
+    }
 
-    response.status(200).json({ variants, creditsRemaining: workspace.ai_credits - 1 })
+    reservedWorkspaceId = null
+    response.status(200).json({ variants, creditsRemaining })
   } catch (error) {
+    if (reservedWorkspaceId && adminClient) {
+      await adminClient.rpc('refund_ai_credit', { p_workspace_id: reservedWorkspaceId })
+    }
     const code = error instanceof Error ? error.message : ''
-    if (code === 'UNAUTHORIZED') response.status(401).json({ error: 'Войдите в аккаунт заново' })
+    if (error instanceof RateLimitError) {
+      response.setHeader('Retry-After', String(error.retryAfter))
+      response.status(429).json({ error: `Слишком много запросов. Повторите через ${error.retryAfter} сек.` })
+    } else if (code === 'UNAUTHORIZED') response.status(401).json({ error: 'Войдите в аккаунт заново' })
     else if (code === 'SUPABASE_SERVER_NOT_CONFIGURED') response.status(503).json({ error: 'Серверная часть Supabase не настроена' })
-    else response.status(500).json({ error: 'AI-генерация временно недоступна' })
+    else if (code.includes('AI_CREDITS_EXHAUSTED')) response.status(402).json({ error: 'Лимит AI-кредитов исчерпан' })
+    else response.status(502).json({ error: code === 'INVALID_MODEL_RESPONSE' ? 'AI вернул некорректный ответ. Повторите генерацию.' : 'AI-генерация временно недоступна' })
   }
 }

@@ -52,10 +52,76 @@ test('content can be generated, reviewed and approved', async ({ page }) => {
   await variantB.getByRole('button', { name: 'Согласовать', exact: true }).click()
   await expect(page).toHaveURL(/\/app\/approvals$/)
 
+  await page.getByRole('button', { name: 'Редактировать' }).click()
+  await page.getByRole('dialog', { name: 'Редактировать публикацию' }).getByLabel('Текст').fill('Системный контент даёт команде предсказуемый ритм и понятный процесс проверки.')
+  await page.getByRole('dialog', { name: 'Редактировать публикацию' }).getByRole('button', { name: 'Сохранить' }).click()
+  await expect(page.getByText('Системный контент даёт команде предсказуемый ритм')).toBeVisible()
+
   await page.getByRole('button', { name: 'Исправить риск' }).click()
   await expect(page.getByText(/стандартное AES-256 шифрование/)).toBeVisible()
   await page.getByRole('button', { name: 'Согласовать и запланировать' }).click()
   await expect(page.getByRole('heading', { name: 'Публикация согласована' })).toBeVisible()
+
+  expect(errors).toEqual([])
+})
+
+test('global search, notifications and AI history respond to user actions', async ({ page }) => {
+  const errors = collectRuntimeErrors(page)
+
+  await page.goto('/app/dashboard')
+  await page.getByRole('textbox', { name: 'Поиск' }).fill('TechNova')
+  await expect(page.getByRole('listbox', { name: 'Результаты поиска' }).getByText('Профиль бренда')).toBeVisible()
+  await page.getByRole('listbox', { name: 'Результаты поиска' }).getByRole('button').first().click()
+  await expect(page).toHaveURL(/\/app\/brands$/)
+
+  await page.getByRole('button', { name: 'Уведомления' }).click()
+  await expect(page.getByRole('dialog', { name: 'Уведомления' }).getByText('Новых уведомлений нет')).toBeVisible()
+  await page.getByRole('dialog', { name: 'Уведомления' }).getByRole('button', { name: 'Закрыть' }).click()
+
+  await page.goto('/app/studio')
+  await page.locator('.variant-card').filter({ hasText: 'Вариант A' }).getByRole('button', { name: 'Сохранить', exact: true }).click()
+  await page.getByRole('button', { name: 'История' }).click()
+  await expect(page.getByRole('dialog', { name: 'История AI Studio' }).locator('.history-list > button')).toHaveCount(1)
+
+  expect(errors).toEqual([])
+})
+
+test('workspace policies persist and calendar modes change the rendered view', async ({ page }) => {
+  const errors = collectRuntimeErrors(page)
+
+  await page.goto('/app/settings')
+  await page.getByRole('button', { name: 'Безопасность' }).click()
+  const settings = page.locator('.settings-placeholder')
+  await settings.getByRole('checkbox').uncheck()
+  await settings.getByRole('combobox').selectOption('strict')
+  await settings.getByRole('button', { name: 'Сохранить' }).click()
+  await expect(page.getByText('Настройки сохранены')).toBeVisible()
+  await page.getByRole('button', { name: 'AI-провайдеры' }).click()
+  await page.getByRole('button', { name: 'Безопасность' }).click()
+  await expect(settings.getByRole('checkbox')).not.toBeChecked()
+  await expect(settings.getByRole('combobox')).toHaveValue('strict')
+
+  await page.goto('/app/calendar')
+  await page.getByRole('button', { name: 'Список', exact: true }).click()
+  await expect(page.locator('.calendar-list-view')).toBeVisible()
+  await page.getByRole('button', { name: 'Месяц', exact: true }).click()
+  await expect(page.locator('.calendar-card')).toBeVisible()
+
+  expect(errors).toEqual([])
+})
+
+test('manual Threads profiles can be added, assigned and removed', async ({ page }) => {
+  const errors = collectRuntimeErrors(page)
+
+  await page.goto('/app/accounts')
+  await page.getByRole('button', { name: 'Ручной профиль' }).click()
+  await page.getByRole('dialog', { name: 'Добавить Threads-профиль' }).getByLabel('Username').fill('@test_profile')
+  await page.getByRole('dialog', { name: 'Добавить Threads-профиль' }).getByRole('button', { name: 'Добавить' }).click()
+  await expect(page.getByRole('heading', { name: '@test_profile' })).toBeVisible()
+  await page.getByLabel('Связанный бренд').selectOption({ label: 'TechNova' })
+  await page.getByRole('button', { name: 'Удалить' }).click()
+  await page.getByRole('dialog', { name: 'Удалить профиль' }).getByRole('button', { name: 'Удалить' }).click()
+  await expect(page.getByRole('heading', { name: '@test_profile' })).toHaveCount(0)
 
   expect(errors).toEqual([])
 })
@@ -68,10 +134,15 @@ test('key screens fit a mobile viewport without horizontal overflow', async ({ p
     '/',
     '/setup',
     '/app/dashboard',
+    '/app/accounts',
+    '/app/brands',
     '/app/studio',
     '/app/calendar',
+    '/app/monitoring',
     '/app/approvals',
+    '/app/analytics',
     '/app/media',
+    '/app/billing',
     '/app/settings',
   ]
 
@@ -135,6 +206,21 @@ test('dashboard remains inside the viewport with the desktop sidebar', async ({ 
 
     expect(layout.overflow, `Dashboard horizontal overflow at ${width}px`).toBeLessThanOrEqual(1)
     expect(layout.cardsOutsideViewport, `Dashboard cards outside viewport at ${width}px`).toBe(0)
+  }
+
+  expect(errors).toEqual([])
+})
+
+test('calendar remains inside desktop viewport across sidebar breakpoints', async ({ page }) => {
+  const errors = collectRuntimeErrors(page)
+
+  for (const width of [1440, 1280, 1100]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/app/calendar')
+    await expect(page.locator('.calendar-layout')).toBeVisible()
+
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+    expect(overflow, `Calendar horizontal overflow at ${width}px`).toBeLessThanOrEqual(1)
   }
 
   expect(errors).toEqual([])

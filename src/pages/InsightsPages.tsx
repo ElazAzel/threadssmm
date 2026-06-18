@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { AlertTriangle, BarChart3, Bell, Bot, Check, CheckCircle2, Copy, Download, Eye, FileText, Image as ImageIcon, KeyRound, ShieldCheck, Sparkles, Trash2, Upload } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
 import { Badge, Button, Card, Progress, SectionTitle } from '../components/ui'
 import { mediaAssets } from '../data'
@@ -45,6 +46,7 @@ export function MediaPage() {
   const [copied, setCopied] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [notice, setNotice] = useState('')
+  const [brandId, setBrandId] = useState(brands[0]?.id ?? '')
   const fileInput = useRef<HTMLInputElement>(null)
   const asset = assets.find((item) => item.id === selectedId) ?? assets[0] ?? null
 
@@ -56,7 +58,7 @@ export function MediaPage() {
     if (!file) return
     setUploading(true)
     try {
-      const created = await uploadMedia(file)
+      const created = await uploadMedia(file, file.name, brandId || null)
       setSelectedId(created.id)
       setNotice('Файл загружен в медиатеку')
     } catch (caught) {
@@ -82,7 +84,7 @@ export function MediaPage() {
 
   return (
     <AppShell>
-      <div className="page-head"><div><h1>Медиатека</h1><p>Изображения хранятся в закрытом Supabase Storage и выдаются по временным ссылкам.</p></div><div className="inline-form"><Button variant="secondary">Бренд: {brands[0]?.name ?? 'не выбран'}</Button><input ref={fileInput} type="file" accept="image/*" hidden onChange={(event) => void handleUpload(event.target.files?.[0])} /><Button onClick={() => fileInput.current?.click()} disabled={uploading}><Upload size={17} /> {uploading ? 'Загрузка...' : 'Загрузить'}</Button></div></div>
+      <div className="page-head"><div><h1>Медиатека</h1><p>Изображения хранятся в закрытом Supabase Storage и выдаются по временным ссылкам.</p></div><div className="inline-form"><label className="compact-select">Бренд<select value={brandId} onChange={(event) => setBrandId(event.target.value)}><option value="">Без бренда</option>{brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}</select></label><input ref={fileInput} type="file" accept="image/*" hidden onChange={(event) => void handleUpload(event.target.files?.[0])} /><Button onClick={() => fileInput.current?.click()} disabled={uploading}><Upload size={17} /> {uploading ? 'Загрузка...' : 'Загрузить'}</Button></div></div>
       <div className="media-layout"><div className="media-grid">{assets.map((item, index) => <button key={item.id} className={`media-tile ${asset?.id === item.id ? 'active' : ''} ${index === 0 ? 'media-featured' : ''}`} onClick={() => setSelectedId(item.id)}><img src={item.url} alt={item.title} /><span><Badge tone="blue">{item.source === 'upload' ? 'Файл' : 'AI'}</Badge><b>{item.title}</b><small>{new Date(item.created_at).toLocaleDateString('ru-RU')}</small></span></button>)}{!assets.length ? <Card className="empty-state"><ImageIcon /><h2>Медиатека пуста</h2><p>Загрузите первое изображение до 10 МБ.</p></Card> : null}</div>{asset ? <aside className="asset-details"><h2>Детали материала</h2><img src={asset.url} alt={asset.title} /><h3>{asset.title}</h3><p>{asset.width ?? '—'} × {asset.height ?? '—'} · {(asset.size_bytes / 1024 / 1024).toFixed(2)} МБ · {asset.mime_type}</p><dl><div><dt>Бренд</dt><dd>{brands.find((brand) => brand.id === asset.brand_id)?.name ?? 'Без бренда'}</dd></div><div><dt>Источник</dt><dd>{asset.source}</dd></div><div><dt>Создано</dt><dd>{new Date(asset.created_at).toLocaleDateString('ru-RU')}</dd></div></dl>{asset.prompt ? <Card className="prompt-box"><span>Промпт <button onClick={() => { void navigator.clipboard.writeText(asset.prompt); setCopied(true); window.setTimeout(() => setCopied(false), 2000) }}><Copy size={15} /> {copied ? 'Скопировано' : 'Копировать'}</button></span><p>{asset.prompt}</p></Card> : null}<Button className="full-button" onClick={() => window.open(asset.url, '_blank', 'noopener,noreferrer')}><Download size={17} /> Открыть оригинал</Button><div className="split-actions"><Button variant="secondary" onClick={() => { void navigator.clipboard.writeText(asset.url); setNotice('Временная ссылка скопирована') }}><Copy size={17} /> Ссылка</Button><Button variant="danger" aria-label="Удалить" onClick={() => void removeAsset()}><Trash2 size={17} /></Button></div></aside> : <aside className="asset-details empty-state"><h2>Выберите материал</h2></aside>}</div>
       {notice ? <div className="toast">{notice}</div> : null}
     </AppShell>
@@ -101,37 +103,66 @@ export function BillingPage() {
 }
 
 export function SettingsPage() {
-  const { workspace, accounts } = useWorkspace()
+  const { workspace, accounts, auditLogs } = useWorkspace()
+  const navigate = useNavigate()
   const activeAccount = accounts.find((account) => account.status === 'active')
   const [tab, setTab] = useState(() => window.matchMedia('(max-width: 720px)').matches ? 'Workspace' : 'Threads API')
   const [secretVisible, setSecretVisible] = useState(false)
-  const [saved, setSaved] = useState(false)
   const tabs = ['Workspace', 'Безопасность', 'AI-провайдеры', 'Threads API', 'Уведомления', 'Аудит']
+  const exportAudit = () => {
+    const rows = [['Время', 'Пользователь', 'Действие', 'Ресурс', 'ID', 'Риск'], ...auditLogs.map((entry) => [entry.created_at, entry.actor_id ?? 'system', entry.action, entry.resource_type, entry.resource_id ?? '', entry.risk])]
+    const csv = rows.map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(',')).join('\n')
+    const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }))
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = 'threads-smm-audit.csv'
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }
   return (
     <AppShell>
       <div className="page-head"><div><h1>Настройки {workspace?.name ?? 'workspace'}</h1><p>Интеграционные секреты задаются только в Vercel Environment Variables и не отправляются из браузера.</p></div></div><div className="tabs settings-tabs">{tabs.map((item) => <button key={item} className={tab === item ? 'active' : ''} onClick={() => setTab(item)}>{item}</button>)}</div>
-      {tab === 'Threads API' ? <div className="settings-layout"><div><Card className="integration-card"><div className="integration-title"><div><h2>Интеграция Threads</h2><p>Добавьте переменные в Vercel, затем подключите аккаунт на странице «Аккаунты».</p></div><Badge tone={activeAccount ? 'green' : 'orange'}>{activeAccount ? 'OAuth подключён' : 'Нужна настройка'}</Badge></div><label>THREADS_APP_ID<div className="input-action"><input value="Задаётся в Vercel" readOnly /><button onClick={() => void navigator.clipboard.writeText('THREADS_APP_ID')}><Copy size={18} /></button></div></label><label>THREADS_APP_SECRET<div className="input-action"><input type={secretVisible ? 'text' : 'password'} value="server-only" readOnly /><button onClick={() => setSecretVisible(!secretVisible)}><Eye size={18} /></button></div></label><label>Redirect URI<div className="input-action"><input value="https://threadssmm.vercel.app/api/threads/callback" readOnly /><button onClick={() => void navigator.clipboard.writeText('https://threadssmm.vercel.app/api/threads/callback')}><Copy size={18} /></button></div></label><div className="integration-actions"><Button onClick={() => { setSaved(true); window.setTimeout(() => setSaved(false), 2300) }}><KeyRound size={17} /> Показать инструкцию</Button></div></Card><Card><SectionTitle title="Обязательные переменные" /><div className="permission-list"><code>THREADS_APP_ID</code><code>THREADS_APP_SECRET</code><code>THREADS_REDIRECT_URI</code><code>TOKEN_ENCRYPTION_KEY</code><code>CRON_SECRET</code></div></Card></div><div><Card><SectionTitle title="Подключённый профиль" />{activeAccount ? <div className="meta-status"><CheckCircle2 /><div><b>@{activeAccount.username}</b><p>Токен хранится зашифрованно в private schema.</p></div></div> : <p>Официальный аккаунт ещё не подключён.</p>}</Card><Card><SectionTitle title="Лимит Meta" /><p>Threads ограничивает профиль до 250 публикаций за 24 часа. Приложение не обходит это ограничение.</p></Card></div></div> : <SettingsTab tab={tab} />}
-      <Card className="audit-table table-wrap"><SectionTitle title="Последние события аудита" action={<Button variant="secondary"><Download size={16} /> CSV</Button>} /><table><thead><tr><th>Время</th><th>Кто</th><th>Действие</th><th>Ресурс</th><th>Риск</th></tr></thead><tbody><tr><td>15 июня, 12:32</td><td>System</td><td>Token Refresh</td><td><code>oauth/access_token</code></td><td><Badge tone="green">Успех</Badge></td></tr><tr><td>15 июня, 11:15</td><td>Sarah J.</td><td>Webhook обновлён</td><td><code>api/settings/webhook</code></td><td><Badge tone="orange">Повышенный</Badge></td></tr><tr><td>14 июня, 18:09</td><td>Mike T.</td><td>Неудачный вход</td><td><code>oauth/authorize</code></td><td><Badge tone="red">Высокий</Badge></td></tr></tbody></table></Card>
-      {saved ? <div className="toast">Настройки интеграции сохранены</div> : null}
+      {tab === 'Threads API' ? <div className="settings-layout"><div><Card className="integration-card"><div className="integration-title"><div><h2>Интеграция Threads</h2><p>Добавьте переменные в Vercel, затем подключите аккаунт на странице «Аккаунты».</p></div><Badge tone={activeAccount ? 'green' : 'orange'}>{activeAccount ? 'OAuth подключён' : 'Нужна настройка'}</Badge></div><label>THREADS_APP_ID<div className="input-action"><input value="Задаётся в Vercel" readOnly /><button onClick={() => void navigator.clipboard.writeText('THREADS_APP_ID')} aria-label="Копировать название переменной"><Copy size={18} /></button></div></label><label>THREADS_APP_SECRET<div className="input-action"><input type={secretVisible ? 'text' : 'password'} value="server-only" readOnly /><button onClick={() => setSecretVisible(!secretVisible)} aria-label={secretVisible ? 'Скрыть значение' : 'Показать значение'}><Eye size={18} /></button></div></label><label>Redirect URI<div className="input-action"><input value="https://threadssmm.vercel.app/api/threads/callback" readOnly /><button onClick={() => void navigator.clipboard.writeText('https://threadssmm.vercel.app/api/threads/callback')} aria-label="Копировать Redirect URI"><Copy size={18} /></button></div></label><div className="integration-actions"><Button onClick={() => navigate('/setup')}><KeyRound size={17} /> Проверить настройку</Button></div></Card><Card><SectionTitle title="Обязательные переменные" /><div className="permission-list"><code>THREADS_APP_ID</code><code>THREADS_APP_SECRET</code><code>THREADS_REDIRECT_URI</code><code>TOKEN_ENCRYPTION_KEY</code><code>CRON_SECRET</code></div></Card></div><div><Card><SectionTitle title="Подключённый профиль" />{activeAccount ? <div className="meta-status"><CheckCircle2 /><div><b>@{activeAccount.username}</b><p>Токен хранится зашифрованно в private schema.</p></div></div> : <p>Официальный аккаунт ещё не подключён.</p>}</Card><Card><SectionTitle title="Лимит Meta" /><p>Threads ограничивает профиль до 250 публикаций за 24 часа. Приложение не обходит это ограничение.</p></Card></div></div> : <SettingsTab tab={tab} />}
+      <Card className="audit-table table-wrap"><SectionTitle title="Последние события аудита" action={<Button variant="secondary" onClick={exportAudit} disabled={!auditLogs.length}><Download size={16} /> CSV</Button>} />{auditLogs.length ? <table><thead><tr><th>Время</th><th>Кто</th><th>Действие</th><th>Ресурс</th><th>Риск</th></tr></thead><tbody>{auditLogs.map((entry) => <tr key={entry.id}><td>{new Date(entry.created_at).toLocaleString('ru-RU')}</td><td>{entry.actor_id ? entry.actor_id.slice(0, 8) : 'Система'}</td><td>{entry.action}</td><td><code>{entry.resource_type}{entry.resource_id ? `/${entry.resource_id.slice(0, 8)}` : ''}</code></td><td><Badge tone={entry.risk === 'low' ? 'green' : entry.risk === 'medium' ? 'orange' : 'red'}>{entry.risk}</Badge></td></tr>)}</tbody></table> : <div className="empty-state"><h2>Событий пока нет</h2><p>Журнал заполнится после создания workspace, согласований и публикаций.</p></div>}</Card>
     </AppShell>
   )
 }
 
 function SettingsTab({ tab }: { tab: string }) {
-  const { workspace, updateWorkspace } = useWorkspace()
+  const { workspace, workspaceSettings, updateWorkspace, saveWorkspaceSettings } = useWorkspace()
   const [name, setName] = useState(workspace?.name ?? '')
   const [timezone, setTimezone] = useState(workspace?.timezone ?? 'UTC')
   const [notice, setNotice] = useState('')
+  const settingsKey = tab === 'Безопасность' ? 'security' : tab === 'AI-провайдеры' ? 'ai' : tab === 'Уведомления' ? 'notifications' : 'audit'
+  const enabledKey = `${settingsKey}_enabled` as const
+  const policyKey = `${settingsKey}_policy` as const
+  const [enabled, setEnabled] = useState(workspaceSettings?.[enabledKey] ?? true)
+  const [policy, setPolicy] = useState(workspaceSettings?.[policyKey] ?? 'standard')
 
   useEffect(() => {
     setName(workspace?.name ?? '')
     setTimezone(workspace?.timezone ?? 'UTC')
   }, [workspace])
 
+  useEffect(() => {
+    setEnabled(workspaceSettings?.[enabledKey] ?? true)
+    setPolicy(workspaceSettings?.[policyKey] ?? 'standard')
+  }, [enabledKey, policyKey, workspaceSettings])
+
   const saveWorkspace = async () => {
     try {
       await updateWorkspace({ name, timezone })
       setNotice('Настройки workspace сохранены')
+    } catch (caught) {
+      setNotice(caught instanceof Error ? caught.message : 'Не удалось сохранить настройки')
+    }
+    window.setTimeout(() => setNotice(''), 2500)
+  }
+
+  const saveSection = async () => {
+    try {
+      await saveWorkspaceSettings({ [enabledKey]: enabled, [policyKey]: policy })
+      setNotice('Настройки сохранены')
     } catch (caught) {
       setNotice(caught instanceof Error ? caught.message : 'Не удалось сохранить настройки')
     }
@@ -149,5 +180,5 @@ function SettingsTab({ tab }: { tab: string }) {
   }
   const item = blocks[tab]
   const Icon = item.icon
-  return <Card className="settings-placeholder"><Icon /><div><h2>{item.title}</h2><p>{item.text}</p><label className="switch-row"><span>Включить рекомендуемые настройки</span><input type="checkbox" defaultChecked /></label><label>Основная политика<select><option>Стандартная</option><option>Строгая</option><option>Пользовательская</option></select></label><Button>Сохранить</Button></div></Card>
+  return <><Card className="settings-placeholder"><Icon /><div><h2>{item.title}</h2><p>{item.text}</p><label className="switch-row"><span>Включить рекомендуемые настройки</span><input type="checkbox" checked={enabled} onChange={(event) => setEnabled(event.target.checked)} /></label><label>Основная политика<select value={policy} onChange={(event) => setPolicy(event.target.value as typeof policy)}><option value="standard">Стандартная</option><option value="strict">Строгая</option><option value="custom">Пользовательская</option></select></label><Button onClick={() => void saveSection()}>Сохранить</Button></div></Card>{notice ? <div className="toast">{notice}</div> : null}</>
 }

@@ -1,4 +1,5 @@
 import { ArrowUpRight, BarChart3, CalendarDays, CheckSquare, Clock3, Lightbulb, MessageSquare, Radar, Sparkles, UsersRound } from 'lucide-react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
 import { Badge, Button, Card, Progress, SectionTitle } from '../components/ui'
@@ -9,6 +10,8 @@ export function DashboardPage() {
   const { accounts, approvals, drafts, workspace, monitorItems } = useWorkspace()
   const pending = approvals.filter((approval) => approval.status === 'pending').length
   const scheduled = drafts.filter((draft) => draft.status === 'scheduled')
+  const [monitorFilter, setMonitorFilter] = useState<'all' | 'mentions'>('all')
+  const visibleMonitorItems = monitorFilter === 'mentions' ? monitorItems.filter((item) => item.author.startsWith('@')) : monitorItems
   return (
     <AppShell title="Threads SMM Agent">
       <MobileDashboard />
@@ -43,9 +46,9 @@ export function DashboardPage() {
         </section>
 
         <section>
-          <SectionTitle icon={<Radar />} title="Мониторинг тем" action={<div className="segmented"><button className="active">Все темы</button><button>Упоминания</button></div>} />
+          <SectionTitle icon={<Radar />} title="Мониторинг тем" action={<div className="segmented"><button className={monitorFilter === 'all' ? 'active' : ''} onClick={() => setMonitorFilter('all')}>Все темы</button><button className={monitorFilter === 'mentions' ? 'active' : ''} onClick={() => setMonitorFilter('mentions')}>Упоминания</button></div>} />
           <Card className="topic-table table-wrap">
-            {monitorItems.length ? <table><thead><tr><th>Материал</th><th>Источник</th><th>Тональность</th><th>Релевантность</th></tr></thead><tbody>{monitorItems.slice(0, 5).map((item) => <tr key={item.id}><td><b>{item.title}</b><small>{item.summary.slice(0, 80)}</small></td><td>{item.author || new URL(item.url).hostname}</td><td><Badge>{item.sentiment}</Badge></td><td><strong className="score-ring">{item.relevance_score}</strong></td></tr>)}</tbody></table> : <div className="empty-state"><p>Добавьте RSS-источник в мониторинге.</p></div>}
+            {visibleMonitorItems.length ? <table><thead><tr><th>Материал</th><th>Источник</th><th>Тональность</th><th>Релевантность</th></tr></thead><tbody>{visibleMonitorItems.slice(0, 5).map((item) => <tr key={item.id}><td><b>{item.title}</b><small>{item.summary.slice(0, 80)}</small></td><td>{item.author || new URL(item.url).hostname}</td><td><Badge>{item.sentiment}</Badge></td><td><strong className="score-ring">{item.relevance_score}</strong></td></tr>)}</tbody></table> : <div className="empty-state"><p>{monitorFilter === 'mentions' ? 'Упоминаний пока нет.' : 'Добавьте RSS-источник в мониторинге.'}</p></div>}
           </Card>
         </section>
       </div>

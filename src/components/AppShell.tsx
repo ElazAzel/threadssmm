@@ -46,8 +46,11 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   const [draftFormat, setDraftFormat] = useState<ContentFormat>('post')
   const [savingDraft, setSavingDraft] = useState(false)
   const [notice, setNotice] = useState('')
+  const [search, setSearch] = useState('')
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [updatesOpen, setUpdatesOpen] = useState(false)
   const { signOut } = useAuth()
-  const { workspace, approvals, createQuickDraft, requestApproval } = useWorkspace()
+  const { workspace, approvals, accounts, brands, drafts, monitorItems, createQuickDraft, requestApproval } = useWorkspace()
   const navigate = useNavigate()
   const location = useLocation()
   const mobileTitles: Record<string, string> = {
@@ -64,6 +67,16 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     '/app/settings': 'Настройки',
   }
   const routeClass = `route-${location.pathname.split('/').pop()}`
+  const normalizedSearch = search.trim().toLocaleLowerCase('ru-RU')
+  const searchResults = normalizedSearch ? [
+    ...brands.filter((item) => `${item.name} ${item.niche}`.toLocaleLowerCase('ru-RU').includes(normalizedSearch)).map((item) => ({ id: `brand-${item.id}`, label: item.name, meta: 'Профиль бренда', to: '/app/brands' })),
+    ...accounts.filter((item) => `${item.username} ${item.display_name}`.toLocaleLowerCase('ru-RU').includes(normalizedSearch)).map((item) => ({ id: `account-${item.id}`, label: `@${item.username}`, meta: 'Threads-аккаунт', to: '/app/accounts' })),
+    ...drafts.filter((item) => `${item.title} ${item.content}`.toLocaleLowerCase('ru-RU').includes(normalizedSearch)).slice(0, 5).map((item) => ({ id: `draft-${item.id}`, label: item.title || item.content.slice(0, 60), meta: 'Публикация', to: item.status === 'pending_approval' ? '/app/approvals' : '/app/calendar' })),
+    ...monitorItems.filter((item) => `${item.title} ${item.summary}`.toLocaleLowerCase('ru-RU').includes(normalizedSearch)).slice(0, 5).map((item) => ({ id: `monitor-${item.id}`, label: item.title, meta: 'Мониторинг', to: '/app/monitoring' })),
+  ].slice(0, 10) : []
+  const pendingApprovals = approvals.filter((item) => item.status === 'pending')
+  const failedDrafts = drafts.filter((item) => item.status === 'failed')
+  const problemAccounts = accounts.filter((item) => item.status === 'expired' || item.status === 'error')
 
   const saveQuickDraft = async () => {
     if (!draft.trim()) return
@@ -112,7 +125,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
 
         <div className="sidebar-bottom">
           <a href="mailto:support@threadssmm.app"><CircleHelp size={18} /> Поддержка</a>
-          <button type="button"><Megaphone size={18} /> Что нового</button>
+          <button type="button" onClick={() => setUpdatesOpen(true)}><Megaphone size={18} /> Что нового</button>
         </div>
       </aside>
 
@@ -123,12 +136,13 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
           <button className="menu-button" onClick={() => setMenuOpen(true)} aria-label="Открыть меню"><Menu size={22} /></button>
           {title ? <strong className="topbar-title">{title}</strong> : null}
           <strong className="mobile-top-title">{mobileTitles[location.pathname] ?? 'Threads SMM Agent'}</strong>
-          <label className="global-search">
+          <div className="global-search">
             <Search size={19} />
-            <input aria-label="Поиск" placeholder="Поиск по аккаунтам, постам, темам..." />
-          </label>
+            <input aria-label="Поиск" placeholder="Поиск по аккаунтам, постам, темам..." value={search} onChange={(event) => setSearch(event.target.value)} />
+            {normalizedSearch ? <div className="global-search-results" role="listbox" aria-label="Результаты поиска">{searchResults.length ? searchResults.map((result) => <button key={result.id} type="button" onClick={() => { navigate(result.to); setSearch('') }}><span>{result.label}</span><small>{result.meta}</small></button>) : <p>Ничего не найдено</p>}</div> : null}
+          </div>
           <button className="credits" onClick={() => navigate('/app/billing')}><Sparkles size={16} /> {workspace?.ai_credits ?? 0} кредитов</button>
-          <button className="icon-button" aria-label="Уведомления"><Bell size={20} /></button>
+          <button className="icon-button notification-button" aria-label="Уведомления" onClick={() => setNotificationsOpen(true)}><Bell size={20} />{pendingApprovals.length + failedDrafts.length + problemAccounts.length ? <i /> : null}</button>
           <button className="avatar-button" aria-label="Выйти" title="Выйти" onClick={() => void signOut().then(() => navigate('/login'))}><UserRound size={20} /></button>
           <Button className="topbar-create" onClick={() => setCreateOpen(true)}>Создать</Button>
         </header>
@@ -161,6 +175,10 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
           </div>
         </Modal>
       ) : null}
+
+      {notificationsOpen ? <Modal title="Уведомления" onClose={() => setNotificationsOpen(false)}><div className="notification-list">{pendingApprovals.length ? <button onClick={() => { navigate('/app/approvals'); setNotificationsOpen(false) }}><CheckSquare /><span><b>Материалы ждут согласования</b><small>{pendingApprovals.length} шт.</small></span></button> : null}{failedDrafts.length ? <button onClick={() => { navigate('/app/calendar'); setNotificationsOpen(false) }}><CalendarDays /><span><b>Ошибки публикации</b><small>{failedDrafts.length} шт.</small></span></button> : null}{problemAccounts.length ? <button onClick={() => { navigate('/app/accounts'); setNotificationsOpen(false) }}><UsersRound /><span><b>Требуется переподключение аккаунта</b><small>{problemAccounts.length} шт.</small></span></button> : null}{!pendingApprovals.length && !failedDrafts.length && !problemAccounts.length ? <div className="empty-state compact"><Bell /><h3>Новых уведомлений нет</h3></div> : null}</div></Modal> : null}
+
+      {updatesOpen ? <Modal title="Что нового" onClose={() => setUpdatesOpen(false)}><div className="updates-list"><article><span>18 июня 2026</span><h3>Надёжное ядро рабочих процессов</h3><p>Добавлены атомарные кредиты AI, транзакционные согласования, rate limit API и сохраняемые настройки.</p></article><article><span>17 июня 2026</span><h3>Диагностика production</h3><p>Экран настройки показывает, какие подключения готовы для запуска.</p></article></div></Modal> : null}
 
       {notice ? <div className="toast" role="status">{notice}</div> : null}
     </div>

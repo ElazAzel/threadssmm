@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import type { ApiRequest, ApiResponse } from '../_lib/http.js'
 import { encryptToken, verifyOAuthState } from '../_lib/threads.js'
+import type { Database } from '../../src/lib/database.types.js'
 
 function queryValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value
@@ -23,7 +24,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     if (oauthError) return fail('Доступ в Threads не предоставлен')
     if (!code || !stateValue) return fail('Meta не вернула код авторизации')
     const state = verifyOAuthState(stateValue)
-    const admin = createClient(supabaseUrl, secretKey, { auth: { persistSession: false, autoRefreshToken: false } })
+    const admin = createClient<Database>(supabaseUrl, secretKey, { auth: { persistSession: false, autoRefreshToken: false } })
     const { data: membership } = await admin.from('workspace_members').select('role').eq('workspace_id', state.workspaceId).eq('user_id', state.userId).maybeSingle()
     if (!membership) return fail('Доступ к workspace отозван')
 

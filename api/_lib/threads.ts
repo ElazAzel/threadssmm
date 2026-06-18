@@ -1,5 +1,6 @@
 import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '../../src/lib/database.types.js'
 
 interface OAuthState {
   workspaceId: string
@@ -57,7 +58,7 @@ async function graphJson(url: URL, init?: RequestInit) {
   return payload
 }
 
-export async function publishDraft(admin: SupabaseClient, draftId: string) {
+export async function publishDraft(admin: SupabaseClient<Database>, draftId: string) {
   const { data: draft } = await admin.from('drafts').select('*').eq('id', draftId).single()
   if (!draft) throw new Error('DRAFT_NOT_FOUND')
   if (!['approved', 'scheduled'].includes(draft.status)) throw new Error('DRAFT_NOT_APPROVED')

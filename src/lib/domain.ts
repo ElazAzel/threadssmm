@@ -164,6 +164,32 @@ export interface MonitorItem {
   created_at: string
 }
 
+export interface WorkspaceSettings {
+  workspace_id: string
+  security_enabled: boolean
+  security_policy: 'standard' | 'strict' | 'custom'
+  ai_enabled: boolean
+  ai_policy: 'standard' | 'strict' | 'custom'
+  notifications_enabled: boolean
+  notifications_policy: 'standard' | 'strict' | 'custom'
+  audit_enabled: boolean
+  audit_policy: 'standard' | 'strict' | 'custom'
+  created_at: string
+  updated_at: string
+}
+
+export interface AuditLog {
+  id: string
+  workspace_id: string
+  actor_id: string | null
+  action: string
+  resource_type: string
+  resource_id: string | null
+  risk: RiskLevel
+  details: Record<string, unknown>
+  created_at: string
+}
+
 export interface OnboardingInput {
   workspaceName: string
   region: string

@@ -233,10 +233,39 @@ code, .mono-label, .field-label { font-family: 'JetBrains Mono', monospace; font
 .app-stage { width: calc(100% - 280px); min-width: 0; margin-left: 280px; }
 .topbar { position: sticky; z-index: 30; top: 0; height: 76px; display: flex; align-items: center; gap: 15px; padding: 0 28px; border-bottom: 1px solid #48515d; background: rgb(15 20 26 / 91%); color: var(--text); backdrop-filter: blur(14px); }
 .topbar-title { min-width: max-content; font-size: 24px; }
-.global-search { width: min(480px, 45vw); min-width: 0; display: flex; align-items: center; gap: 8px; margin-right: auto; padding: 0 13px; border: 1px solid var(--border); border-radius: 10px; background: #20242a; }
+.global-search { position: relative; width: min(480px, 45vw); min-width: 0; display: flex; align-items: center; gap: 8px; margin-right: auto; padding: 0 13px; border: 1px solid var(--border); border-radius: 10px; background: #20242a; }
 .global-search input { border: 0; background: transparent; box-shadow: none; padding-inline: 4px; }
+.global-search-results { position: absolute; top: calc(100% + 10px); left: 0; right: 0; max-height: min(420px, 60vh); overflow-y: auto; padding: 7px; border: 1px solid var(--border); border-radius: 12px; background: #171c22; box-shadow: 0 22px 55px rgb(0 0 0 / 45%); }
+.global-search-results button { width: 100%; display: grid; gap: 3px; padding: 11px 12px; border: 0; border-radius: 8px; background: transparent; color: var(--text); text-align: left; cursor: pointer; }
+.global-search-results button:hover, .global-search-results button:focus-visible { background: #252c35; }
+.global-search-results small { color: var(--muted); }
+.global-search-results p { margin: 0; padding: 16px; color: var(--muted); text-align: center; }
+.notification-button { position: relative; }
+.notification-button i { position: absolute; top: 7px; right: 7px; width: 7px; height: 7px; border: 2px solid #151a20; border-radius: 50%; background: var(--orange); }
 .credits { min-width: max-content; height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 16px; border: 1px solid #4a5360; border-radius: 999px; background: #252b34; font: 600 12px 'JetBrains Mono'; letter-spacing: .08em; cursor: pointer; }
 .credits svg { color: var(--orange); }
+.notification-list { display: grid; gap: 9px; }
+.notification-list > button { width: 100%; display: flex; align-items: center; gap: 13px; padding: 14px; border: 1px solid var(--border); border-radius: 11px; background: #20262e; color: var(--text); text-align: left; cursor: pointer; }
+.notification-list > button:hover { border-color: var(--blue); }
+.notification-list > button svg { color: var(--blue); }
+.notification-list > button span { display: grid; gap: 3px; }
+.notification-list small { color: var(--muted); }
+.empty-state.compact { padding: 26px 18px; }
+.updates-list { display: grid; gap: 12px; }
+.updates-list article { padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: #20262e; }
+.updates-list article span { color: var(--blue); font: 600 11px 'JetBrains Mono'; }
+.updates-list article h3 { margin: 8px 0 5px; }
+.updates-list article p { margin: 0; color: var(--muted); }
+.history-list { display: grid; gap: 8px; max-height: 55vh; overflow-y: auto; }
+.history-list > button { display: grid; gap: 5px; padding: 13px; border: 1px solid var(--border); border-radius: 9px; background: #20262e; color: var(--text); text-align: left; cursor: pointer; }
+.history-list > button:hover { border-color: var(--blue); }
+.history-list small { color: var(--muted); }
+.source-chips { display: flex; gap: 8px; overflow-x: auto; margin: -16px 0 18px; padding-bottom: 4px; }
+.source-chips > span { min-width: max-content; display: flex; align-items: center; gap: 8px; padding: 7px 9px 7px 12px; border: 1px solid var(--border); border-radius: 999px; background: #20262e; font-size: 12px; }
+.source-chips button { display: grid; place-items: center; padding: 3px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; }
+.source-chips button:hover { background: #343d49; color: var(--text); }
+.compact-select { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+.compact-select select { min-width: 150px; }
 .menu-button { display: none; }
 .app-content { width: 100%; min-width: 0; max-width: 100%; padding: 48px; }
 .app-content > *, .card, section, aside { min-width: 0; max-width: 100%; }
@@ -372,19 +401,28 @@ td small { margin-top: 3px; color: var(--muted); }
 .visual-options span { font-size: 11px; color: var(--muted); }
 
 /* Calendar */
-.calendar-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+.calendar-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 28px; }
 .calendar-toolbar h1 { margin: 0 auto 0 0; font-size: 22px; }
 .calendar-toolbar h1 span { display: block; color: var(--muted); font-size: 16px; }
-.calendar-layout { display: grid; grid-template-columns: minmax(650px, 1fr) 390px; gap: 28px; }
+.calendar-month-control { min-width: 210px; display: flex; align-items: center; gap: 8px; }
+.calendar-month-control h1 { flex: 1; margin: 0; text-transform: capitalize; }
+.calendar-month-control > button { width: 34px; height: 34px; border: 1px solid var(--border); border-radius: 8px; background: #20262e; color: var(--text); font-size: 24px; cursor: pointer; }
+.calendar-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(310px, 360px); gap: 24px; }
 .calendar-card { padding: 20px; }
 .weekdays, .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); }
 .weekdays b { padding: 13px; background: #181d23; text-align: center; font: 600 12px 'JetBrains Mono'; }
 .calendar-days > div { min-height: 130px; padding: 10px; border-right: 1px solid #303741; border-bottom: 1px solid #303741; }
 .calendar-days > div:nth-child(7n + 1) { border-left: 1px solid #303741; }
 .calendar-days > div.today { box-shadow: 0 0 0 1px var(--blue) inset; }
+.calendar-days > div.outside { background: #151a20; }
 .calendar-days > div > span { display: block; margin-bottom: 9px; text-align: right; font-weight: 600; }
 .event { width: 100%; display: grid; gap: 5px; margin-bottom: 6px; padding: 8px; border: 0; border-left: 3px solid var(--blue); border-radius: 7px; background: #28303a; text-align: left; cursor: pointer; overflow: hidden; }
 .event-green { border-color: var(--green); }.event-orange { border-color: var(--orange); }.event-neutral { border-color: #707887; }
+.calendar-list-view { display: grid; align-content: start; gap: 9px; padding: 20px; }
+.calendar-list-view > button { display: grid; grid-template-columns: 90px minmax(0, 1fr) max-content; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: #20262e; color: var(--text); text-align: left; cursor: pointer; }
+.calendar-list-view > button:hover { border-color: var(--blue); }
+.calendar-list-view time, .calendar-list-view > button > span { display: grid; gap: 4px; }
+.calendar-list-view small { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .event b, .event small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .event small { color: var(--muted); }
 .post-details { display: grid; align-content: start; gap: 18px; }
@@ -747,7 +785,8 @@ td small { margin-top: 3px; color: var(--muted); }
   .mobile-calendar-filters .button { min-width: max-content; border-radius: 999px; }
   .mobile-calendar-list { position: relative; display: grid; gap: 16px; }
   .mobile-calendar-list > .mono-label { margin: 8px 0 0; }
-  .mobile-calendar-event { padding: 22px; border-left: 5px solid var(--blue); }
+  .mobile-calendar-event { width: 100%; padding: 22px; border: 1px solid var(--border); border-left: 5px solid var(--blue); color: var(--text); text-align: left; }
+  .mobile-calendar-event.green { border-left-color: var(--green); }.mobile-calendar-event.orange { border-left-color: var(--orange); }.mobile-calendar-event.neutral { border-left-color: #707887; }
   .mobile-calendar-event.draft { border-left-color: #56606e; }.mobile-calendar-event.review { border-left-color: var(--orange); }
   .mobile-calendar-event > div { display: flex; align-items: center; gap: 8px; color: #c7ced8; }.mobile-calendar-event .badge { margin-left: auto; }
   .mobile-calendar-event h2 { margin: 22px 0 7px; font-size: 20px; }.mobile-calendar-event p { margin: 0 0 18px; }

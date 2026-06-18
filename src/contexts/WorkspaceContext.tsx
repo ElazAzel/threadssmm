@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { Approval, ApprovalStatus, Brand, ContentFormat, Draft, MediaAsset, MonitorItem, MonitorSource, OnboardingInput, ThreadAccount, Workspace } from '../lib/domain'
+import type { Approval, ApprovalStatus, AuditLog, Brand, ContentFormat, Draft, MediaAsset, MonitorItem, MonitorSource, OnboardingInput, ThreadAccount, Workspace, WorkspaceSettings } from '../lib/domain'
+import type { DraftRow, Json } from '../lib/database.types'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
 
@@ -13,20 +14,27 @@ interface WorkspaceContextValue {
   mediaAssets: MediaAsset[]
   monitorSources: MonitorSource[]
   monitorItems: MonitorItem[]
+  workspaceSettings: WorkspaceSettings | null
+  auditLogs: AuditLog[]
   loading: boolean
   error: string
   refresh: () => Promise<void>
   createWorkspace: (input: OnboardingInput) => Promise<void>
   updateWorkspace: (changes: Partial<Pick<Workspace, 'name' | 'region' | 'timezone'>>) => Promise<void>
+  saveWorkspaceSettings: (changes: Partial<WorkspaceSettings>) => Promise<void>
   createBrand: (name: string) => Promise<Brand>
   saveBrand: (brand: Brand) => Promise<void>
   addManualAccount: (username: string, brandId?: string | null) => Promise<ThreadAccount>
-  createQuickDraft: (content: string, format?: ContentFormat) => Promise<Draft>
+  updateAccount: (accountId: string, changes: Partial<Pick<ThreadAccount, 'brand_id' | 'display_name'>>) => Promise<void>
+  deleteAccount: (accountId: string) => Promise<void>
+  createQuickDraft: (content: string, format?: ContentFormat, source?: string) => Promise<Draft>
   updateDraft: (draftId: string, changes: Partial<Pick<Draft, 'title' | 'content' | 'status' | 'risk_score' | 'risk_level' | 'scheduled_at'>>) => Promise<void>
   requestApproval: (draftId: string, reason?: string) => Promise<void>
   reviewApproval: (approvalId: string, status: ApprovalStatus, note?: string) => Promise<void>
-  uploadMedia: (file: File, title?: string) => Promise<MediaAsset>
+  uploadMedia: (file: File, title?: string, brandId?: string | null) => Promise<MediaAsset>
   deleteMedia: (asset: MediaAsset) => Promise<void>
+  deleteMonitorSource: (sourceId: string) => Promise<void>
+  dismissMonitorItem: (itemId: string) => Promise<void>
 }
 
 const now = new Date().toISOString()
@@ -92,11 +100,48 @@ const demoAccount: ThreadAccount = {
   updated_at: now,
 }
 
+const demoWorkspaceSettings: WorkspaceSettings = {
+  workspace_id: demoWorkspace.id,
+  security_enabled: true,
+  security_policy: 'standard',
+  ai_enabled: true,
+  ai_policy: 'standard',
+  notifications_enabled: true,
+  notifications_policy: 'standard',
+  audit_enabled: true,
+  audit_policy: 'strict',
+  created_at: now,
+  updated_at: now,
+}
+
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null)
 
 function slugify(value: string) {
   const base = value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'workspace'
   return `${base}-${crypto.randomUUID().slice(0, 8)}`
+}
+
+function isRecord(value: Json): value is { [key: string]: Json | undefined } {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
+
+function normalizeDraft(row: DraftRow): Draft {
+  const variants = Array.isArray(row.variants) ? row.variants.flatMap((value) => {
+    if (!isRecord(value) || typeof value.id !== 'string' || typeof value.content !== 'string') return []
+    return [{
+      id: value.id,
+      label: typeof value.label === 'string' ? value.label : value.id,
+      content: value.content,
+      tone: typeof value.tone === 'string' ? value.tone : '',
+      hookScore: typeof value.hookScore === 'number' ? value.hookScore : 0,
+      complianceScore: typeof value.complianceScore === 'number' ? value.complianceScore : 0,
+    }]
+  }) : []
+  const complianceNotes = Array.isArray(row.compliance_notes)
+    ? row.compliance_notes.filter((value): value is string => typeof value === 'string')
+    : []
+  const metadata = isRecord(row.metadata) ? row.metadata as Record<string, unknown> : {}
+  return { ...row, variants, compliance_notes: complianceNotes, metadata }
 }
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
@@ -109,6 +154,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [mediaAssets, setMediaAssets] = useState<MediaAsset[]>([])
   const [monitorSources, setMonitorSources] = useState<MonitorSource[]>([])
   const [monitorItems, setMonitorItems] = useState<MonitorItem[]>([])
+  const [workspaceSettings, setWorkspaceSettings] = useState<WorkspaceSettings | null>(demo ? demoWorkspaceSettings : null)
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([])
   const [loading, setLoading] = useState(!demo)
   const [error, setError] = useState('')
 
@@ -123,6 +170,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       setMediaAssets([])
       setMonitorSources([])
       setMonitorItems([])
+      setWorkspaceSettings(null)
+      setAuditLogs([])
       setLoading(false)
       return
     }
@@ -132,7 +181,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setError('')
     const membershipResult = await supabase
       .from('workspace_members')
-      .select('workspace_id, workspaces(*)')
+      .select('workspace_id')
       .eq('user_id', user.id)
       .order('created_at', { ascending: true })
       .limit(1)
@@ -144,7 +193,16 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    const nextWorkspace = membershipResult.data?.workspaces as unknown as Workspace | null
+    const workspaceId = membershipResult.data?.workspace_id
+    const workspaceResult = workspaceId
+      ? await supabase.from('workspaces').select('*').eq('id', workspaceId).single()
+      : { data: null, error: null }
+    if (workspaceResult.error) {
+      setError(workspaceResult.error.message)
+      setLoading(false)
+      return
+    }
+    const nextWorkspace = workspaceResult.data as Workspace | null
     setWorkspace(nextWorkspace)
     if (!nextWorkspace) {
       setBrands([])
@@ -154,11 +212,13 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       setMediaAssets([])
       setMonitorSources([])
       setMonitorItems([])
+      setWorkspaceSettings(null)
+      setAuditLogs([])
       setLoading(false)
       return
     }
 
-    const [brandResult, accountResult, draftResult, approvalResult, mediaResult, sourceResult, itemResult] = await Promise.all([
+    const [brandResult, accountResult, draftResult, approvalResult, mediaResult, sourceResult, itemResult, settingsResult, auditResult] = await Promise.all([
       supabase.from('brands').select('*').eq('workspace_id', nextWorkspace.id).order('created_at'),
       supabase.from('threads_accounts').select('*').eq('workspace_id', nextWorkspace.id).order('created_at'),
       supabase.from('drafts').select('*').eq('workspace_id', nextWorkspace.id).order('created_at', { ascending: false }),
@@ -166,13 +226,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       supabase.from('media_assets').select('*').eq('workspace_id', nextWorkspace.id).order('created_at', { ascending: false }),
       supabase.from('monitor_sources').select('*').eq('workspace_id', nextWorkspace.id).order('created_at', { ascending: false }),
       supabase.from('monitor_items').select('*').eq('workspace_id', nextWorkspace.id).eq('dismissed', false).order('published_at', { ascending: false }).limit(100),
+      supabase.from('workspace_settings').select('*').eq('workspace_id', nextWorkspace.id).maybeSingle(),
+      supabase.from('audit_logs').select('*').eq('workspace_id', nextWorkspace.id).order('created_at', { ascending: false }).limit(100),
     ])
 
-    const firstError = brandResult.error ?? accountResult.error ?? draftResult.error ?? approvalResult.error ?? mediaResult.error ?? sourceResult.error ?? itemResult.error
+    const firstError = brandResult.error ?? accountResult.error ?? draftResult.error ?? approvalResult.error ?? mediaResult.error ?? sourceResult.error ?? itemResult.error ?? settingsResult.error ?? auditResult.error
     if (firstError) setError(firstError.message)
     setBrands((brandResult.data ?? []) as Brand[])
     setAccounts((accountResult.data ?? []) as ThreadAccount[])
-    setDrafts((draftResult.data ?? []) as Draft[])
+    setDrafts((draftResult.data ?? []).map(normalizeDraft))
     setApprovals((approvalResult.data ?? []) as Approval[])
     const mediaRows = mediaResult.data ?? []
     const mediaWithUrls = await Promise.all(mediaRows.map(async (row) => {
@@ -182,6 +244,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setMediaAssets(mediaWithUrls)
     setMonitorSources((sourceResult.data ?? []) as MonitorSource[])
     setMonitorItems((itemResult.data ?? []) as MonitorItem[])
+    setWorkspaceSettings(settingsResult.data as WorkspaceSettings | null)
+    setAuditLogs((auditResult.data ?? []) as AuditLog[])
     setLoading(false)
   }, [authLoading, demo, user])
 
@@ -199,51 +263,19 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     }
     if (!supabase) throw new Error('Supabase не настроен')
 
-    const { data: createdWorkspace, error: workspaceError } = await supabase
-      .from('workspaces')
-      .insert({
-        owner_id: user.id,
-        name: input.workspaceName.trim(),
-        slug: slugify(input.workspaceName),
-        region: input.region,
-        locale: input.locale,
-        timezone: input.timezone,
-        onboarding_completed: true,
-      })
-      .select('*')
-      .single()
+    const { error: workspaceError } = await supabase.rpc('create_workspace_with_defaults', {
+      p_name: input.workspaceName.trim(),
+      p_slug: slugify(input.workspaceName),
+      p_region: input.region,
+      p_locale: input.locale,
+      p_timezone: input.timezone,
+      p_brand_name: input.brandName.trim(),
+      p_niche: input.niche.trim(),
+      p_audience: input.audience.trim(),
+      p_goal: input.goal,
+      p_threads_username: input.manualThreadsHandle?.trim() || null,
+    })
     if (workspaceError) throw workspaceError
-
-    const { error: memberError } = await supabase.from('workspace_members').insert({
-      workspace_id: createdWorkspace.id,
-      user_id: user.id,
-      role: 'owner',
-    })
-    if (memberError) throw memberError
-
-    const { error: brandError } = await supabase.from('brands').insert({
-      workspace_id: createdWorkspace.id,
-      name: input.brandName.trim(),
-      niche: input.niche.trim(),
-      audience: input.audience.trim(),
-      goals: [input.goal],
-      language: input.locale,
-      geography: input.region,
-    })
-    if (brandError) throw brandError
-
-    const { error: aiError } = await supabase.from('ai_settings').insert({ workspace_id: createdWorkspace.id })
-    if (aiError) throw aiError
-
-    if (input.manualThreadsHandle?.trim()) {
-      const { error: accountError } = await supabase.from('threads_accounts').insert({
-        workspace_id: createdWorkspace.id,
-        username: input.manualThreadsHandle.trim().replace(/^@/, ''),
-        display_name: input.brandName.trim(),
-        status: 'manual',
-      })
-      if (accountError) throw accountError
-    }
     await refresh()
   }, [demo, refresh, user])
 
@@ -258,6 +290,30 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (updateError) throw updateError
     setWorkspace(data as Workspace)
   }, [demo, workspace])
+
+  const saveWorkspaceSettings = useCallback(async (changes: Partial<WorkspaceSettings>) => {
+    if (!workspace) throw new Error('Рабочее пространство не готово')
+    const next = { ...(workspaceSettings ?? demoWorkspaceSettings), ...changes, workspace_id: workspace.id, updated_at: new Date().toISOString() }
+    if (demo) {
+      setWorkspaceSettings(next)
+      return
+    }
+    if (!supabase) throw new Error('Supabase не настроен')
+    const payload = {
+      workspace_id: workspace.id,
+      security_enabled: next.security_enabled,
+      security_policy: next.security_policy,
+      ai_enabled: next.ai_enabled,
+      ai_policy: next.ai_policy,
+      notifications_enabled: next.notifications_enabled,
+      notifications_policy: next.notifications_policy,
+      audit_enabled: next.audit_enabled,
+      audit_policy: next.audit_policy,
+    }
+    const { data, error: saveError } = await supabase.from('workspace_settings').upsert(payload, { onConflict: 'workspace_id' }).select('*').single()
+    if (saveError) throw saveError
+    setWorkspaceSettings(data as WorkspaceSettings)
+  }, [demo, workspace, workspaceSettings])
 
   const saveBrand = useCallback(async (brand: Brand) => {
     if (demo) {
@@ -306,7 +362,29 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     return account
   }, [brands, demo, workspace])
 
-  const createQuickDraft = useCallback(async (content: string, format: ContentFormat = 'post') => {
+  const updateAccount = useCallback(async (accountId: string, changes: Partial<Pick<ThreadAccount, 'brand_id' | 'display_name'>>) => {
+    if (demo) {
+      setAccounts((items) => items.map((item) => item.id === accountId ? { ...item, ...changes, updated_at: new Date().toISOString() } : item))
+      return
+    }
+    if (!supabase) throw new Error('Supabase не настроен')
+    const { data, error: updateError } = await supabase.from('threads_accounts').update(changes).eq('id', accountId).select('*').single()
+    if (updateError) throw updateError
+    setAccounts((items) => items.map((item) => item.id === accountId ? data as ThreadAccount : item))
+  }, [demo])
+
+  const deleteAccount = useCallback(async (accountId: string) => {
+    if (demo) {
+      setAccounts((items) => items.filter((item) => item.id !== accountId))
+      return
+    }
+    if (!supabase) throw new Error('Supabase не настроен')
+    const { error: deleteError } = await supabase.from('threads_accounts').delete().eq('id', accountId)
+    if (deleteError) throw deleteError
+    setAccounts((items) => items.filter((item) => item.id !== accountId))
+  }, [demo])
+
+  const createQuickDraft = useCallback(async (content: string, format: ContentFormat = 'post', source = 'manual') => {
     if (!workspace || !user) throw new Error('Рабочее пространство не готово')
     const payload = {
       workspace_id: workspace.id,
@@ -316,7 +394,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       format,
       title: content.trim().slice(0, 80),
       content: content.trim(),
-      source: 'manual',
+      source,
       status: 'draft' as const,
     }
     if (demo) {
@@ -327,7 +405,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (!supabase) throw new Error('Supabase не настроен')
     const { data, error: insertError } = await supabase.from('drafts').insert(payload).select('*').single()
     if (insertError) throw insertError
-    const draft = data as Draft
+    const draft = normalizeDraft(data)
     setDrafts((items) => [draft, ...items])
     return draft
   }, [accounts, brands, demo, user, workspace])
@@ -340,7 +418,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (!supabase) throw new Error('Supabase не настроен')
     const { data, error: updateError } = await supabase.from('drafts').update(changes).eq('id', draftId).select('*').single()
     if (updateError) throw updateError
-    setDrafts((items) => items.map((item) => item.id === draftId ? data as Draft : item))
+    setDrafts((items) => items.map((item) => item.id === draftId ? normalizeDraft(data) : item))
   }, [demo])
 
   const requestApproval = useCallback(async (draftId: string, reason = '') => {
@@ -352,9 +430,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       return
     }
     if (!supabase) throw new Error('Supabase не настроен')
-    const { error: draftError } = await supabase.from('drafts').update({ status: 'pending_approval' }).eq('id', draftId)
-    if (draftError) throw draftError
-    const { error: approvalError } = await supabase.from('approvals').upsert({ workspace_id: workspace.id, draft_id: draftId, requested_by: user.id, status: 'pending', reason }, { onConflict: 'draft_id' })
+    const { error: approvalError } = await supabase.rpc('request_draft_approval', { p_draft_id: draftId, p_reason: reason })
     if (approvalError) throw approvalError
     await refresh()
   }, [demo, refresh, user, workspace])
@@ -369,14 +445,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       return
     }
     if (!supabase) throw new Error('Supabase не настроен')
-    const { error: approvalError } = await supabase.from('approvals').update({ status, decision_note: note, reviewed_by: user.id, reviewed_at: new Date().toISOString() }).eq('id', approvalId)
+    const { error: approvalError } = await supabase.rpc('review_draft_approval', { p_approval_id: approvalId, p_status: status, p_note: note })
     if (approvalError) throw approvalError
-    const { error: draftError } = await supabase.from('drafts').update({ status: draftStatus }).eq('id', approval.draft_id)
-    if (draftError) throw draftError
     await refresh()
   }, [approvals, demo, refresh, user])
 
-  const uploadMedia = useCallback(async (file: File, title = file.name) => {
+  const uploadMedia = useCallback(async (file: File, title = file.name, brandId: string | null = brands[0]?.id ?? null) => {
     if (!workspace || !user) throw new Error('Рабочее пространство не готово')
     if (!file.type.startsWith('image/')) throw new Error('Можно загружать только изображения')
     if (file.size > 10 * 1024 * 1024) throw new Error('Максимальный размер файла — 10 МБ')
@@ -386,7 +460,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     const path = `${workspace.id}/${user.id}/${crypto.randomUUID()}-${safeName}`
     const { error: storageError } = await supabase.storage.from('media-assets').upload(path, file, { contentType: file.type, upsert: false })
     if (storageError) throw storageError
-    const { data, error: insertError } = await supabase.from('media_assets').insert({ workspace_id: workspace.id, brand_id: brands[0]?.id ?? null, created_by: user.id, title: title.trim() || file.name, storage_path: path, mime_type: file.type, size_bytes: file.size, source: 'upload' }).select('*').single()
+    const { data, error: insertError } = await supabase.from('media_assets').insert({ workspace_id: workspace.id, brand_id: brandId, created_by: user.id, title: title.trim() || file.name, storage_path: path, mime_type: file.type, size_bytes: file.size, source: 'upload' }).select('*').single()
     if (insertError) {
       await supabase.storage.from('media-assets').remove([path])
       throw insertError
@@ -407,10 +481,32 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setMediaAssets((items) => items.filter((item) => item.id !== asset.id))
   }, [demo])
 
+  const deleteMonitorSource = useCallback(async (sourceId: string) => {
+    if (demo) throw new Error('В демо нет сохранённых RSS-источников')
+    if (!supabase) throw new Error('Supabase не настроен')
+    const { error: itemError } = await supabase.from('monitor_items').delete().eq('source_id', sourceId)
+    if (itemError) throw itemError
+    const { error: sourceError } = await supabase.from('monitor_sources').delete().eq('id', sourceId)
+    if (sourceError) throw sourceError
+    setMonitorSources((items) => items.filter((item) => item.id !== sourceId))
+    setMonitorItems((items) => items.filter((item) => item.source_id !== sourceId))
+  }, [demo])
+
+  const dismissMonitorItem = useCallback(async (itemId: string) => {
+    if (demo) {
+      setMonitorItems((items) => items.filter((item) => item.id !== itemId))
+      return
+    }
+    if (!supabase) throw new Error('Supabase не настроен')
+    const { error: dismissError } = await supabase.from('monitor_items').update({ dismissed: true }).eq('id', itemId)
+    if (dismissError) throw dismissError
+    setMonitorItems((items) => items.filter((item) => item.id !== itemId))
+  }, [demo])
+
   const value = useMemo<WorkspaceContextValue>(() => ({
-    workspace, brands, accounts, drafts, approvals, mediaAssets, monitorSources, monitorItems, loading, error, refresh,
-    createWorkspace, updateWorkspace, createBrand, saveBrand, addManualAccount, createQuickDraft, updateDraft, requestApproval, reviewApproval, uploadMedia, deleteMedia,
-  }), [accounts, addManualAccount, approvals, brands, createBrand, createQuickDraft, createWorkspace, deleteMedia, drafts, error, loading, mediaAssets, monitorItems, monitorSources, refresh, requestApproval, reviewApproval, saveBrand, updateDraft, updateWorkspace, uploadMedia, workspace])
+    workspace, brands, accounts, drafts, approvals, mediaAssets, monitorSources, monitorItems, workspaceSettings, auditLogs, loading, error, refresh,
+    createWorkspace, updateWorkspace, saveWorkspaceSettings, createBrand, saveBrand, addManualAccount, updateAccount, deleteAccount, createQuickDraft, updateDraft, requestApproval, reviewApproval, uploadMedia, deleteMedia, deleteMonitorSource, dismissMonitorItem,
+  }), [accounts, addManualAccount, approvals, auditLogs, brands, createBrand, createQuickDraft, createWorkspace, deleteAccount, deleteMedia, deleteMonitorSource, dismissMonitorItem, drafts, error, loading, mediaAssets, monitorItems, monitorSources, refresh, requestApproval, reviewApproval, saveBrand, saveWorkspaceSettings, updateAccount, updateDraft, updateWorkspace, uploadMedia, workspace, workspaceSettings])
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>
 }

@@ -2,7 +2,7 @@ import { lookup } from 'node:dns/promises'
 import { isIP } from 'node:net'
 import { XMLParser } from 'fast-xml-parser'
 import type { ApiRequest, ApiResponse } from '../_lib/http.js'
-import { requireUser } from '../_lib/supabaseServer.js'
+import { enforceRateLimit, RateLimitError, requireUser } from '../_lib/supabaseServer.js'
 
 interface RssBody {
   workspaceId: string
@@ -69,6 +69,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     const { user, admin } = await requireUser(request)
     const { data: membership } = await admin.from('workspace_members').select('role').eq('workspace_id', body.workspaceId).eq('user_id', user.id).maybeSingle()
     if (!membership) return response.status(403).json({ error: 'Нет доступа к рабочему пространству' })
+    await enforceRateLimit(admin, 'monitor.rss', user.id, 10, 600)
 
     const feed = await fetchFeed(body.url)
     const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_', trimValues: true })
@@ -100,9 +101,9 @@ export default async function handler(request: ApiRequest, response: ApiResponse
         summary: text(item.description ?? item.summary ?? item.content).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 2000),
         published_at: Number.isNaN(publishedTimestamp) ? null : new Date(publishedTimestamp).toISOString(),
         relevance_score: 50,
-        urgency: 'normal',
-        sentiment: 'neutral',
-        recommendation: 'post',
+        urgency: 'normal' as const,
+        sentiment: 'neutral' as const,
+        recommendation: 'post' as const,
       }
     })
     if (items.length) {
@@ -112,7 +113,10 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     response.status(200).json({ imported: items.length, source: feedTitle })
   } catch (error) {
     const code = error instanceof Error ? error.message : ''
-    if (code === 'UNAUTHORIZED') response.status(401).json({ error: 'Войдите в аккаунт заново' })
+    if (error instanceof RateLimitError) {
+      response.setHeader('Retry-After', String(error.retryAfter))
+      response.status(429).json({ error: `Слишком много запросов. Повторите через ${error.retryAfter} сек.` })
+    } else if (code === 'UNAUTHORIZED') response.status(401).json({ error: 'Войдите в аккаунт заново' })
     else if (['INVALID_URL', 'TOO_MANY_REDIRECTS', 'INVALID_REDIRECT'].includes(code)) response.status(400).json({ error: 'Этот RSS URL небезопасен или некорректен' })
     else response.status(502).json({ error: 'Не удалось прочитать RSS-ленту' })
   }
