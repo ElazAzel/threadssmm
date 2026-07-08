@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "node server/index.js",
     "dev:demo": "cross-env VITE_DEMO_MODE=true vite",
     "build": "tsc -b && vite build",
     "build:test": "cross-env VITE_DEMO_MODE=true vite build",
@@ -16,11 +17,18 @@
   "dependencies": {
     "@google/genai": "^2.8.0",
     "@supabase/supabase-js": "^2.108.2",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
     "fast-xml-parser": "^5.9.0",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.468.0",
+    "multer": "^2.2.0",
+    "pg": "^8.22.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.1.1",
+    "uuid": "^14.0.1",
     "zod": "^4.4.3",
     "zod-to-json-schema": "^3.25.2"
   },
