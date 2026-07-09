@@ -2,13 +2,12 @@ import { useState } from 'react'
 import { Search, Target, MessageSquare, ThumbsUp } from 'lucide-react'
 import { Button, Card, Badge, EmptyState } from './ui'
 import { RiskBadge } from './RiskBadge'
-import type { CommentCampaign, CommentOpportunity, GeneratedComment, AudienceSegment } from '../lib/domain'
+import type { CommentCampaign, CommentOpportunity, GeneratedComment } from '../lib/domain'
 
 interface EngagementFactoryProps {
   campaigns: CommentCampaign[]
   opportunities: CommentOpportunity[]
   comments: GeneratedComment[]
-  segments?: AudienceSegment[]
   onSaveCampaign: (campaign: Partial<CommentCampaign>) => Promise<void>
   onApproveComment: (commentId: string) => Promise<void>
   onRejectComment: (commentId: string) => Promise<void>

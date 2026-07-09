@@ -1,5 +1,45 @@
 -- Expand Content Engine: audience segments, locations, content pillars, comment campaigns, risk assessments
 
+-- ─── Locations ──────────────────────────────────────────────
+create table public.locations (
+  id uuid primary key default gen_random_uuid(),
+  brand_id uuid not null references public.brands(id) on delete cascade,
+  name text not null,
+  country text,
+  city text,
+  region text,
+  currency text not null default '₸',
+  language text not null default 'ru' check (language in ('ru', 'kk', 'en')),
+  formality integer not null default 50 check (formality between 0 and 100),
+  timezone text not null default 'Asia/Almaty',
+  post_hours jsonb default '{"start":10,"end":20}',
+  local_examples text[] default '{}',
+  local_references text[] default '{}',
+  local_context text,
+  local_events text[] default '{}',
+  local_business_terms text[] default '{}',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index locations_brand_idx on public.locations(brand_id);
+
+create trigger locations_updated_at
+before update on public.locations
+for each row execute procedure private.set_updated_at();
+
+alter table public.locations enable row level security;
+create policy locations_select_member on public.locations for select to authenticated
+  using (private.is_workspace_member((select workspace_id from public.brands where id = brand_id)));
+create policy locations_insert_admin on public.locations for insert to authenticated
+  with check (private.is_workspace_admin((select workspace_id from public.brands where id = brand_id)));
+create policy locations_update_admin on public.locations for update to authenticated
+  using (private.is_workspace_admin((select workspace_id from public.brands where id = brand_id)))
+  with check (private.is_workspace_admin((select workspace_id from public.brands where id = brand_id)));
+create policy locations_delete_admin on public.locations for delete to authenticated
+  using (private.is_workspace_admin((select workspace_id from public.brands where id = brand_id)));
+grant select, insert, update, delete on public.locations to authenticated;
+
 -- ─── Audience Segments ──────────────────────────────────────
 create table public.audience_segments (
   id uuid primary key default gen_random_uuid(),
@@ -40,46 +80,6 @@ create policy audience_segments_update_admin on public.audience_segments for upd
 create policy audience_segments_delete_admin on public.audience_segments for delete to authenticated
   using (private.is_workspace_admin((select workspace_id from public.brands where id = brand_id)));
 grant select, insert, update, delete on public.audience_segments to authenticated;
-
--- ─── Locations ──────────────────────────────────────────────
-create table public.locations (
-  id uuid primary key default gen_random_uuid(),
-  brand_id uuid not null references public.brands(id) on delete cascade,
-  name text not null,
-  country text,
-  city text,
-  region text,
-  currency text not null default '₸',
-  language text not null default 'ru' check (language in ('ru', 'kk', 'en')),
-  formality integer not null default 50 check (formality between 0 and 100),
-  timezone text not null default 'Asia/Almaty',
-  post_hours jsonb default '{"start":10,"end":20}',
-  local_examples text[] default '{}',
-  local_references text[] default '{}',
-  local_context text,
-  local_events text[] default '{}',
-  local_business_terms text[] default '{}',
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
-create index locations_brand_idx on public.locations(brand_id);
-
-create trigger locations_updated_at
-before update on public.locations
-for each row execute procedure private.set_updated_at();
-
-alter table public.locations enable row level security;
-create policy locations_select_member on public.locations for select to authenticated
-  using (private.is_workspace_member((select workspace_id from public.brands where id = brand_id)));
-create policy locations_insert_admin on public.locations for insert to authenticated
-  with check (private.is_workspace_admin((select workspace_id from public.brands where id = brand_id)));
-create policy locations_update_admin on public.locations for update to authenticated
-  using (private.is_workspace_admin((select workspace_id from public.brands where id = brand_id)))
-  with check (private.is_workspace_admin((select workspace_id from public.brands where id = brand_id)));
-create policy locations_delete_admin on public.locations for delete to authenticated
-  using (private.is_workspace_admin((select workspace_id from public.brands where id = brand_id)));
-grant select, insert, update, delete on public.locations to authenticated;
 
 -- ─── Content Pillars ────────────────────────────────────────
 create table public.content_pillars (

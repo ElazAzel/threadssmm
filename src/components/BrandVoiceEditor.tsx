@@ -8,7 +8,7 @@ interface BrandVoiceEditorProps {
 }
 
 export function BrandVoiceEditor({ value, onChange }: BrandVoiceEditorProps) {
-  const set = (key: keyof BrandVoiceSelection, val: string | string[]) => onChange({ ...value, [key]: val })
+  const set = (key: keyof BrandVoiceSelection, val: string | string[] | number) => onChange({ ...value, [key]: val })
 
   const traitEntries = useMemo(() => Object.entries(BRAND_VOICE_TRAITS), [])
 
@@ -96,7 +96,7 @@ export function BrandVoiceEditor({ value, onChange }: BrandVoiceEditorProps) {
         <div className="form-group">
           <span className="field-label">Уровень дерзости</span>
           <input type="range" min="0" max="100" value={value.boldnessLevel ?? 30}
-            onChange={(e) => set('boldnessLevel', e.target.value)}
+            onChange={(e) => set('boldnessLevel', Number(e.target.value))}
           />
           <div className="range-labels"><span>Сдержанный</span><span>Смелый</span></div>
         </div>
@@ -104,7 +104,7 @@ export function BrandVoiceEditor({ value, onChange }: BrandVoiceEditorProps) {
         <div className="form-group">
           <span className="field-label">Уровень формальности</span>
           <input type="range" min="0" max="100" value={value.formalityLevel ?? 50}
-            onChange={(e) => set('formalityLevel', e.target.value)}
+            onChange={(e) => set('formalityLevel', Number(e.target.value))}
           />
           <div className="range-labels"><span>Непринуждённый</span><span>Официальный</span></div>
         </div>

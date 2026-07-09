@@ -330,6 +330,60 @@ code { font-family: var(--font-mono); font-size: var(--text-xs); }
 .empty-state-action { margin-top: 16px; }
 .empty-state.compact { padding: 26px 18px; }
 
+/* ─── Engagement Factory Components ────────────── */
+
+.tab-bar { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+.tab-bar .tab { padding: 10px 16px; border: 0; background: transparent; color: var(--muted); font-size: var(--text-sm); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s, border-color .15s; }
+.tab-bar .tab:hover { color: var(--fg); }
+.tab-bar .tab-active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border: 1px solid var(--border); border-radius: var(--radius-pill); background: transparent; color: var(--fg); font-size: var(--text-sm); cursor: pointer; transition: all .15s; }
+.pill:hover { border-color: var(--accent); color: var(--accent); }
+.pill.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent), transparent 85%); color: var(--accent); }
+.pill small { display: block; color: var(--muted); font-size: var(--text-xs); margin-top: 2px; }
+
+.chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.archetype-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-bottom: 20px; }
+.archetype-grid .pill { flex-direction: column; text-align: center; padding: 12px; }
+
+.opportunity-card { padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 12px; }
+.opportunity-card:hover { border-color: var(--accent); }
+.opportunity-card .score { font-size: var(--text-2xl); font-weight: 700; color: var(--accent); }
+.opportunity-card .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.opportunity-card .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+.approval-card { padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 12px; }
+.approval-card .preview { padding: 12px; background: var(--bg-deep); border-radius: var(--radius-sm); margin: 8px 0; font-size: var(--text-sm); }
+.approval-card .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+.inbox-card { padding: 14px; border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 10px; cursor: pointer; }
+.inbox-card:hover { border-color: var(--accent); }
+.inbox-card .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.inbox-card .badge-row { display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap; }
+.inbox-card .suggestion { padding: 10px; background: var(--bg-deep); border-radius: var(--radius-sm); margin-top: 8px; font-size: var(--text-sm); }
+.inbox-card .suggestion .action-row { display: flex; gap: 6px; margin-top: 8px; }
+
+/* ─── Risk Badge ───────────────────────────────── */
+
+.risk-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid; border-radius: var(--radius-pill); font-size: var(--text-xs); font-weight: 600; }
+.risk-badge.compact { padding: 2px 6px; font-size: 10px; }
+.risk-warnings { margin-top: 4px; }
+.risk-warnings small { display: block; color: var(--muted); font-size: 10px; }
+
+/* ─── Campaign Modal ───────────────────────────── */
+
+.modal-overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px; background: rgb(2 5 9 / 74%); backdrop-filter: blur(7px); }
+.modal-overlay .modal { width: min(560px, 100%); padding: 0; border: 1px solid var(--border); border-radius: var(--radius-lg); background: #181c22; box-shadow: var(--elev-modal); }
+.modal-overlay .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); }
+.modal-overlay .modal-header h2 { margin: 0; font-size: 18px; }
+.modal-overlay .modal-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--border); }
+
+/* ─── Page Content ─────────────────────────────── */
+
+.page-content { padding: 24px 0; }
+.page-content .section-header { text-align: left; margin-bottom: 20px; }
+
 /* ─── State Classes ────────────────────────────── */
 
 .state-loading .state-content { display: none; }
