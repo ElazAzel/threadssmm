@@ -8,6 +8,7 @@ import { ResultManager } from '../components/ResultManager'
 import { variants } from '../data'
 import { useAuth } from '../contexts/AuthContext'
 import { useWorkspace } from '../contexts/WorkspaceContext'
+import { ModelSelector } from '../components/ModelSelector'
 import { authenticatedJson } from '../lib/api'
 import type { Brand, ContentFormat } from '../lib/domain'
 import type { PipelineResult } from '../lib/intent-engine'
@@ -204,6 +205,7 @@ export function StudioPage() {
   const [currentVariants, setCurrentVariants] = useState(variants)
   const [notice, setNotice] = useState('')
   const [riskTolerance, setRiskTolerance] = useState(45)
+  const [aiModel, setAiModel] = useState('gemini-2.0-flash')
   const [presetModalOpen, setPresetModalOpen] = useState(false)
   const [pipelineResult, setPipelineResult] = useState<PipelineResult | null>(null)
   const [historyOpen, setHistoryOpen] = useState(false)
@@ -226,6 +228,7 @@ export function StudioPage() {
         prompt: finalPrompt,
         format,
         riskTolerance,
+        modelId: aiModel,
       })
       if (!payload.variants) throw new Error('AI не вернул варианты')
       setCurrentVariants(payload.variants.map((item) => ({
@@ -255,6 +258,7 @@ export function StudioPage() {
         prompt: repairPrompt,
         format,
         riskTolerance,
+        modelId: aiModel,
       })
       if (!payload.variants) throw new Error('AI не вернул исправление')
       const repaired = payload.variants[0]
@@ -306,7 +310,7 @@ export function StudioPage() {
             <label>Workspace<select><option>{workspace?.name ?? 'Workspace'}</option></select></label>
             <div className="form-grid compact">
               <label>Язык<select><option>Русский</option></select></label>
-              <label>Модель<select><option>Gemini Flash</option></select></label>
+              <div className="model-selector-wrapper"><ModelSelector value={aiModel} onChange={setAiModel} tokenBalance={120} /></div>
             </div>
             {pipelineResult && (
               <div className="pipeline-params">
