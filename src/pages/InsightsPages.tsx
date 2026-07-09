@@ -9,6 +9,7 @@ import { useWorkspace } from '../contexts/WorkspaceContext'
 import { authenticatedJson } from '../lib/api'
 import { generateHtmlReport, downloadPdfReport, buildReportData } from '../lib/pdf-export'
 import { calculateBestTime, getDefaultBestTime, formatBestTimeSuggestion, type BestTimeResult } from '../lib/best-time'
+import { PLANS, TOKEN_PACKS } from '../lib/pricing'
 
 export function AnalyticsPage() {
   const { getAccessToken } = useAuth()
@@ -267,16 +268,92 @@ export function MediaPage() {
 }
 
 export function BillingPage() {
-  const { brands, accounts, monitorSources } = useWorkspace()
+  const { workspace } = useWorkspace()
+  const { getAccessToken, demo } = useAuth()
+  const [loading, setLoading] = useState('')
+  const [notice, setNotice] = useState('')
+
+  const subscribe = async (planId: string) => {
+    if (!workspace) return
+    if (demo) { setNotice('Демо-режим: платежи отключены'); window.setTimeout(() => setNotice(''), 3500); return }
+    setLoading(planId)
+    try {
+      const payload = await authenticatedJson<{ url: string }>(getAccessToken, '/api/billing/create-checkout', {
+        workspaceId: workspace.id, planId,
+      })
+      window.location.assign(payload.url)
+    } catch (caught) {
+      setNotice(caught instanceof Error ? caught.message : 'Ошибка подключения платежей')
+    } finally {
+      setLoading('')
+      window.setTimeout(() => setNotice(''), 3500)
+    }
+  }
+
   return (
     <AppShell title="Тарифы и биллинг">
-      <div className="page-head"><div><h1>Тарифы</h1><p>Платёжная система не подключена. Сейчас используются только бесплатные квоты Vercel, Supabase, Gemini и Meta.</p></div></div>
-      <h2 className="standalone-title">Подключённые бесплатные сервисы</h2>
-      <div className="plans-grid">
-        <Card><Badge tone="blue">Frontend/API</Badge><h2>Vercel Hobby</h2><p>Хостинг SPA, serverless endpoints и cron каждые 15 минут.</p><ul><li><Check size={17} /> GitHub автодеплой</li><li><Check size={17} /> HTTPS</li><li><Check size={17} /> Serverless Functions</li></ul></Card>
-        <Card><Badge tone="blue">Данные</Badge><h2>Supabase Free</h2><p>{brands.length} брендов · {accounts.length} аккаунтов · {monitorSources.length} RSS-источников</p><ul><li><Check size={17} /> Auth и RLS</li><li><Check size={17} /> Postgres</li><li><Check size={17} /> Private Storage</li></ul></Card>
-        <Card><Badge tone="blue">AI и публикация</Badge><h2>Gemini + Meta</h2><p>Оплата в приложении не подключена. Используются только доступные бесплатные квоты внешних сервисов.</p><ul><li><Check size={17} /> Gemini Flash</li><li><Check size={17} /> Threads OAuth</li><li><Check size={17} /> Ручной fallback</li></ul></Card>
+      <div className="page-head"><div><h1>Тарифы</h1><p>Чистая прибыль с каждого пользователя — более 85%. Остальное — токены AI, инфраструктура, эквайринг и налоги.</p></div></div>
+
+      <div className="pricing-grid">
+        {PLANS.map((plan) => (
+          <Card key={plan.id} className={`pricing-card${plan.id === 'pro' ? ' featured' : ''}`}>
+            {plan.id === 'pro' && <Badge tone="violet">Рекомендуем</Badge>}
+            <h2>{plan.name}</h2>
+            <div className="price">
+              <span className="amount">${plan.price}</span>
+              <span className="period">/мес</span>
+            </div>
+            <p className="tokens-included">{plan.tokensPerMonth} токенов в месяц</p>
+            <ul className="plan-features">
+              {plan.features.map((f) => <li key={f}><Check size={16} /> {f}</li>)}
+            </ul>
+            <Button
+              className="full-button"
+              onClick={() => void subscribe(plan.id)}
+              disabled={loading === plan.id}
+            >
+              {loading === plan.id ? 'Открываем Stripe...' : 'Выбрать'}
+            </Button>
+          </Card>
+        ))}
       </div>
+
+      <h2 className="standalone-title">Купить токены дополнительно</h2>
+      <div className="token-packs">
+        {TOKEN_PACKS.map((pack) => (
+          <Card key={pack.id} className="token-pack-card">
+            <span className="token-count">{pack.tokens}</span>
+            <span className="token-label">токенов</span>
+            <span className="token-price">${pack.price}</span>
+            <span className="token-per">{`(${(pack.price / pack.tokens).toFixed(2)} $/токен)`}</span>
+            <Button
+              variant="secondary"
+              onClick={() => void subscribe(pack.id)}
+              disabled={loading === pack.id}
+            >
+              {loading === pack.id ? '...' : 'Купить'}
+            </Button>
+          </Card>
+        ))}
+      </div>
+
+      <Card className="margin-card">
+        <h3>Как расходуются ваши средства</h3>
+        <div className="margin-breakdown">
+          <div className="margin-bar">
+            <div className="margin-fill" style={{ width: '15%' }} />
+          </div>
+          <div className="margin-legend">
+            <span><span className="dot green" /> Вы получаете (85%)</span>
+            <span><span className="dot accent" /> AI-токены и API (~4%)</span>
+            <span><span className="dot blue" /> Инфраструктура (~1%)</span>
+            <span><span className="dot orange" /> Эквайринг (~5%)</span>
+            <span><span className="dot gray" /> Налоги (~5%)</span>
+          </div>
+        </div>
+      </Card>
+
+      {notice ? <div className="toast">{notice}</div> : null}
     </AppShell>
   )
 }
