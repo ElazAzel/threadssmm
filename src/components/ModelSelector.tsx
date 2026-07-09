@@ -82,7 +82,7 @@ export function ModelSelector({ value, onChange, tokenBalance, category }: Model
       >
         <Icon size={14} style={{ color: 'var(--muted)', flexShrink: 0 }} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600 }}>{model.label}</div>
+          <div style={{ fontWeight: 600 }}>{model.label} <TierBadge tier={model.tier} /></div>
           <div style={{ color: 'var(--muted)', fontSize: 'var(--text-xs)' }}>{model.description}</div>
         </div>
         <span style={{ color: 'var(--accent)', fontWeight: 600, fontSize: 10, fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>
@@ -91,4 +91,14 @@ export function ModelSelector({ value, onChange, tokenBalance, category }: Model
       </button>
     )
   }
+}
+
+function TierBadge({ tier }: { tier: string }) {
+  const style: Record<string, React.CSSProperties> = {
+    budget: { color: '#6b7280', background: '#1f2228', border: '1px solid #2d323a' },
+    mid: { color: '#60a5fa', background: '#1a2633', border: '1px solid #2a3a50' },
+    flagship: { color: '#c084fc', background: '#231d2e', border: '1px solid #382a4a' },
+  }
+  const labels: Record<string, string> = { budget: 'Budget', mid: 'Средний', flagship: 'Флагман' }
+  return <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, fontWeight: 500, marginLeft: 6, ...(style[tier] ?? style.budget) } as React.CSSProperties}>{labels[tier] ?? tier}</span>
 }

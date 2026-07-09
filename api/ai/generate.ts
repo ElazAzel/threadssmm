@@ -15,19 +15,19 @@ interface GenerateBody {
 }
 
 const VALID_MODEL_IDS = [
-  'gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash',
+  'gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite',
   'gpt-4o', 'gpt-4o-mini',
   'grok-3', 'grok-3-mini',
-  'claude-sonnet-4', 'claude-haiku-3',
+  'claude-sonnet-4', 'claude-haiku-3', 'claude-opus-4',
   'deepseek-v3', 'deepseek-r1',
 ]
 
 const MODEL_TOKEN_COST: Record<string, number> = {
-  'gemini-2.5-pro': 5, 'gemini-2.5-flash': 2, 'gemini-2.0-flash': 1,
-  'gpt-4o': 5, 'gpt-4o-mini': 2,
-  'grok-3': 4, 'grok-3-mini': 2,
-  'claude-sonnet-4': 5, 'claude-haiku-3': 2,
-  'deepseek-v3': 2, 'deepseek-r1': 3,
+  'gemini-2.5-pro': 8, 'gemini-2.5-flash': 2, 'gemini-2.0-flash': 1, 'gemini-2.0-flash-lite': 1,
+  'gpt-4o': 7, 'gpt-4o-mini': 2,
+  'grok-3': 6, 'grok-3-mini': 2,
+  'claude-sonnet-4': 8, 'claude-haiku-3': 4, 'claude-opus-4': 15,
+  'deepseek-v3': 1, 'deepseek-r1': 3,
 }
 
 function rpc(admin: unknown, name: string, params: Record<string, unknown>) {
@@ -48,10 +48,10 @@ function isGenerateBody(value: unknown): value is GenerateBody {
 }
 
 const PROVIDER_ROUTER: Record<string, (modelId: string, prompt: string, format: string, riskTolerance: number, brand: Record<string, unknown> | null) => Promise<Array<{ id: string; tone: string; text: string; hookScore: number; complianceScore: number; complianceNote: string }>>> = {
-  'gemini-2.5-pro': callGoogle, 'gemini-2.5-flash': callGoogle, 'gemini-2.0-flash': callGoogle,
+  'gemini-2.5-pro': callGoogle, 'gemini-2.5-flash': callGoogle, 'gemini-2.0-flash': callGoogle, 'gemini-2.0-flash-lite': callGoogle,
   'gpt-4o': callOpenAI, 'gpt-4o-mini': callOpenAI,
   'grok-3': callGrok, 'grok-3-mini': callGrok,
-  'claude-sonnet-4': callAnthropic, 'claude-haiku-3': callAnthropic,
+  'claude-sonnet-4': callAnthropic, 'claude-haiku-3': callAnthropic, 'claude-opus-4': callAnthropic,
   'deepseek-v3': callDeepSeek, 'deepseek-r1': callDeepSeek,
 }
 

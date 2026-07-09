@@ -10,6 +10,7 @@ import { authenticatedJson } from '../lib/api'
 import { generateHtmlReport, downloadPdfReport, buildReportData } from '../lib/pdf-export'
 import { calculateBestTime, getDefaultBestTime, formatBestTimeSuggestion, type BestTimeResult } from '../lib/best-time'
 import { PLANS, TOKEN_PACKS } from '../lib/pricing'
+import { AI_MODELS } from '../lib/ai-models'
 
 export function AnalyticsPage() {
   const { getAccessToken } = useAuth()
@@ -338,24 +339,58 @@ export function BillingPage() {
       </div>
 
       <Card className="margin-card">
-        <h3>Как расходуются ваши средства</h3>
+        <h3>Как расходуются ваши средства — до 89% чистой прибыли</h3>
         <div className="margin-breakdown">
           <div className="margin-bar">
-            <div className="margin-fill" style={{ width: '15%' }} />
+            <div className="margin-fill" style={{ width: '13%' }} />
           </div>
           <div className="margin-legend">
-            <span><span className="dot green" /> Вы получаете (85%)</span>
-            <span><span className="dot accent" /> AI-токены и API (~4%)</span>
-            <span><span className="dot blue" /> Инфраструктура (~1%)</span>
-            <span><span className="dot orange" /> Эквайринг (~5%)</span>
+            <span><span className="dot green" /> Вы получаете (87–89%)</span>
+            <span><span className="dot accent" /> API провайдеров (~0.1–1%)</span>
+            <span><span className="dot blue" /> Инфраструктура (&lt;1%)</span>
+            <span><span className="dot orange" /> Эквайринг (3–5%)</span>
             <span><span className="dot gray" /> Налоги (~5%)</span>
           </div>
+        </div>
+      </Card>
+
+      <Card className="margin-detail-card">
+        <h3>Топ-15 AI-моделей июля 2026</h3>
+        <div className="model-table-wrap">
+          <table className="model-table">
+            <thead>
+              <tr>
+                <th>Модель</th><th>Провайдер</th><th>Тир</th><th>Токенов</th><th>$/генерация</th>
+              </tr>
+            </thead>
+            <tbody>
+              {AI_MODELS.map((m) => (
+                <tr key={m.id}>
+                  <td><b>{m.label}</b></td>
+                  <td><span className="provider-tag">{m.provider}</span></td>
+                  <td><TierLabel tier={m.tier} /></td>
+                  <td>{m.tokenCost}</td>
+                  <td>${(m.tokenCost * 0.10).toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </Card>
 
       {notice ? <div className="toast">{notice}</div> : null}
     </AppShell>
   )
+}
+
+function TierLabel({ tier }: { tier: string }) {
+  const style: Record<string, React.CSSProperties> = {
+    budget: { color: '#6b7280' },
+    mid: { color: '#60a5fa' },
+    flagship: { color: '#c084fc' },
+  }
+  const labels: Record<string, string> = { budget: 'Budget', mid: 'Средний', flagship: 'Флагман' }
+  return <span style={{ ...(style[tier] ?? style.budget), fontSize: 11, fontWeight: 600 }}>{labels[tier] ?? tier}</span>
 }
 
 export function SettingsPage() {

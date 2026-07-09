@@ -8,7 +8,7 @@ interface ImageBody {
   count?: number
 }
 
-const MODEL_TOKEN_COST: Record<string, number> = { 'imagen-3': 10, 'dall-e-3': 15 }
+const MODEL_TOKEN_COST: Record<string, number> = { 'imagen-3': 10, 'dall-e-3': 12 }
 const VALID_MODELS = ['imagen-3', 'dall-e-3']
 
 function rpc(admin: unknown, name: string, params: Record<string, unknown>) {

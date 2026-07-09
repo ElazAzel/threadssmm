@@ -8,32 +8,35 @@ export interface AiModel {
   category: AiCategory
   tokenCost: number
   maxTokens: number
+  tier: 'budget' | 'mid' | 'flagship'
   isDefault?: boolean
 }
 
 export const AI_MODELS: AiModel[] = [
   // ─── Google Gemini ─────────────────────────────
-  { id: 'gemini-2.5-pro', provider: 'google', label: 'Gemini 2.5 Pro', description: 'Текст + изображения (Imagen)', category: 'text_visual', tokenCost: 5, maxTokens: 65536 },
-  { id: 'gemini-2.5-flash', provider: 'google', label: 'Gemini 2.5 Flash', description: 'Быстрый, для повседневных задач', category: 'text_only', tokenCost: 2, maxTokens: 32768 },
-  { id: 'gemini-2.0-flash', provider: 'google', label: 'Gemini 2.0 Flash', description: 'Лёгкий, для простых запросов', category: 'text_only', tokenCost: 1, maxTokens: 8192, isDefault: true },
-  { id: 'imagen-3', provider: 'google', label: 'Imagen 3', description: 'Генерация изображений через Google', category: 'visual_only', tokenCost: 10, maxTokens: 0 },
+  { id: 'gemini-2.0-flash-lite', provider: 'google', label: 'Gemini 2.0 Flash-Lite', description: 'Максимум экономии, для классификации', category: 'text_only', tokenCost: 1, maxTokens: 8192, tier: 'budget' },
+  { id: 'gemini-2.0-flash', provider: 'google', label: 'Gemini 2.0 Flash', description: 'Лёгкий, для простых запросов', category: 'text_only', tokenCost: 1, maxTokens: 8192, tier: 'budget', isDefault: true },
+  { id: 'gemini-2.5-flash', provider: 'google', label: 'Gemini 2.5 Flash', description: 'Сбалансированный, повседневные задачи', category: 'text_only', tokenCost: 2, maxTokens: 32768, tier: 'mid' },
+  { id: 'gemini-2.5-pro', provider: 'google', label: 'Gemini 2.5 Pro', description: 'Флагман Google: текст + Imagen 3', category: 'text_visual', tokenCost: 8, maxTokens: 65536, tier: 'flagship' },
+  { id: 'imagen-3', provider: 'google', label: 'Imagen 3', description: 'Генерация изображений Google', category: 'visual_only', tokenCost: 10, maxTokens: 0, tier: 'flagship' },
 
   // ─── OpenAI GPT ────────────────────────────────
-  { id: 'gpt-4o', provider: 'openai', label: 'GPT-4o', description: 'Текст + DALL·E 3 (изображения)', category: 'text_visual', tokenCost: 5, maxTokens: 32768 },
-  { id: 'gpt-4o-mini', provider: 'openai', label: 'GPT-4o Mini', description: 'Быстрый, для повседневных задач', category: 'text_only', tokenCost: 2, maxTokens: 16384 },
-  { id: 'dall-e-3', provider: 'openai', label: 'DALL·E 3', description: 'Генерация изображений через OpenAI', category: 'visual_only', tokenCost: 15, maxTokens: 0 },
+  { id: 'gpt-4o-mini', provider: 'openai', label: 'GPT-4o Mini', description: 'Лёгкий и быстрый, для рутины', category: 'text_only', tokenCost: 2, maxTokens: 16384, tier: 'budget' },
+  { id: 'gpt-4o', provider: 'openai', label: 'GPT-4o', description: 'Флагман OpenAI: текст + DALL·E 3', category: 'text_visual', tokenCost: 7, maxTokens: 32768, tier: 'flagship' },
+  { id: 'dall-e-3', provider: 'openai', label: 'DALL·E 3', description: 'Генерация изображений OpenAI', category: 'visual_only', tokenCost: 12, maxTokens: 0, tier: 'flagship' },
 
   // ─── Grok (xAI) ────────────────────────────────
-  { id: 'grok-3', provider: 'grok', label: 'Grok 3', description: 'Текст + Flux (изображения)', category: 'text_visual', tokenCost: 4, maxTokens: 32768 },
-  { id: 'grok-3-mini', provider: 'grok', label: 'Grok 3 Mini', description: 'Быстрый, для повседневных задач', category: 'text_only', tokenCost: 2, maxTokens: 16384 },
+  { id: 'grok-3-mini', provider: 'grok', label: 'Grok 3 Mini', description: 'Лёгкий Grok, повседневные задачи', category: 'text_only', tokenCost: 2, maxTokens: 16384, tier: 'budget' },
+  { id: 'grok-3', provider: 'grok', label: 'Grok 3', description: 'Флагман xAI: текст + Flux', category: 'text_visual', tokenCost: 6, maxTokens: 32768, tier: 'flagship' },
 
   // ─── Anthropic Claude ──────────────────────────
-  { id: 'claude-sonnet-4', provider: 'anthropic', label: 'Claude Sonnet 4', description: 'Глубокий анализ, тренды, исследования', category: 'text_only', tokenCost: 5, maxTokens: 65536 },
-  { id: 'claude-haiku-3', provider: 'anthropic', label: 'Claude Haiku 3', description: 'Быстрый, лёгкий', category: 'text_only', tokenCost: 2, maxTokens: 16384 },
+  { id: 'claude-haiku-3', provider: 'anthropic', label: 'Claude Haiku 3', description: 'Быстрый и лёгкий Claude', category: 'text_only', tokenCost: 4, maxTokens: 16384, tier: 'mid' },
+  { id: 'claude-sonnet-4', provider: 'anthropic', label: 'Claude Sonnet 4', description: 'Глубокий анализ, тренды, код', category: 'text_only', tokenCost: 8, maxTokens: 65536, tier: 'flagship' },
+  { id: 'claude-opus-4', provider: 'anthropic', label: 'Claude Opus 4', description: 'Максимальное качество, сложные задачи', category: 'text_only', tokenCost: 15, maxTokens: 131072, tier: 'flagship' },
 
   // ─── DeepSeek ──────────────────────────────────
-  { id: 'deepseek-v3', provider: 'deepseek', label: 'DeepSeek V3', description: 'Мощный, для тредов и аналитики', category: 'text_only', tokenCost: 2, maxTokens: 32768 },
-  { id: 'deepseek-r1', provider: 'deepseek', label: 'DeepSeek R1', description: 'С рассуждением, для сложных задач', category: 'text_only', tokenCost: 3, maxTokens: 32768 },
+  { id: 'deepseek-v3', provider: 'deepseek', label: 'DeepSeek V3', description: 'Мощный и дешёвый, для объёмов', category: 'text_only', tokenCost: 1, maxTokens: 32768, tier: 'budget' },
+  { id: 'deepseek-r1', provider: 'deepseek', label: 'DeepSeek R1', description: 'С рассуждением, для сложных задач', category: 'text_only', tokenCost: 3, maxTokens: 32768, tier: 'mid' },
 ]
 
 export function getDefaultModel(): AiModel {

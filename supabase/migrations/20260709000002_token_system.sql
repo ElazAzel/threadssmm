@@ -62,23 +62,25 @@ create table public.model_pricing (
 );
 
 insert into public.model_pricing (model_id, provider, label, category, token_cost, max_tokens) values
-  -- Google
-  ('gemini-2.5-pro', 'google', 'Gemini 2.5 Pro', 'text_visual', 5, 65536),
-  ('gemini-2.5-flash', 'google', 'Gemini 2.5 Flash', 'text_only', 2, 32768),
+  -- Google (5 моделей)
+  ('gemini-2.0-flash-lite', 'google', 'Gemini 2.0 Flash-Lite', 'text_only', 1, 8192),
   ('gemini-2.0-flash', 'google', 'Gemini 2.0 Flash', 'text_only', 1, 8192),
+  ('gemini-2.5-flash', 'google', 'Gemini 2.5 Flash', 'text_only', 2, 32768),
+  ('gemini-2.5-pro', 'google', 'Gemini 2.5 Pro', 'text_visual', 8, 65536),
   ('imagen-3', 'google', 'Imagen 3', 'visual_only', 10, 0),
-  -- OpenAI
-  ('gpt-4o', 'openai', 'GPT-4o', 'text_visual', 5, 32768),
+  -- OpenAI (3 модели)
   ('gpt-4o-mini', 'openai', 'GPT-4o Mini', 'text_only', 2, 16384),
-  ('dall-e-3', 'openai', 'DALL-E 3', 'visual_only', 15, 0),
-  -- xAI Grok
-  ('grok-3', 'grok', 'Grok 3', 'text_visual', 4, 32768),
+  ('gpt-4o', 'openai', 'GPT-4o', 'text_visual', 7, 32768),
+  ('dall-e-3', 'openai', 'DALL-E 3', 'visual_only', 12, 0),
+  -- xAI Grok (2 модели)
   ('grok-3-mini', 'grok', 'Grok 3 Mini', 'text_only', 2, 16384),
-  -- Anthropic
-  ('claude-sonnet-4', 'anthropic', 'Claude Sonnet 4', 'text_only', 5, 65536),
-  ('claude-haiku-3', 'anthropic', 'Claude Haiku 3', 'text_only', 2, 16384),
-  -- DeepSeek
-  ('deepseek-v3', 'deepseek', 'DeepSeek V3', 'text_only', 2, 32768),
+  ('grok-3', 'grok', 'Grok 3', 'text_visual', 6, 32768),
+  -- Anthropic (3 модели)
+  ('claude-haiku-3', 'anthropic', 'Claude Haiku 3', 'text_only', 4, 16384),
+  ('claude-sonnet-4', 'anthropic', 'Claude Sonnet 4', 'text_only', 8, 65536),
+  ('claude-opus-4', 'anthropic', 'Claude Opus 4', 'text_only', 15, 131072),
+  -- DeepSeek (2 модели)
+  ('deepseek-v3', 'deepseek', 'DeepSeek V3', 'text_only', 1, 32768),
   ('deepseek-r1', 'deepseek', 'DeepSeek R1', 'text_only', 3, 32768);
 
 alter table public.model_pricing enable row level security;

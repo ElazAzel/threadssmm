@@ -1089,6 +1089,16 @@ td small { margin-top: 3px; color: var(--muted); }
 .margin-legend .orange { background: #f59e0b; }
 .margin-legend .gray { background: #6b7280; }
 
+.margin-detail-card { padding: 24px; margin-bottom: 32px; }
+.margin-detail-card h3 { margin-bottom: 16px; }
+.model-table-wrap { overflow-x: auto; }
+.model-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.model-table th, .model-table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+.model-table th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+.model-table td:last-child { color: var(--accent); font-weight: 600; }
+.model-table .provider-tag { color: var(--muted); font-size: 11px; }
+.model-table tr:hover td { background: rgba(255,255,255,0.02); }
+
 /* ─── Settings ─────────────────────────────────── */
 
 .settings-tabs { margin-top: 0; }
