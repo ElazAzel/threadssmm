@@ -6,3 +6,5 @@ export const supabaseConfig = {
 }
 
 export const isSupabaseConfigured = Boolean(supabaseConfig.url && supabaseConfig.publishableKey)
+
+export const sentryDsn = import.meta.env.VITE_SENTRY_DSN?.trim() || ''

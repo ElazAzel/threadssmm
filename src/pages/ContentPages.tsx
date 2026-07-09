@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Bot, Check, CircleAlert, Copy, ExternalLink, Globe2, History, Link2, Plus, RefreshCw, Save, SlidersHorizontal, Sparkles, Trash2, Upload } from 'lucide-react'
+import { Bot, Check, CircleAlert, ExternalLink, Globe2, History, Link2, Plus, RefreshCw, Save, SlidersHorizontal, Sparkles, Trash2, Zap } from 'lucide-react'
 import { AppShell } from '../components/AppShell'
 import { Badge, Button, Card, Modal, Progress, SectionTitle } from '../components/ui'
+import { IntentInput } from '../components/IntentInput'
+import { ResultManager } from '../components/ResultManager'
 import { variants } from '../data'
 import { useAuth } from '../contexts/AuthContext'
 import { useWorkspace } from '../contexts/WorkspaceContext'
 import { authenticatedJson } from '../lib/api'
 import type { Brand, ContentFormat } from '../lib/domain'
+import type { PipelineResult } from '../lib/intent-engine'
 
 interface AiVariantResponse {
   id: 'A' | 'B' | 'C'
@@ -196,34 +199,34 @@ function BrandTabEditor({ tab, brand, update }: { tab: string; brand: Brand; upd
 export function StudioPage() {
   const { demo, getAccessToken } = useAuth()
   const { workspace, drafts, createQuickDraft, requestApproval, refresh } = useWorkspace()
-  const [type, setType] = useState('Пост')
   const [prompt, setPrompt] = useState('')
   const [generated, setGenerated] = useState(demo)
   const [currentVariants, setCurrentVariants] = useState(variants)
-  const [loading, setLoading] = useState(false)
-  const [selected, setSelected] = useState('B')
   const [notice, setNotice] = useState('')
-  const [tone, setTone] = useState('Профессиональный')
-  const [audienceGoal, setAudienceGoal] = useState('Получить содержательные ответы')
   const [riskTolerance, setRiskTolerance] = useState(45)
+  const [presetModalOpen, setPresetModalOpen] = useState(false)
+  const [pipelineResult, setPipelineResult] = useState<PipelineResult | null>(null)
   const [historyOpen, setHistoryOpen] = useState(false)
-  const [visualType, setVisualType] = useState('3D-концепт')
   const navigate = useNavigate()
 
-  const contentFormat = ({ Пост: 'post', Тред: 'thread', Ответ: 'reply' } as const)[type as 'Пост' | 'Тред' | 'Ответ'] ?? 'post'
+  const format = pipelineResult?.slots.format ?? 'post'
 
-  const generate = async () => {
-    if (!prompt.trim() || !workspace) return
-    setLoading(true)
+  const generate = async (usePrompt?: string) => {
+    const finalPrompt = usePrompt ?? prompt
+    if (!finalPrompt.trim() || !workspace) return
     setNotice('')
     if (demo) {
-      window.setTimeout(() => { setGenerated(true); setLoading(false); setNotice('Созданы 3 варианта в голосе бренда'); window.setTimeout(() => setNotice(''), 2500) }, 700)
+      window.setTimeout(() => { setGenerated(true); setNotice('Созданы 3 варианта в голосе бренда'); window.setTimeout(() => setNotice(''), 2500) }, 700)
       return
     }
 
     try {
-      const generationPrompt = `${prompt.trim()}\nТон: ${tone}. Цель аудитории: ${audienceGoal}.`
-      const payload = await authenticatedJson<{ variants?: AiVariantResponse[] }>(getAccessToken, '/api/ai/generate', { workspaceId: workspace.id, prompt: generationPrompt, format: contentFormat, riskTolerance })
+      const payload = await authenticatedJson<{ variants?: AiVariantResponse[] }>(getAccessToken, '/api/ai/generate', {
+        workspaceId: workspace.id,
+        prompt: finalPrompt,
+        format,
+        riskTolerance,
+      })
       if (!payload.variants) throw new Error('AI не вернул варианты')
       setCurrentVariants(payload.variants.map((item) => ({
         id: item.id,
@@ -233,24 +236,43 @@ export function StudioPage() {
         compliance: `${item.complianceScore}% · ${item.complianceNote}`,
         text: item.text,
       })))
-      setSelected(payload.variants[0].id)
       setGenerated(true)
       setNotice('Созданы 3 варианта в голосе бренда')
       await refresh()
     } catch (caught) {
       setNotice(caught instanceof Error ? caught.message : 'AI-генерация временно недоступна')
     } finally {
-      setLoading(false)
       window.setTimeout(() => setNotice(''), 3200)
     }
+  }
+
+  const handleRepairRequest = async (variantId: string, repairPrompt: string) => {
+    if (demo) return
+    setNotice('Улучшаем вариант...')
+    try {
+      const payload = await authenticatedJson<{ variants?: AiVariantResponse[] }>(getAccessToken, '/api/ai/generate', {
+        workspaceId: workspace!.id,
+        prompt: repairPrompt,
+        format,
+        riskTolerance,
+      })
+      if (!payload.variants) throw new Error('AI не вернул исправление')
+      const repaired = payload.variants[0]
+      setCurrentVariants((prev) => prev.map((v) =>
+        v.id === variantId ? { ...v, id: v.id, tone: repaired.tone, badge: v.badge, score: repaired.hookScore.toFixed(1), compliance: `${repaired.complianceScore}% · ${repaired.complianceNote}`, text: repaired.text } : v
+      ))
+      setNotice('Вариант улучшен')
+    } catch (caught) {
+      setNotice(caught instanceof Error ? caught.message : 'Не удалось улучшить вариант')
+    }
+    window.setTimeout(() => setNotice(''), 3000)
   }
 
   const saveVariant = async (variantId: string, approve: boolean) => {
     const variant = currentVariants.find((item) => item.id === variantId)
     if (!variant) return
-    setSelected(variantId)
     try {
-      const draft = await createQuickDraft(variant.text, contentFormat as ContentFormat, 'ai_studio')
+      const draft = await createQuickDraft(variant.text, format as ContentFormat, 'ai_studio')
       if (approve) await requestApproval(draft.id, `AI Studio, вариант ${variantId}`)
       setNotice(approve ? `Вариант ${variantId} отправлен на согласование` : `Вариант ${variantId} сохранён в черновики`)
       if (approve) window.setTimeout(() => navigate('/app/approvals'), 500)
@@ -259,22 +281,90 @@ export function StudioPage() {
     }
   }
 
+  const handlePromptReady = (hiddenPrompt: string) => {
+    setPrompt(hiddenPrompt)
+    void generate(hiddenPrompt)
+  }
+
   return (
     <AppShell>
       <div className="studio-layout">
         <div className="mobile-studio-intro"><h1>AI Studio</h1><p>Настройте и создайте несколько сильных вариантов контента.</p></div>
-        <Card className="mobile-studio-config"><SectionTitle title="Настройки генерации" /><span className="field-label">Тон</span><div className="tone-options">{['Профессиональный', 'Вовлекающий', 'Экспертный'].map((item) => <button key={item} className={tone === item ? 'active' : ''} onClick={() => setTone(item)}>{item}</button>)}</div><div className="form-grid"><label>Длина<select><option>Короткий пост</option><option>Средний пост</option></select></label><label>Хэштеги<select><option>Минимально (1–2)</option><option>Без хэштегов</option></select></label></div></Card>
         <div className="studio-config">
-          <Card><SectionTitle icon={<SlidersHorizontal />} title="Настройки генерации" /><label>Workspace<select><option>{workspace?.name ?? 'Workspace'}</option></select></label><label>Персона бренда<select><option>Профиль бренда</option></select></label><div className="form-grid compact"><label>Язык<select><option>Русский</option></select></label><label>Модель<select><option>Gemini Flash</option></select></label></div><span className="field-label">Формат</span><div className="segmented full">{['Пост', 'Тред', 'Ответ'].map((item) => <button key={item} className={type === item ? 'active' : ''} onClick={() => setType(item)}>{item}</button>)}</div><span className="field-label">Тон</span><div className="segmented full">{['Профессиональный', 'Вовлекающий', 'Экспертный'].map((item) => <button key={item} className={tone === item ? 'active' : ''} onClick={() => setTone(item)}>{item}</button>)}</div><span className="field-label">Допустимый риск: {riskTolerance}%</span><input type="range" min="0" max="100" value={riskTolerance} onChange={(event) => setRiskTolerance(Number(event.target.value))} /><div className="range-labels"><span>Безопасно</span><span>Смело</span></div></Card>
-          <Card><SectionTitle icon={<Bot />} title="Контекст" /><label>Основная мысль<textarea rows={9} value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Например: объяснить, почему системный контент сильнее случайных вирусных постов" /></label><label>Цель аудитории<input value={audienceGoal} onChange={(event) => setAudienceGoal(event.target.value)} placeholder="Получить ответы и переходы" /></label><Button className="full-button" onClick={() => void generate()} disabled={loading || prompt.trim().length < 5}><Sparkles size={18} /> {loading ? 'Генерируем...' : 'Создать варианты'}</Button></Card>
+          <Card>
+            <SectionTitle icon={<Sparkles />} title="Content Intent Engine" />
+            <IntentInput
+              initialPrompt=""
+              onPromptReady={handlePromptReady}
+              onPipelineResult={setPipelineResult}
+              openPresetModal={presetModalOpen}
+              onClosePresetModal={() => setPresetModalOpen(false)}
+            />
+          </Card>
+          <Card>
+            <SectionTitle icon={<SlidersHorizontal />} title="Параметры" />
+            <label>Workspace<select><option>{workspace?.name ?? 'Workspace'}</option></select></label>
+            <div className="form-grid compact">
+              <label>Язык<select><option>Русский</option></select></label>
+              <label>Модель<select><option>Gemini Flash</option></select></label>
+            </div>
+            {pipelineResult && (
+              <div className="pipeline-params">
+                <span className="field-label">Формат</span>
+                <div className="segmented full">
+                  {['Пост', 'Тред', 'Ответ'].map((item) => {
+                    const val = ({ Пост: 'post', Тред: 'thread', Ответ: 'reply' } as const)[item as 'Пост' | 'Тред' | 'Ответ']
+                    return (
+                      <button key={item} className={pipelineResult.slots.format === val ? 'active' : ''} onClick={() => setPipelineResult({ ...pipelineResult, slots: { ...pipelineResult.slots, format: val } })}>
+                        {item}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            <span className="field-label">Допустимый риск: {riskTolerance}%</span>
+            <input type="range" min="0" max="100" value={riskTolerance} onChange={(event) => setRiskTolerance(Number(event.target.value))} />
+            <div className="range-labels"><span>Безопасно</span><span>Смело</span></div>
+            <Button className="full-button" onClick={() => setPresetModalOpen(true)} variant="secondary">
+              <Zap size={16} /> Быстрые сценарии
+            </Button>
+          </Card>
         </div>
 
-        <section className="studio-results"><div className="page-head compact-head"><div><h1>Варианты публикации</h1><p>Проверьте смысл, риски и голос бренда перед согласованием.</p></div><Button variant="secondary" onClick={() => setHistoryOpen(true)}><History size={17} /> История</Button></div>
-          {generated ? <div className="variant-grid">{currentVariants.map((item) => <Card key={item.id} className={`variant-card ${selected === item.id ? 'selected' : ''}`} onClick={() => setSelected(item.id)}><div className="variant-top"><Badge>Вариант {item.id}</Badge><Badge tone={item.badge}>{item.tone}</Badge><button aria-label="Скопировать" onClick={(event) => { event.stopPropagation(); void navigator.clipboard.writeText(item.text); setNotice('Текст скопирован') }}><Copy size={17} /></button></div><p className="variant-copy">{item.text}</p><div className="variant-scores"><span><small>Hook score</small><b>{item.score}</b></span><span><small>Compliance</small><b>{item.compliance}</b></span></div><div className="split-actions"><Button variant="secondary" onClick={(event) => { event.stopPropagation(); void saveVariant(item.id, false) }}>Сохранить</Button><Button onClick={(event) => { event.stopPropagation(); void saveVariant(item.id, true) }}>Согласовать</Button></div></Card>)}</div> : <Card className="empty-state"><h2>Варианты ещё не созданы</h2><p>Опишите основную мысль и запустите генерацию. Результат появится здесь.</p></Card>}
-          <Card className="visual-assets"><div><SectionTitle title="Визуальные материалы" /><label>Визуальный стиль<select><option>Technical Dark</option><option>Editorial Minimal</option><option>Brand Gradient</option></select></label><p>Выбрано: {visualType}. Используйте тип как основу промпта или загрузите готовое изображение.</p></div><div className="visual-options">{[['{ }', 'Абстракция'], ['◒', '3D-концепт'], ['⌘', 'Интерфейс']].map(([icon, item]) => <button key={item} className={visualType === item ? 'active' : ''} onClick={() => { setVisualType(item); void navigator.clipboard.writeText(`${item}, ${prompt || 'визуал для Threads'}, стиль бренда`); setNotice(`Промпт «${item}» скопирован`) }}>{icon}<span>{item}</span></button>)}<button onClick={() => navigate('/app/media')}><Upload /><span>Загрузить</span></button></div></Card>
+        <section className="studio-results">
+          <div className="page-head compact-head">
+            <div>
+              <h1>Варианты публикации</h1>
+              <p>Проверьте смысл, риски и голос бренда перед согласованием.</p>
+            </div>
+            <Button variant="secondary" onClick={() => setHistoryOpen(true)}><History size={17} /> История</Button>
+          </div>
+          {generated && currentVariants.length ? (
+            <ResultManager
+              variants={currentVariants.map((v) => ({
+                id: v.id,
+                text: v.text,
+                tone: v.tone,
+                hookScore: Number(v.score),
+                complianceScore: Number(v.compliance.replace(/[^0-9]/g, '').slice(0, 3)),
+                complianceNote: v.compliance,
+              }))}
+              pipelineResult={pipelineResult}
+              onSave={(id) => void saveVariant(id, false)}
+              onApprove={(id) => void saveVariant(id, true)}
+              onRepairRequest={(id, repairPrompt) => void handleRepairRequest(id, repairPrompt)}
+            />
+          ) : (
+            <Card className="empty-state">
+              <h2>Варианты ещё не созданы</h2>
+              <p>Опишите основную мысль — система сама подберёт формат, тон и структуру. Или выберите готовый сценарий.</p>
+              <Button onClick={() => setPresetModalOpen(true)}><Zap size={17} /> Выбрать сценарий</Button>
+            </Card>
+          )}
         </section>
       </div>
-      {historyOpen ? <Modal title="История AI Studio" onClose={() => setHistoryOpen(false)}><div className="history-list">{drafts.filter((draft) => draft.source === 'ai_studio').slice(0, 10).map((draft) => <button key={draft.id} onClick={() => { setPrompt(draft.content); setHistoryOpen(false) }}><b>{draft.title || 'Без названия'}</b><small>{new Date(draft.created_at).toLocaleString('ru-RU')} · {draft.status}</small></button>)}{!drafts.some((draft) => draft.source === 'ai_studio') ? <div className="empty-state compact"><h3>История пока пуста</h3><p>Сохранённые варианты появятся здесь.</p></div> : null}</div></Modal> : null}
+      {historyOpen ? <Modal title="История AI Studio" onClose={() => setHistoryOpen(false)}><div className="history-list">{drafts.filter((draft) => draft.source === 'ai_studio').slice(0, 10).map((draft) => <button key={draft.id} onClick={() => { handlePromptReady(draft.content); setHistoryOpen(false) }}><b>{draft.title || 'Без названия'}</b><small>{new Date(draft.created_at).toLocaleString('ru-RU')} · {draft.status}</small></button>)}{!drafts.some((draft) => draft.source === 'ai_studio') ? <div className="empty-state compact"><h3>История пока пуста</h3><p>Сохранённые варианты появятся здесь.</p></div> : null}</div></Modal> : null}
       {notice ? <div className="toast">{notice}</div> : null}
     </AppShell>
   )

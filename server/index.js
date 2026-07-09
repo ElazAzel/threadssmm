@@ -12,7 +12,7 @@ import { fileURLToPath } from 'url'
 const { Pool } = pg
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const JWT_SECRET = 'v4QD3IRkJ0CnZOUMbgwiNuzx5pfraKET8hyqsYG2Hdmj1WBS'
+const JWT_SECRET = process.env.JWT_SECRET || 'v4QD3IRkJ0CnZOUMbgwiNuzx5pfraKET8hyqsYG2Hdmj1WBS'
 const PORT = 54321
 
 const pool = new Pool({

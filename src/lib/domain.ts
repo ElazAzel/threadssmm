@@ -44,6 +44,14 @@ export interface Brand {
   reply_style: string
   negative_response_rules: string
   risk_tolerance: number
+  loved_words: string[]
+  hated_words: string[]
+  cta_style: 'none' | 'soft' | 'direct' | 'question'
+  humor_style: 'none' | 'subtle' | 'friendly' | 'playful' | 'sarcastic'
+  boldness_level: number
+  formality_level: number
+  reply_style_guide: string
+  brand_archetype: '' | 'creator' | 'caregiver' | 'ruler' | 'jester' | 'sage' | 'hero' | 'outlaw' | 'magician' | 'regular_guy' | 'lover' | 'explorer' | 'innocent'
   created_at: string
   updated_at: string
 }
@@ -188,6 +196,183 @@ export interface AuditLog {
   risk: RiskLevel
   details: Record<string, unknown>
   created_at: string
+}
+
+export interface AudienceSegment {
+  id: string
+  brand_id: string
+  name: string
+  segment_type: 'entrepreneur' | 'startup_founder' | 'student' | 'marketer' | 'smm' | 'hr' | 'ceo' | 'small_business' | 'corp' | 'university' | 'investor' | 'developer' | 'designer' | 'creator'
+  location_id: string | null
+  awareness_level: 'cold' | 'warm' | 'hot' | 'client' | 'partner' | 'community'
+  archetype: 'pragmatic' | 'ambitious' | 'skeptic' | 'beginner' | 'expert' | 'tech_lover'
+  pains: string[]
+  desires: string[]
+  triggers: string[]
+  forbidden_topics: string[]
+  communication: {
+    language: string
+    formality: number
+    boldness: number
+    humor: number
+    ctaFormulas: string[]
+    postFormats: string[]
+    forbiddenPhrases: string[]
+  }
+  offer_mapping: {
+    primaryOffer: string
+    objections: string[]
+    valueProps: string[]
+    localReferences: string[]
+  }
+  created_at: string
+  updated_at: string
+}
+
+export interface Location {
+  id: string
+  brand_id: string
+  name: string
+  country: string | null
+  city: string | null
+  region: string | null
+  currency: string
+  language: 'ru' | 'kk' | 'en'
+  formality: number
+  timezone: string
+  post_hours: { start: number; end: number }
+  local_examples: string[]
+  local_references: string[]
+  local_context: string | null
+  local_events: string[]
+  local_business_terms: string[]
+  created_at: string
+  updated_at: string
+}
+
+export interface ContentPillar {
+  id: string
+  brand_id: string
+  name: string
+  goal: string | null
+  audience_segments: string[]
+  frequency: 'daily' | 'weekly' | 'biweekly' | 'monthly'
+  style: string | null
+  cta_template: string | null
+  examples: string[]
+  risk_level: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface CommentCampaign {
+  id: string
+  brand_id: string
+  name: string
+  goal: 'awareness' | 'leads' | 'expertise' | 'local_domination' | 'trend_hijacking' | 'community'
+  target_audience: {
+    segments: string[]
+    locations: string[]
+    topics: string[]
+  }
+  tone: 'expert' | 'friendly' | 'ironic' | 'supportive' | 'controversial'
+  cta_style: 'none' | 'soft' | 'direct'
+  forbidden_words: string[]
+  source_lists: string[]
+  rss_feeds: string[]
+  competitor_accounts: string[]
+  influencer_accounts: string[]
+  limits: { perDay: number; perHour: number; minInterval: number }
+  approval_mode: 'draft_only' | 'approve_and_publish' | 'manual_copy' | 'team_approval'
+  status: 'draft' | 'active' | 'paused' | 'completed' | 'archived'
+  schedule: Record<string, unknown>
+  created_at: string
+  updated_at: string
+}
+
+export interface CommentOpportunity {
+  id: string
+  campaign_id: string | null
+  brand_id: string
+  threads_post_id: string
+  author_id: string | null
+  author_username: string | null
+  post_text: string | null
+  topic: string[]
+  language: string | null
+  location: string | null
+  freshness_hours: number | null
+  conversation_activity: number
+  opportunity_score: number
+  topic_match: number
+  audience_match: number
+  location_match: number
+  freshness_score: number
+  activity_score: number
+  toxicity_risk: number
+  spam_risk: number
+  lead_potential: number
+  brand_fit_score: number
+  status: 'found' | 'proposed' | 'reviewed' | 'approved' | 'published' | 'rejected' | 'dismissed'
+  source: 'rss' | 'user_list' | 'competitor' | 'influencer' | 'keyword' | 'trend' | 'manual'
+  created_at: string
+}
+
+export interface GeneratedComment {
+  id: string
+  opportunity_id: string
+  text: string
+  tone: 'expert' | 'short' | 'question' | 'supportive' | 'soft_cta'
+  risk_score: number
+  brand_fit_score: number
+  uniqueness_score: number
+  relevance_score: number
+  is_best: boolean
+  status: 'proposed' | 'approved' | 'rejected' | 'published' | 'failed'
+  published_at: string | null
+  threads_reply_id: string | null
+  error_message: string | null
+  created_at: string
+}
+
+export interface RiskAssessment {
+  id: string
+  brand_id: string
+  target_type: 'post' | 'comment' | 'draft' | 'campaign'
+  target_id: string
+  score: number
+  verdict: 'safe' | 'low_risk' | 'needs_review' | 'high_risk' | 'blocked'
+  factors: Record<string, number>
+  warnings: string[]
+  recommendations: string[]
+  created_at: string
+}
+
+export interface AiGenerationLog {
+  id: string
+  brand_id: string | null
+  agent_name: string
+  input_hash: string | null
+  output_hash: string | null
+  model: string
+  tokens_input: number
+  tokens_output: number
+  latency_ms: number
+  success: boolean
+  error: string | null
+  created_at: string
+}
+
+export interface RateLimit {
+  id: string
+  brand_id: string
+  account_id: string | null
+  action_type: 'publish' | 'reply' | 'comment'
+  window_start: string
+  window_end: string
+  current_count: number
+  limit_value: number
 }
 
 export interface OnboardingInput {

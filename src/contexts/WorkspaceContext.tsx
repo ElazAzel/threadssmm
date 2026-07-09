@@ -79,6 +79,14 @@ const demoBrand: Brand = {
   reply_style: 'Коротко и по существу',
   negative_response_rules: 'Не спорить, уточнять факты и предлагать решение',
   risk_tolerance: 45,
+  loved_words: ['автоматизация', 'инновации', 'эффективность'],
+  hated_words: ['синергия', 'революционный'],
+  cta_style: 'soft',
+  humor_style: 'subtle',
+  boldness_level: 40,
+  formality_level: 60,
+  reply_style_guide: 'Коротко и по существу, с технической точностью',
+  brand_archetype: 'sage',
   created_at: now,
   updated_at: now,
 }
@@ -232,7 +240,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
     const firstError = brandResult.error ?? accountResult.error ?? draftResult.error ?? approvalResult.error ?? mediaResult.error ?? sourceResult.error ?? itemResult.error ?? settingsResult.error ?? auditResult.error
     if (firstError) setError(firstError.message)
-    setBrands((brandResult.data ?? []) as Brand[])
+    setBrands((brandResult.data ?? []) as unknown as Brand[])
     setAccounts((accountResult.data ?? []) as ThreadAccount[])
     setDrafts((draftResult.data ?? []).map(normalizeDraft))
     setApprovals((approvalResult.data ?? []) as Approval[])
@@ -327,7 +335,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     delete changes.updated_at
     const { data, error: updateError } = await supabase.from('brands').update(changes).eq('id', brand.id).select('*').single()
     if (updateError) throw updateError
-    setBrands((items) => items.map((item) => item.id === brand.id ? data as Brand : item))
+    setBrands((items) => items.map((item) => item.id === brand.id ? data as unknown as Brand : item))
   }, [demo])
 
   const createBrand = useCallback(async (name: string) => {
@@ -340,7 +348,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (!supabase) throw new Error('Supabase не настроен')
     const { data, error: insertError } = await supabase.from('brands').insert({ workspace_id: workspace.id, name: name.trim() }).select('*').single()
     if (insertError) throw insertError
-    const brand = data as Brand
+    const brand = data as unknown as Brand
     setBrands((items) => [...items, brand])
     return brand
   }, [demo, workspace])

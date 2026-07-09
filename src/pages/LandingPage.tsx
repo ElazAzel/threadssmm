@@ -1,17 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
-import {
-  ArrowRight, BarChart3, CheckSquare, LockKeyhole, Radar,
-  ShieldCheck, Sparkles, UsersRound, ChevronRight, Quote,
-} from 'lucide-react'
+import { ArrowRight, BarChart3, LockKeyhole, Radar, ShieldCheck, Sparkles, UsersRound } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 const dashboardImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCKXdyT8pZYWSEkk1WcakBKch0K5S647jXpouuEeA9oiKCCLlkBVRLF-ZZ5hS41Gg2ZfdfV5wfb78UiH5el8wY-Cyo1Ml4vORnXQf2Gh7pzoSVfxhsPvTvj_xc_UT7hB_008vm61HWquXw9lAxWn-nXAnYUdjoLlZVeHFIipQhJW1tKf_eTyxEeb3Ns5Lvi1csMOw8Wf_O6XjuqCLEU4zb5-XCaVhymopPOTQxVzyTDqFpJHKW0rGJ6EwWhkyvge7o6AG5OBrw7qZg'
 
 const features = [
-  { num: '01', icon: Sparkles, title: 'AI-стратегия контента', text: 'Цели, аудитория, стиль и ограничения бренда — агент строит контент-план, который работает на результат.' },
-  { num: '02', icon: UsersRound, title: 'Голос бренда', text: 'Агент изучает ваши тексты и поддерживает лексику, ритм, тон и правила коммуникации.' },
-  { num: '03', icon: CheckSquare, title: 'Контур согласования', text: 'AI предлагает — человек утверждает. Риск-анализ, compliance и полный контроль.' },
-  { num: '04', icon: Radar, title: 'Мониторинг и реакции', text: 'Система находит релевантные темы и упоминания, предлагает безопасный угол реакции.' },
+  { icon: Sparkles, title: 'AI-стратегия контента', text: 'Цели, аудитория, стиль и ограничения бренда — агент строит контент-план, который работает на результат.' },
+  { icon: UsersRound, title: 'Голос бренда', text: 'Агент изучает ваши тексты и поддерживает лексику, ритм, тон и правила коммуникации.' },
+  { icon: LockKeyhole, title: 'Контур согласования', text: 'AI предлагает — человек утверждает. Риск-анализ, compliance и полный контроль.' },
+  { icon: Radar, title: 'Мониторинг и реакции', text: 'Система находит релевантные темы и упоминания, предлагает безопасный угол реакции.' },
 ]
 
 const plans = [
@@ -35,225 +31,183 @@ const plans = [
   },
 ]
 
-function useScrollReveal() {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
+const metrics = [
+  { value: '10K+', label: 'сгенерировано постов' },
+  { value: '98%', label: 'публикаций без риска' },
+  { value: '3 мин', label: 'на запуск первого поста' },
+]
 
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect() } },
-      { threshold: 0.08 },
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
-
-  return { ref, visible }
-}
-
-function Reveal({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
-  const { ref, visible } = useScrollReveal()
-  return (
-    <div
-      ref={ref}
-      className={`reveal ${visible ? 'reveal-visible' : ''} ${className}`}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
-      {children}
-    </div>
-  )
-}
+const securityCards = [
+  { icon: ShieldCheck, title: 'Только официальный API', text: 'Без скрытой автоматизации и ботов. Полная спецификация Meta Threads API.' },
+  { icon: LockKeyhole, title: 'Безопасный OAuth', text: 'Пароли не нужны — токены доступа шифруются и никогда не покидают ваш workspace.' },
+  { icon: BarChart3, title: 'Журнал аудита', text: 'Каждое действие фиксируется. Прозрачность и контроль на всех этапах.' },
+]
 
 export function LandingPage() {
-  const [menuOpen, setMenuOpen] = useState(false)
-
   return (
     <div className="landing-page">
       <header className="landing-header">
-        <Link to="/" className="landing-logo"><Sparkles size={18} /> Threads SMM Agent</Link>
-        <nav className={menuOpen ? 'nav-open' : ''}>
+        <Link to="/" className="landing-logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Threads SMM Agent
+        </Link>
+        <nav>
           <a href="#features">Возможности</a>
           <a href="#pricing">Тарифы</a>
           <a href="#security">Безопасность</a>
-          <div className="nav-mobile-cta">
-            <Link className="button button-ghost" to="/login">Войти</Link>
-            <Link className="button button-primary" to="/login">Начать</Link>
-          </div>
         </nav>
         <div className="landing-header-actions">
           <Link className="button button-ghost" to="/login">Войти</Link>
           <Link className="button button-primary" to="/login">Начать</Link>
         </div>
-        <button className="burger" onClick={() => setMenuOpen(!menuOpen)} aria-label="Меню">
-          <span className={`burger-line ${menuOpen ? 'open' : ''}`} />
-        </button>
       </header>
 
       <main>
-        <section className="hero">
-          <Reveal>
-            <span className="hero-badge">Now with Threads API</span>
-          </Reveal>
-          <Reveal delay={80}>
-            <h1>Ваш <span>AI SMM-агент</span><br />для Threads</h1>
-          </Reveal>
-          <Reveal delay={160}>
+        <section className="hero-section">
+          <div className="container">
+            <span className="hero-eyebrow">Now with Threads API</span>
+            <h1>Ваш AI SMM-агент для Threads</h1>
             <p className="hero-lead">Планируйте, создавайте, согласовывайте и анализируйте контент в системе, которая понимает голос бренда и оставляет контроль человеку.</p>
-          </Reveal>
-          <Reveal delay={240} className="hero-actions">
-            <Link className="button button-primary" to="/login">
-              Попробовать бесплатно <ArrowRight size={16} />
-            </Link>
-            <Link className="button button-secondary" to="/login">
-              Войти в кабинет
-            </Link>
-          </Reveal>
-          <Reveal delay={320}>
+            <div className="hero-actions">
+              <Link className="button button-primary button-lg" to="/login">
+                Попробовать бесплатно <ArrowRight size={18} />
+              </Link>
+              <Link className="button button-secondary button-lg" to="/login">
+                Войти в кабинет
+              </Link>
+            </div>
             <div className="hero-preview">
-              <div className="preview-dots"><i /><i /><i /></div>
-              <img src={dashboardImage} alt="Демонстрация панели Threads SMM Agent" />
+              <div className="hero-preview-bar"><span /><span /><span /></div>
+              <img src={dashboardImage} alt="Демонстрация панели Threads SMM Agent" loading="lazy" />
             </div>
-          </Reveal>
+          </div>
         </section>
 
-        <section className="trust-strip">
-          <Reveal delay={0}>
-            <div>
-              <strong>10K+</strong>
-              <span>сгенерировано постов</span>
-            </div>
-          </Reveal>
-          <Reveal delay={80}>
-            <div>
-              <strong>98%</strong>
-              <span>публикаций без риска</span>
-            </div>
-          </Reveal>
-          <Reveal delay={160}>
-            <div>
-              <strong>3 мин</strong>
-              <span>на запуск первого поста</span>
-            </div>
-          </Reveal>
-        </section>
-
-        <section id="features" className="landing-section features-section">
-          <Reveal className="section-header">
-            <span className="section-label">Возможности</span>
-            <h2>Управляйте системой,<br />а не хаосом</h2>
-            <p className="section-lead">От стратегии до публикации — всё в единой системе с AI-помощью на каждом этапе.</p>
-          </Reveal>
-          <div className="features-grid">
-            {features.map(({ num, icon: Icon, title, text }, i) => (
-              <Reveal key={num} delay={i * 80} className="feature-card">
-                <span className="feature-num">{num}</span>
-                <Icon size={22} className="feature-icon" />
-                <h3>{title}</h3>
-                <p>{text}</p>
-              </Reveal>
+        <section className="metrics-section">
+          <div className="container metrics-grid">
+            {metrics.map((m) => (
+              <div key={m.value} className="metric-item">
+                <strong>{m.value}</strong>
+                <span>{m.label}</span>
+              </div>
             ))}
           </div>
         </section>
 
-        <section id="security" className="landing-section security-section">
-          <Reveal className="section-header">
-            <span className="section-label">Безопасность</span>
-            <h2>Контроль, которому<br />можно доверять</h2>
-          </Reveal>
-          <div className="security-grid">
-            <Reveal delay={0} className="security-card">
-              <ShieldCheck size={24} />
-              <h3>Только официальный API</h3>
-              <p>Без скрытой автоматизации и ботов. Полная спецификация Meta Threads API.</p>
-            </Reveal>
-            <Reveal delay={80} className="security-card">
-              <LockKeyhole size={24} />
-              <h3>Безопасный OAuth</h3>
-              <p>Пароли не нужны — токены доступа шифруются и никогда не покидают ваш workspace.</p>
-            </Reveal>
-            <Reveal delay={160} className="security-card">
-              <BarChart3 size={24} />
-              <h3>Журнал аудита</h3>
-              <p>Каждое действие фиксируется. Прозрачность и контроль на всех этапах.</p>
-            </Reveal>
+        <section id="features" className="features-section">
+          <div className="container">
+            <div className="section-header">
+              <span className="section-eyebrow">Возможности</span>
+              <h2>Управляйте системой, а не хаосом</h2>
+              <p className="section-lead">От стратегии до публикации — всё в единой системе с AI-помощью на каждом этапе.</p>
+            </div>
+            <div className="features-grid">
+              {features.map(({ icon: Icon, title, text }, i) => (
+                <div key={title} className="feature-card" style={{ '--delay': `${i * 80}ms` } as React.CSSProperties}>
+                  <Icon size={22} />
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
-        <section id="pricing" className="landing-section pricing-section">
-          <Reveal className="section-header">
-            <span className="section-label">Тарифы</span>
-            <h2>Начните бесплатно,<br />растите с нами</h2>
-            <p className="section-lead">Бесплатный старт с основными возможностями. Расширяйте по мере роста.</p>
-          </Reveal>
-          <div className="pricing-grid">
-            {plans.map((plan, i) => (
-              <Reveal key={plan.name} delay={i * 100} className={`pricing-card ${plan.featured ? 'pricing-featured' : ''}`}>
-                {plan.featured && <span className="pricing-badge">Рекомендуем</span>}
-                <h3>{plan.name}</h3>
-                <strong className="pricing-price">
-                  {plan.price}<small>{plan.suffix}</small>
-                </strong>
-                <p className="pricing-desc">{plan.desc}</p>
-                <ul>
-                  {plan.items.map((item) => (
-                    <li key={item}><ChevronRight size={12} /> {item}</li>
-                  ))}
-                </ul>
-                <Link
-                  className={`button ${plan.featured ? 'button-primary' : 'button-secondary'} full-button`}
-                  to="/login"
-                >
-                  {plan.featured ? 'Начать бесплатно' : 'Подробнее'}
-                </Link>
-              </Reveal>
-            ))}
+        <section id="security" className="security-section">
+          <div className="container">
+            <div className="section-header">
+              <span className="section-eyebrow">Безопасность</span>
+              <h2>Контроль, которому можно доверять</h2>
+            </div>
+            <div className="security-grid">
+              {securityCards.map(({ icon: Icon, title, text }, i) => (
+                <div key={title} className="security-card" style={{ '--delay': `${i * 80}ms` } as React.CSSProperties}>
+                  <Icon size={24} />
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
-        <section className="closing-cta">
-          <Reveal className="closing-inner">
-            <div className="closing-content">
-              <Quote size={28} className="closing-quote" />
-              <h2>Готовы управлять<br />контентом с AI?</h2>
+        <section id="pricing" className="pricing-section">
+          <div className="container">
+            <div className="section-header">
+              <span className="section-eyebrow">Тарифы</span>
+              <h2>Начните бесплатно, растите с нами</h2>
+              <p className="section-lead">Бесплатный старт с основными возможностями. Расширяйте по мере роста.</p>
+            </div>
+            <div className="pricing-grid">
+              {plans.map((plan) => (
+                <div key={plan.name} className={`pricing-card ${plan.featured ? 'pricing-featured' : ''}`}>
+                  {plan.featured && <span className="pricing-badge">Рекомендуем</span>}
+                  <h3>{plan.name}</h3>
+                  <strong className="pricing-price">
+                    {plan.price}<small>{plan.suffix}</small>
+                  </strong>
+                  <p className="pricing-desc">{plan.desc}</p>
+                  <ul>
+                    {plan.items.map((item) => (
+                      <li key={item}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5l10-10"/></svg> {item}</li>
+                    ))}
+                  </ul>
+                  <Link
+                    className={`button ${plan.featured ? 'button-primary' : 'button-secondary'} full-button`}
+                    to="/login"
+                  >
+                    {plan.featured ? 'Начать бесплатно' : 'Подробнее'}
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="cta-section">
+          <div className="container">
+            <div className="cta-card">
+              <h2>Готовы управлять контентом с AI?</h2>
               <p>14 дней бесплатного доступа. Без привязки карты.</p>
-              <Link className="closing-button" to="/login">
+              <Link className="button button-primary button-lg" to="/login">
                 Попробовать бесплатно <ArrowRight size={18} />
               </Link>
             </div>
-          </Reveal>
+          </div>
         </section>
       </main>
 
       <footer className="landing-footer">
-        <div className="footer-grid">
-          <div className="footer-brand">
-            <Link to="/" className="landing-logo"><Sparkles size={16} /> Threads SMM Agent</Link>
-            <p>AI-агент для управления контентом в Threads. Создавайте, публикуйте и анализируйте с умом.</p>
+        <div className="container">
+          <div className="footer-grid">
+            <div className="footer-brand">
+              <Link to="/" className="landing-logo">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                Threads SMM Agent
+              </Link>
+              <p>AI-агент для управления контентом в Threads. Создавайте, публикуйте и анализируйте с умом.</p>
+            </div>
+            <div className="footer-col">
+              <h4>Продукт</h4>
+              <a href="#features">Возможности</a>
+              <a href="#pricing">Тарифы</a>
+              <Link to="/login">Войти</Link>
+            </div>
+            <div className="footer-col">
+              <h4>Ресурсы</h4>
+              <Link to="/privacy">Политика</Link>
+              <Link to="/terms">Условия</Link>
+            </div>
+            <div className="footer-col">
+              <h4>Компания</h4>
+              <a href="#">Контакты</a>
+              <Link to="/terms">Условия</Link>
+              <Link to="/privacy">Конфиденциальность</Link>
+            </div>
           </div>
-          <div className="footer-col">
-            <h5>Продукт</h5>
-            <a href="#features">Возможности</a>
-            <a href="#pricing">Тарифы</a>
-            <Link to="/login">Войти</Link>
+          <div className="footer-bottom">
+            <span>Threads SMM Agent · 2026</span>
           </div>
-          <div className="footer-col">
-            <h5>Ресурсы</h5>
-            <a href="#">Документация</a>
-            <a href="#">API Reference</a>
-            <a href="#">Блог</a>
-          </div>
-          <div className="footer-col">
-            <h5>Компания</h5>
-            <a href="#">О нас</a>
-            <a href="#">Контакты</a>
-            <a href="#">Условия</a>
-            <a href="#">Конфиденциальность</a>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <span>✦ Threads SMM Agent · 2026</span>
         </div>
       </footer>
     </div>
