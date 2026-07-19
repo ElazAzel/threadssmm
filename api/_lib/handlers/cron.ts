@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
-import type { ApiRequest, ApiResponse } from '../_lib/http.js'
-import { getBearerToken } from '../_lib/http.js'
-import { publishDraft } from '../_lib/threads.js'
-import { publishBatch } from '../_lib/scheduler.js'
-import type { Database } from '../../src/lib/database.types.js'
+import type { ApiRequest, ApiResponse } from '../http.js'
+import { getBearerToken } from '../http.js'
+import { publishDraft } from '../threads.js'
+import { publishBatch } from '../scheduler.js'
+import type { Database } from '../../../src/lib/database.types.js'
 
 export default async function handler(request: ApiRequest, response: ApiResponse) {
   if (getBearerToken(request) !== process.env.CRON_SECRET) return response.status(401).json({ error: 'Unauthorized' })

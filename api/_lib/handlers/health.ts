@@ -1,4 +1,4 @@
-import type { ApiRequest, ApiResponse } from './_lib/http.js'
+import type { ApiRequest, ApiResponse } from '../http.js'
 
 interface HealthCheck {
   id: string

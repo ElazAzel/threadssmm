@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
-import type { ApiRequest, ApiResponse } from '../_lib/http.js'
-import { getBearerToken } from '../_lib/http.js'
-import { decryptToken } from '../_lib/threads.js'
-import type { Database, Json } from '../../src/lib/database.types.js'
+import type { ApiRequest, ApiResponse } from '../http.js'
+import { getBearerToken } from '../http.js'
+import { decryptToken } from '../threads.js'
+import type { Database, Json } from '../../../src/lib/database.types.js'
 
 interface ThreadsPostMetrics {
   views?: number

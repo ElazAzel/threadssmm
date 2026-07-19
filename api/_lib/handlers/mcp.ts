@@ -1,7 +1,7 @@
-import type { ApiRequest, ApiResponse } from '../_lib/http.js'
-import { getBearerToken } from '../_lib/http.js'
+import type { ApiRequest, ApiResponse } from '../http.js'
+import { getBearerToken } from '../http.js'
 import { createClient } from '@supabase/supabase-js'
-import type { ContentStatus, Database } from '../../src/lib/database.types.js'
+import type { ContentStatus, Database } from '../../../src/lib/database.types.js'
 
 const MCP_VERSION = '1.0.0'
 const SERVER_NAME = 'threadssmm'

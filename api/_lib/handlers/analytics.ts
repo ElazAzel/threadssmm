@@ -1,5 +1,5 @@
-import type { ApiRequest, ApiResponse } from '../_lib/http.js'
-import { enforceRateLimit, RateLimitError, requireUser } from '../_lib/supabaseServer.js'
+import type { ApiRequest, ApiResponse } from '../http.js'
+import { enforceRateLimit, RateLimitError, requireUser } from '../supabaseServer.js'
 
 interface ThreadsInsights {
   views: number

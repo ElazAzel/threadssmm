@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { ApiRequest, ApiResponse } from '../_lib/http.js'
-import { enforceRateLimit, RateLimitError, requireUser } from '../_lib/supabaseServer.js'
+import type { ApiRequest, ApiResponse } from '../http.js'
+import { enforceRateLimit, RateLimitError, requireUser } from '../supabaseServer.js'
 
 function adminFrom(admin: any, table: string) {
   return admin.from(table)

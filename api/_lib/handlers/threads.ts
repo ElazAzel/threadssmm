@@ -1,13 +1,69 @@
 import { createClient } from '@supabase/supabase-js'
-import type { ApiRequest, ApiResponse } from '../_lib/http.js'
-import { encryptToken, verifyOAuthState } from '../_lib/threads.js'
-import type { Database } from '../../src/lib/database.types.js'
+import type { ApiRequest, ApiResponse } from '../http.js'
+import { getBearerToken } from '../http.js'
+import { enforceRateLimit, RateLimitError, requireUser } from '../supabaseServer.js'
+import { newOAuthState, encryptToken, verifyOAuthState, publishDraft } from '../threads.js'
+import { getPublicError } from '../threads-errors.js'
+import type { Database } from '../../../src/lib/database.types.js'
 
 function queryValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value
 }
 
-export default async function handler(request: ApiRequest, response: ApiResponse) {
+export async function connectHandler(request: ApiRequest, response: ApiResponse) {
+  response.setHeader('Cache-Control', 'no-store')
+  if (request.method !== 'POST') return response.status(405).json({ error: 'Метод не поддерживается' })
+  const body = request.body as { workspaceId?: unknown }
+  if (typeof body?.workspaceId !== 'string') return response.status(400).json({ error: 'Workspace не указан' })
+  try {
+    const appId = process.env.THREADS_APP_ID
+    const redirectUri = process.env.THREADS_REDIRECT_URI
+    if (!appId || !redirectUri) return response.status(503).json({ error: 'Meta App ещё не настроен' })
+    const { user, admin } = await requireUser(request)
+    const { data: membership } = await admin.from('workspace_members').select('role').eq('workspace_id', body.workspaceId).eq('user_id', user.id).maybeSingle()
+    if (!membership) return response.status(403).json({ error: 'Нет доступа к рабочему пространству' })
+    await enforceRateLimit(admin, 'threads.connect', user.id, 5, 600)
+    const url = new URL('https://threads.net/oauth/authorize')
+    url.searchParams.set('client_id', appId)
+    url.searchParams.set('redirect_uri', redirectUri)
+    url.searchParams.set('scope', 'threads_basic,threads_content_publish')
+    url.searchParams.set('response_type', 'code')
+    url.searchParams.set('state', newOAuthState(body.workspaceId, user.id))
+    response.status(200).json({ url: url.toString() })
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      response.setHeader('Retry-After', String(error.retryAfter))
+      return response.status(429).json({ error: `Слишком много запросов. Повторите через ${error.retryAfter} сек.` })
+    }
+    response.status(error instanceof Error && error.message === 'UNAUTHORIZED' ? 401 : 500).json({ error: error instanceof Error && error.message === 'UNAUTHORIZED' ? 'Войдите в аккаунт заново' : 'Не удалось начать OAuth' })
+  }
+}
+
+export async function publishHandler(request: ApiRequest, response: ApiResponse) {
+  response.setHeader('Cache-Control', 'no-store')
+  if (request.method !== 'POST') return response.status(405).json({ error: 'Метод не поддерживается' })
+  const body = request.body as { draftId?: unknown }
+  if (typeof body?.draftId !== 'string') return response.status(400).json({ error: 'Черновик не указан' })
+  try {
+    const { user, admin } = await requireUser(request)
+    const { data: draft, error: draftError } = await admin.from('drafts').select('workspace_id, status, content, scheduled_at').eq('id', body.draftId).single()
+    if (draftError || !draft) return response.status(404).json({ error: 'Черновик не найден' })
+    const { data: membership } = await admin.from('workspace_members').select('role').eq('workspace_id', draft.workspace_id).eq('user_id', user.id).maybeSingle()
+    if (!membership) return response.status(403).json({ error: 'Нет доступа к публикации' })
+    await enforceRateLimit(admin, 'threads.publish', user.id, 20, 60)
+    const postId = await publishDraft(admin, body.draftId)
+    response.status(200).json({ postId })
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      response.setHeader('Retry-After', String(error.retryAfter))
+      return response.status(429).json({ error: `Слишком много запросов. Повторите через ${error.retryAfter} сек.` })
+    }
+    const message = error instanceof Error ? error.message : ''
+    response.status(400).json({ error: getPublicError(message) || 'Threads не принял публикацию' })
+  }
+}
+
+export async function callbackHandler(request: ApiRequest, response: ApiResponse) {
   const redirectUri = process.env.THREADS_REDIRECT_URI
   const appId = process.env.THREADS_APP_ID
   const appSecret = process.env.THREADS_APP_SECRET

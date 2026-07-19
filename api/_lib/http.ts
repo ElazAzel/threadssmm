@@ -1,5 +1,6 @@
 export interface ApiRequest {
   method?: string
+  url?: string
   headers: Record<string, string | string[] | undefined>
   body?: unknown
   query?: Record<string, string | string[] | undefined>
@@ -8,7 +9,7 @@ export interface ApiRequest {
 export interface ApiResponse {
   setHeader(name: string, value: string): void
   status(code: number): ApiResponse
-  json(body: unknown): void
+  json(body: unknown): ApiResponse
   redirect(status: number, url: string): void
 }
 

@@ -1,8 +1,8 @@
 import { lookup } from 'node:dns/promises'
 import { isIP } from 'node:net'
 import { XMLParser } from 'fast-xml-parser'
-import type { ApiRequest, ApiResponse } from '../_lib/http.js'
-import { enforceRateLimit, RateLimitError, requireUser } from '../_lib/supabaseServer.js'
+import type { ApiRequest, ApiResponse } from '../http.js'
+import { enforceRateLimit, RateLimitError, requireUser } from '../supabaseServer.js'
 
 interface RssBody {
   workspaceId: string
