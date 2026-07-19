@@ -3,14 +3,11 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   BarChart3,
   Bell,
-  Bot,
   CalendarDays,
   CheckSquare,
   CircleHelp,
   CreditCard,
-  Image,
   LayoutDashboard,
-  MapPin,
   Megaphone,
   Menu,
   MessageSquareReply,
@@ -18,7 +15,6 @@ import {
   Search,
   Settings,
   Sparkles,
-  Target,
   UserRound,
   UsersRound,
   X,
@@ -30,19 +26,9 @@ import type { ContentFormat } from '../lib/domain'
 
 const navigation = [
   { to: '/app/dashboard', label: 'Обзор', icon: LayoutDashboard },
-  { to: '/app/accounts', label: 'Аккаунты', icon: UsersRound },
-  { to: '/app/brand-profile', label: 'Профиль бренда', icon: Bot },
-  { to: '/app/studio', label: 'AI Studio', icon: Sparkles },
-  { to: '/app/engagement', label: 'Engagement', icon: Target },
-  { to: '/app/reply', label: 'Ответы', icon: MessageSquareReply },
-  { to: '/app/audiences', label: 'Аудитории', icon: UsersRound },
-  { to: '/app/locations', label: 'Локации', icon: MapPin },
+  { to: '/app/studio', label: 'Контент', icon: Sparkles },
   { to: '/app/calendar', label: 'Календарь', icon: CalendarDays },
-  { to: '/app/monitoring', label: 'Мониторинг', icon: BarChart3 },
-  { to: '/app/approvals', label: 'Согласование', icon: CheckSquare, count: 4 },
   { to: '/app/analytics', label: 'Аналитика', icon: BarChart3 },
-  { to: '/app/media', label: 'Медиатека', icon: Image },
-  { to: '/app/billing', label: 'Тариф и лимиты', icon: CreditCard },
   { to: '/app/settings', label: 'Настройки', icon: Settings },
 ]
 
@@ -62,28 +48,29 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   const location = useLocation()
   const mobileTitles: Record<string, string> = {
     '/app/dashboard': 'Threads SMM Agent',
-    '/app/accounts': 'Аккаунты',
-    '/app/brand-profile': 'Профиль бренда',
-    '/app/studio': 'AI Studio',
-    '/app/engagement': 'Engagement Factory',
-    '/app/reply': 'Ответы',
-    '/app/audiences': 'Аудитории',
-    '/app/locations': 'Локации',
+    '/app/studio': 'Контент',
     '/app/calendar': 'Календарь',
-    '/app/monitoring': 'Мониторинг',
-    '/app/approvals': 'Согласования',
     '/app/analytics': 'Аналитика',
+    '/app/settings': 'Настройки',
+    '/app/accounts': 'Аккаунты',
+    '/app/brands': 'Бренды',
+    '/app/approvals': 'Согласования',
+    '/app/engagement': 'Engagement',
+    '/app/reply': 'Ответы',
+    '/app/monitoring': 'Мониторинг',
     '/app/media': 'Медиатека',
     '/app/billing': 'Тариф и лимиты',
-    '/app/settings': 'Настройки',
+    '/app/audiences': 'Аудитории',
+    '/app/locations': 'Локации',
+    '/app/brand-profile': 'Профиль бренда',
   }
   const routeClass = `route-${location.pathname.split('/').pop()}`
   const normalizedSearch = search.trim().toLocaleLowerCase('ru-RU')
   const searchResults = normalizedSearch ? [
-    ...brands.filter((item) => `${item.name} ${item.niche}`.toLocaleLowerCase('ru-RU').includes(normalizedSearch)).map((item) => ({ id: `brand-${item.id}`, label: item.name, meta: 'Профиль бренда', to: '/app/brands' })),
-    ...accounts.filter((item) => `${item.username} ${item.display_name}`.toLocaleLowerCase('ru-RU').includes(normalizedSearch)).map((item) => ({ id: `account-${item.id}`, label: `@${item.username}`, meta: 'Threads-аккаунт', to: '/app/accounts' })),
-    ...drafts.filter((item) => `${item.title} ${item.content}`.toLocaleLowerCase('ru-RU').includes(normalizedSearch)).slice(0, 5).map((item) => ({ id: `draft-${item.id}`, label: item.title || item.content.slice(0, 60), meta: 'Публикация', to: item.status === 'pending_approval' ? '/app/approvals' : '/app/calendar' })),
-    ...monitorItems.filter((item) => `${item.title} ${item.summary}`.toLocaleLowerCase('ru-RU').includes(normalizedSearch)).slice(0, 5).map((item) => ({ id: `monitor-${item.id}`, label: item.title, meta: 'Мониторинг', to: '/app/monitoring' })),
+    ...brands.filter((item) => `${item.name} ${item.niche}`.toLocaleLowerCase('ru-RU').includes(normalizedSearch)).map((item) => ({ id: `brand-${item.id}`, label: item.name, meta: 'Профиль бренда', to: '/app/settings?section=brands' })),
+    ...accounts.filter((item) => `${item.username} ${item.display_name}`.toLocaleLowerCase('ru-RU').includes(normalizedSearch)).map((item) => ({ id: `account-${item.id}`, label: `@${item.username}`, meta: 'Threads-аккаунт', to: '/app/settings?section=accounts' })),
+    ...drafts.filter((item) => `${item.title} ${item.content}`.toLocaleLowerCase('ru-RU').includes(normalizedSearch)).slice(0, 5).map((item) => ({ id: `draft-${item.id}`, label: item.title || item.content.slice(0, 60), meta: 'Публикация', to: item.status === 'pending_approval' ? '/app/calendar' : '/app/calendar' })),
+    ...monitorItems.filter((item) => `${item.title} ${item.summary}`.toLocaleLowerCase('ru-RU').includes(normalizedSearch)).slice(0, 5).map((item) => ({ id: `monitor-${item.id}`, label: item.title, meta: 'Мониторинг', to: '/app/calendar' })),
   ].slice(0, 10) : []
   const pendingApprovals = approvals.filter((item) => item.status === 'pending')
   const failedDrafts = drafts.filter((item) => item.status === 'failed')
@@ -127,13 +114,27 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
         </Button>
 
         <nav className="sidebar-nav" aria-label="Основная навигация">
-          {navigation.map(({ to, label, icon: Icon, count }) => (
-            <NavLink key={to} to={to} onClick={() => setMenuOpen(false)}>
+          {navigation.map(({ to, label, icon: Icon }) => (
+            <NavLink key={to} to={to} onClick={() => setMenuOpen(false)} end={to === '/app/dashboard'}>
               <Icon size={19} />
               <span>{label}</span>
-              {(to === '/app/approvals' ? approvals.filter((item) => item.status === 'pending').length : count) ? <b>{to === '/app/approvals' ? approvals.filter((item) => item.status === 'pending').length : count}</b> : null}
             </NavLink>
           ))}
+          <div className="sidebar-divider" />
+          <div className="sidebar-section-label">Быстрый доступ</div>
+          <NavLink to="/app/approvals" onClick={() => setMenuOpen(false)} className="sidebar-extra-link">
+            <Bell size={18} />
+            <span>Согласования</span>
+            {pendingApprovals.length ? <b>{pendingApprovals.length}</b> : null}
+          </NavLink>
+          <NavLink to="/app/monitoring" onClick={() => setMenuOpen(false)} className="sidebar-extra-link">
+            <MessageSquareReply size={18} />
+            <span>Мониторинг</span>
+          </NavLink>
+          <NavLink to="/app/billing" onClick={() => setMenuOpen(false)} className="sidebar-extra-link">
+            <CreditCard size={18} />
+            <span>Тариф и лимиты</span>
+          </NavLink>
         </nav>
 
         <div className="sidebar-bottom">
@@ -147,11 +148,11 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
       <div className="app-stage">
         <header className="topbar">
           <button className="menu-button" onClick={() => setMenuOpen(true)} aria-label="Открыть меню"><Menu size={22} /></button>
-          {title ? <strong className="topbar-title">{title}</strong> : null}
           <strong className="mobile-top-title">{mobileTitles[location.pathname] ?? 'Threads SMM Agent'}</strong>
+          {title ? <strong className="topbar-title">{title}</strong> : null}
           <div className="global-search">
             <Search size={19} />
-            <input aria-label="Поиск" placeholder="Поиск по аккаунтам, постам, темам..." value={search} onChange={(event) => setSearch(event.target.value)} />
+            <input aria-label="Ваш запрос" placeholder="Поиск..." value={search} onChange={(event) => setSearch(event.target.value)} />
             {normalizedSearch ? <div className="global-search-results" role="listbox" aria-label="Результаты поиска">{searchResults.length ? searchResults.map((result) => <button key={result.id} type="button" onClick={() => { navigate(result.to); setSearch('') }}><span>{result.label}</span><small>{result.meta}</small></button>) : <p>Ничего не найдено</p>}</div> : null}
           </div>
           <button className="credits" onClick={() => navigate('/app/billing')}><Sparkles size={16} /> {workspace?.ai_credits ?? 0} кредитов</button>
@@ -163,8 +164,8 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
       </div>
 
       <nav className="mobile-nav" aria-label="Мобильная навигация">
-        <NavLink to="/app/dashboard"><LayoutDashboard /><span>Главная</span></NavLink>
-        <NavLink to="/app/studio"><Sparkles /><span>AI</span></NavLink>
+        <NavLink to="/app/dashboard"><LayoutDashboard /><span>Обзор</span></NavLink>
+        <NavLink to="/app/studio"><Sparkles /><span>Контент</span></NavLink>
         <NavLink to="/app/calendar"><CalendarDays /><span>Календарь</span></NavLink>
         <NavLink to="/app/approvals"><Bell /><span>События</span></NavLink>
         <NavLink to="/app/settings"><Settings /><span>Настройки</span></NavLink>
@@ -189,9 +190,9 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
         </Modal>
       ) : null}
 
-      {notificationsOpen ? <Modal title="Уведомления" onClose={() => setNotificationsOpen(false)}><div className="notification-list">{pendingApprovals.length ? <button onClick={() => { navigate('/app/approvals'); setNotificationsOpen(false) }}><CheckSquare /><span><b>Материалы ждут согласования</b><small>{pendingApprovals.length} шт.</small></span></button> : null}{failedDrafts.length ? <button onClick={() => { navigate('/app/calendar'); setNotificationsOpen(false) }}><CalendarDays /><span><b>Ошибки публикации</b><small>{failedDrafts.length} шт.</small></span></button> : null}{problemAccounts.length ? <button onClick={() => { navigate('/app/accounts'); setNotificationsOpen(false) }}><UsersRound /><span><b>Требуется переподключение аккаунта</b><small>{problemAccounts.length} шт.</small></span></button> : null}{!pendingApprovals.length && !failedDrafts.length && !problemAccounts.length ? <div className="empty-state compact"><Bell /><h3>Новых уведомлений нет</h3></div> : null}</div></Modal> : null}
+      {notificationsOpen ? <Modal title="Уведомления" onClose={() => setNotificationsOpen(false)}><div className="notification-list">{pendingApprovals.length ? <button onClick={() => { navigate('/app/approvals'); setNotificationsOpen(false) }}><CheckSquare /><span><b>Материалы ждут согласования</b><small>{pendingApprovals.length} шт.</small></span></button> : null}{failedDrafts.length ? <button onClick={() => { navigate('/app/calendar'); setNotificationsOpen(false) }}><CalendarDays /><span><b>Ошибки публикации</b><small>{failedDrafts.length} шт.</small></span></button> : null}{problemAccounts.length ? <button onClick={() => { navigate('/app/settings?section=accounts'); setNotificationsOpen(false) }}><UsersRound /><span><b>Требуется переподключение аккаунта</b><small>{problemAccounts.length} шт.</small></span></button> : null}{!pendingApprovals.length && !failedDrafts.length && !problemAccounts.length ? <div className="empty-state compact"><Bell /><h3>Новых уведомлений нет</h3></div> : null}</div></Modal> : null}
 
-      {updatesOpen ? <Modal title="Что нового" onClose={() => setUpdatesOpen(false)}><div className="updates-list"><article><span>18 июня 2026</span><h3>Надёжное ядро рабочих процессов</h3><p>Добавлены атомарные кредиты AI, транзакционные согласования, rate limit API и сохраняемые настройки.</p></article><article><span>17 июня 2026</span><h3>Диагностика production</h3><p>Экран настройки показывает, какие подключения готовы для запуска.</p></article></div></Modal> : null}
+      {updatesOpen ? <Modal title="Что нового" onClose={() => setUpdatesOpen(false)}><div className="updates-list"><article><span>18 июня 2026</span><h3>Надёжное ядро рабочих процессов</h3><p>Добавлены атомарные кредиты AI, транзакционные согласования, rate limit API и сохраняемые настройки.</p></article><article><span>19 июля 2026</span><h3>Упрощённый интерфейс</h3><p>Все настройки в одном месте, компактная навигация, адаптив под любые экраны.</p></article></div></Modal> : null}
 
       {notice ? <div className="toast" role="status">{notice}</div> : null}
     </div>
