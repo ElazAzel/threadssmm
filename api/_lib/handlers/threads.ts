@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
 import type { ApiRequest, ApiResponse } from '../http.js'
-import { getBearerToken } from '../http.js'
 import { enforceRateLimit, RateLimitError, requireUser } from '../supabaseServer.js'
 import { newOAuthState, encryptToken, verifyOAuthState, publishDraft } from '../threads.js'
 import { getPublicError } from '../threads-errors.js'

@@ -1,5 +1,4 @@
 import { ArrowUpRight, BarChart3, Bell, CalendarDays, CheckSquare, Clock3, Lightbulb, MessageSquare, Radar, Sparkles, UsersRound } from 'lucide-react'
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
 import { Badge, Button, Card, Progress, SectionTitle } from '../components/ui'

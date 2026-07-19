@@ -1,17 +1,16 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
-  Bot, CheckCircle2, ChevronDown, ChevronRight, Copy, CreditCard, Download, Eye, Globe,
-  KeyRound, Mail, Plus, Sparkles, Trash2, Upload, UserPlus, UsersRound,
+  Bot, CheckCircle2, ChevronDown, ChevronRight, Copy, Download, Globe,
+  KeyRound, Mail, Plus, Sparkles, Trash2, UserPlus,
 } from 'lucide-react'
 import { AppShell } from '../components/AppShell'
-import { Badge, Button, Card, Modal, SectionTitle, Spinner } from '../components/ui'
-import { useAuth } from '../contexts/AuthContext'
+import { Badge, Button, Card, Modal, SectionTitle } from '../components/ui'
 import { useWorkspace } from '../contexts/WorkspaceContext'
 import { PLANS, TOKEN_PACKS } from '../lib/pricing'
 import { AI_MODELS } from '../lib/ai-models'
 
-function AccordionSection({ id, title, defaultOpen, children }: { id: string; title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+function AccordionSection({ title, defaultOpen, children }: { id: string; title: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen ?? false)
   return (
     <Card className="settings-section">
@@ -26,15 +25,12 @@ function AccordionSection({ id, title, defaultOpen, children }: { id: string; ti
 
 export function SettingsPage() {
   const { workspace, accounts, brands, auditLogs, teamMembers, updateWorkspace, saveWorkspaceSettings, workspaceSettings,
-    createBrand, deleteBrand, addManualAccount, deleteAccount, inviteTeamMember, removeTeamMember, updateTeamMemberRole,
-    uploadMedia, deleteMedia, mediaAssets } = useWorkspace()
-  const { demo } = useAuth()
-  const [searchParams, setSearchParams] = useSearchParams()
+    createBrand, deleteBrand, addManualAccount, deleteAccount, inviteTeamMember, removeTeamMember, updateTeamMemberRole } = useWorkspace()
+  const [searchParams] = useSearchParams()
   const sectionFromUrl = searchParams.get('section')
-  const [openSection, setOpenSection] = useState<string | null>(sectionFromUrl ?? 'workspace')
+  const [openSection] = useState<string | null>(sectionFromUrl ?? 'workspace')
 
   const activeAccount = accounts.find((account) => account.status === 'active')
-  const [secretVisible, setSecretVisible] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<'admin' | 'editor' | 'viewer'>('editor')
 
@@ -44,11 +40,6 @@ export function SettingsPage() {
   const [newBrandName, setNewBrandName] = useState('')
   const [showAddAccount, setShowAddAccount] = useState(false)
   const [newAccountUsername, setNewAccountUsername] = useState('')
-
-  const toggleSection = (id: string) => {
-    setOpenSection(openSection === id ? null : id)
-    setSearchParams(openSection === id ? {} : { section: id })
-  }
 
   const handleSaveWorkspace = async () => {
     if (workspaceName.trim()) await updateWorkspace({ name: workspaceName, region: workspaceRegion })

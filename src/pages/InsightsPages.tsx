@@ -1,6 +1,5 @@
 ﻿import { useEffect, useRef, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { BarChart3, Bot, Check, CheckCircle2, Copy, Download, Eye, FileText, Image as ImageIcon, KeyRound, Sparkles, Trash2, Upload } from 'lucide-react'
+import { BarChart3, Bot, Check, Copy, Download, Eye, FileText, Image as ImageIcon, Sparkles, Trash2, Upload } from 'lucide-react'
 import { AppShell } from '../components/AppShell'
 import { Badge, Button, Card, Progress, SectionTitle, Spinner } from '../components/ui'
 import { mediaAssets } from '../data'
@@ -257,7 +256,7 @@ export function MediaPage() {
             <h2>{selected.title}</h2>
             <div className="media-meta">
               <span>РўРёРї: {selected.mime_type}</span>
-              <span>Р Р°Р·РјРµСЂ: {selected.size_bytes > 1048576 ? `${(selected.size_bytes / 1048576).toFixed(1)} РњР‘` : `${(selected.size_bytes / 1024).toFixed(0)} РљР‘`}</span>
+              <span>Р Р°Р·РјРµСЂ: {selected.size_bytes > 1048576 ? `${(selected.size_bytes / 1048576).toFixed(1)} РњР‘` : `${(selected.size_bytes / 1024).toFixed(0)} РљР‘`}</span>
               {selected.width ? <span>{selected.width}Г—{selected.height}</span> : null}
               <span>{new Date(selected.created_at).toLocaleString('ru-RU')}</span>
             </div>
@@ -305,7 +304,7 @@ export function BillingPage() {
       <div className="pricing-grid">
         {PLANS.map((plan) => (
           <Card key={plan.id} className={`pricing-card${plan.id === 'pro' ? ' featured' : ''}`}>
-            {plan.id === 'pro' && <Badge tone="violet">Р РµРєРѕРјРµРЅРґСѓРµРј</Badge>}
+            {plan.id === 'pro' && <Badge tone="violet">Р РµРєРѕРјРµРЅРґСѓРµРј</Badge>}
             <h2>{plan.name}</h2>
             <div className="price">
               <span className="amount">${plan.price}</span>

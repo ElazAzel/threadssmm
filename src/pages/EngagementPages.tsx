@@ -11,7 +11,7 @@ import { useAuth } from '../contexts/AuthContext'
 import type { AudienceSegment, Location, CommentCampaign, CommentOpportunity, GeneratedComment } from '../lib/domain'
 import type { IncomingComment } from '../lib/reply-assistant'
 import type { BrandVoiceSelection } from '../lib/brand-voice'
-import { analyzeIncomingComment, generateReplySuggestions } from '../lib/reply-assistant'
+import { analyzeIncomingComment } from '../lib/reply-assistant'
 import { detectLocationFromInput, getTimezoneOffset } from '../lib/location-utils'
 
 export function EngagementPage() {
@@ -252,7 +252,7 @@ export function ReplyPage() {
       setLoading(false)
     }, 300)
     return () => clearTimeout(timer)
-  }, [accounts])
+  }, [accounts, demo])
 
   const handleSendReply = async (commentId: string, _text: string) => {
     try {

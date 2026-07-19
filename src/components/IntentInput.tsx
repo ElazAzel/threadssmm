@@ -1,4 +1,4 @@
-import { useState, useMemo, type ReactNode } from 'react'
+import { useState, useMemo } from 'react'
 import { Sparkles, ChevronRight, Zap, AlertCircle, Lightbulb, Layout } from 'lucide-react'
 import { Button, Badge, Modal } from './ui'
 import { PRESETS } from '../lib/intent-engine'
