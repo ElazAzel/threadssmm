@@ -1,0 +1,146 @@
+/* ThreadsPost — based on Open Design social-x-post-card skill */
+.threads-post {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  max-width: 600px;
+  transition: border-color var(--motion-fast) var(--ease-standard);
+}
+
+.threads-post:hover {
+  border-color: var(--border-accent, var(--accent));
+}
+
+.threads-post-header {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.threads-post-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.threads-post-author {
+  display: grid;
+  gap: 2px;
+}
+
+.threads-post-name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.threads-post-name strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.threads-verified {
+  flex-shrink: 0;
+}
+
+.threads-post-handle {
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.threads-post-body p {
+  color: var(--fg);
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+  white-space: pre-line;
+  overflow-wrap: break-word;
+  margin: 0 0 var(--space-3);
+}
+
+.threads-post-media {
+  margin-bottom: var(--space-3);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.threads-post-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.threads-action {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+
+.threads-action:hover {
+  color: var(--accent);
+}
+
+.threads-views {
+  margin-left: auto;
+  color: var(--meta);
+  font-size: var(--text-xs);
+}
+
+/* Device frame styles */
+.device-frame {
+  margin-inline: auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+}
+
+.browser-chrome {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.browser-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.browser-dots span {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.browser-dots span:first-child { background: var(--danger); }
+.browser-dots span:nth-child(2) { background: var(--warn); }
+.browser-dots span:nth-child(3) { background: var(--success); }
+
+.browser-address {
+  flex: 1;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-deep);
+}
+
+.device-screen {
+  width: 100%;
+  overflow: auto;
+}

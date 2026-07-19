@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;700;760;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import './open-design/tokens.css';
+@import './open-design/ThreadsPost.css';
 
 :root {
   color-scheme: dark;

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BarChart3, Bot, Check, CheckCircle2, Copy, Download, Eye, FileText, Image as ImageIcon, KeyRound, Sparkles, Trash2, Upload } from 'lucide-react'
 import { AppShell } from '../components/AppShell'
-import { Badge, Button, Card, Progress, SectionTitle } from '../components/ui'
+import { Badge, Button, Card, Progress, SectionTitle, Spinner } from '../components/ui'
 import { mediaAssets } from '../data'
 import { useAuth } from '../contexts/AuthContext'
 import { useWorkspace } from '../contexts/WorkspaceContext'
@@ -34,7 +34,7 @@ export function AnalyticsPage() {
       const data = await authenticatedJson(getAccessToken, '/api/analytics/threads', { workspaceId: workspace.id, period })
       setAnalyticsData(data as typeof analyticsData)
     } catch {
-      // ignore — stale data is better than no data
+      setNotice('Не удалось загрузить аналитику — используем демо-данные')
     } finally {
       setLoadingAnalytics(false)
     }
@@ -80,8 +80,15 @@ export function AnalyticsPage() {
     window.setTimeout(() => setNotice(''), 2400)
   }
 
+  if (loadingAnalytics && !demo && !analyticsData) return (
+    <AppShell title="Обзор аналитики">
+      <div className="page-content"><Spinner /></div>
+    </AppShell>
+  )
+
   return (
     <AppShell title="Обзор аналитики">
+      {loadingAnalytics && <div className="toast" style={{ position: 'static', marginBottom: '0.5rem' }}>Загрузка данных аналитики...</div>}
       <div className="analytics-toolbar">
         <div className="segmented">
           {[['7d', '7Д'], ['30d', '30Д'], ['90d', '90Д']].map(([value, label]) => (

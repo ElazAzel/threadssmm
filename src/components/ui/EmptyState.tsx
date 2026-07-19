@@ -5,10 +5,11 @@ interface EmptyStateProps {
   title?: ReactNode
   text?: ReactNode
   action?: ReactNode
+  variant?: 'first-use' | 'no-results' | 'cleared'
 }
 
-export const EmptyState = ({ icon, title, text, action }: EmptyStateProps) => (
-  <div className="empty-state" role="status">
+export const EmptyState = ({ icon, title, text, action, variant = 'no-results' }: EmptyStateProps) => (
+  <div className={`empty-state state-empty variant-${variant}`} role="status">
     {icon && <div className="empty-state-icon" aria-hidden="true">{icon}</div>}
     {title && <h3 className="empty-state-title">{title}</h3>}
     {text && <p className="empty-state-text">{text}</p>}

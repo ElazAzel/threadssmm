@@ -50,10 +50,12 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
         background: '#0d0d0d',
         color: '#e0e0e0',
       }}>
-        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠</div>
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="var(--danger)" style={{ marginBottom: '1rem' }}>
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1 5h2v5h-2V7zm0 6h2v2h-2v-2z"/>
+          </svg>
         <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: '#fff' }}>Что-то пошло не так</h1>
         <p style={{ color: '#888', maxWidth: 400, marginBottom: '1.5rem' }}>
-          Произошла непредвиденная ошибка. Наша команда уже уведомлена.
+          Произошла непредвиденная ошибка. Попробуйте обновить страницу или вернуться позже.
         </p>
         <button
           onClick={() => window.location.reload()}

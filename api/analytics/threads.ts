@@ -37,20 +37,50 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     await enforceRateLimit(admin, 'analytics.view', user.id, 30, 60)
 
     const period = body.period || '7d'
+    if (!['7d', '30d', '90d'].includes(period)) return response.status(400).json({ error: 'Неверный период' })
     const since = new Date()
     since.setDate(since.getDate() - (period === '30d' ? 30 : period === '90d' ? 90 : 7))
     const sinceStr = since.toISOString()
 
-    const { data: published } = await admin.from('drafts').select('id, title, views, likes, replies, reposts, quotes, published_at, threads_post_id').eq('workspace_id', body.workspaceId).eq('status', 'published').gte('published_at', sinceStr).order('published_at', { ascending: false })
-    const posts = published ?? []
-    const totalViews = posts.reduce((s, p) => s + ((p as { views?: number }).views ?? 0), 0)
-    const totalLikes = posts.reduce((s, p) => s + ((p as { likes?: number }).likes ?? 0), 0)
-    const totalReplies = posts.reduce((s, p) => s + ((p as { replies?: number }).replies ?? 0), 0)
-    const totalReposts = posts.reduce((s, p) => s + ((p as { reposts?: number }).reposts ?? 0), 0)
-    const totalQuotes = posts.reduce((s, p) => s + ((p as { quotes?: number }).quotes ?? 0), 0)
-    const postsCount = posts.length
+    const { data: published } = await admin.from('drafts').select('id, title, published_at, threads_post_id').eq('workspace_id', body.workspaceId).eq('status', 'published').gte('published_at', sinceStr).order('published_at', { ascending: false })
+    const postIds = (published ?? []).map((p) => p.id)
+
+    const { data: metrics } = postIds.length > 0
+      ? await admin.from('post_metrics').select('*').in('draft_id', postIds)
+      : { data: [] }
+
+    const metricsMap = new Map<string, { views: number; likes: number; replies: number; reposts: number; quotes: number }>()
+    for (const m of metrics ?? []) {
+      const draftId = (m as { draft_id?: string }).draft_id
+      if (draftId) {
+        const existing = metricsMap.get(draftId) ?? { views: 0, likes: 0, replies: 0, reposts: 0, quotes: 0 }
+        metricsMap.set(draftId, {
+          views: existing.views + ((m as { metric_name?: string; metric_value?: number }).metric_name === 'views' ? (m as { metric_value?: number }).metric_value ?? 0 : 0),
+          likes: existing.likes + ((m as { metric_name?: string; metric_value?: number }).metric_name === 'likes' ? (m as { metric_value?: number }).metric_value ?? 0 : 0),
+          replies: existing.replies + ((m as { metric_name?: string; metric_value?: number }).metric_name === 'replies' ? (m as { metric_value?: number }).metric_value ?? 0 : 0),
+          reposts: existing.reposts + ((m as { metric_name?: string; metric_value?: number }).metric_name === 'reposts' ? (m as { metric_value?: number }).metric_value ?? 0 : 0),
+          quotes: existing.quotes + ((m as { metric_name?: string; metric_value?: number }).metric_name === 'quotes' ? (m as { metric_value?: number }).metric_value ?? 0 : 0),
+        })
+      }
+    }
+
+    const totalViews = Array.from(metricsMap.values()).reduce((s, m) => s + m.views, 0)
+    const totalLikes = Array.from(metricsMap.values()).reduce((s, m) => s + m.likes, 0)
+    const totalReplies = Array.from(metricsMap.values()).reduce((s, m) => s + m.replies, 0)
+    const totalReposts = Array.from(metricsMap.values()).reduce((s, m) => s + m.reposts, 0)
+    const totalQuotes = Array.from(metricsMap.values()).reduce((s, m) => s + m.quotes, 0)
+    const postsCount = published?.length ?? 0
     const engagementRate = totalViews > 0 ? ((totalLikes + totalReplies + totalReposts) / totalViews) * 100 : 0
-    const topPost = posts.length > 0 ? [...posts].sort((a, b) => ((b as { views?: number }).views ?? 0) - ((a as { views?: number }).views ?? 0))[0] : null
+
+    let topPost: { title: string; views: number; postId: string } | null = null
+    let topViews = 0
+    for (const post of published ?? []) {
+      const m = metricsMap.get(post.id) ?? { views: 0, likes: 0, replies: 0, reposts: 0, quotes: 0 }
+      if (m.views > topViews) {
+        topViews = m.views
+        topPost = { title: (post as { title?: string }).title ?? '', views: m.views, postId: (post as { threads_post_id?: string }).threads_post_id ?? '' }
+      }
+    }
 
     const periodInsights: PeriodInsights = {
       totalViews, totalLikes, totalReplies, totalReposts, totalQuotes,
@@ -58,21 +88,27 @@ export default async function handler(request: ApiRequest, response: ApiResponse
       postsCount,
       avgViews: postsCount > 0 ? Math.round(totalViews / postsCount) : 0,
       avgLikes: postsCount > 0 ? Math.round(totalLikes / postsCount) : 0,
-      topPost: topPost ? { title: (topPost as { title?: string }).title ?? '', views: (topPost as { views?: number }).views ?? 0, postId: (topPost as { threads_post_id?: string }).threads_post_id ?? '' } : null,
+      topPost,
     }
 
     const daily: Record<string, ThreadsInsights> = {}
-    for (const post of posts) {
+    for (const post of published ?? []) {
       const day = (post as { published_at?: string }).published_at?.slice(0, 10) ?? 'unknown'
       if (!daily[day]) daily[day] = { views: 0, likes: 0, replies: 0, reposts: 0, quotes: 0, followersDelta: 0, periodStart: day, periodEnd: day }
-      daily[day].views += (post as { views?: number }).views ?? 0
-      daily[day].likes += (post as { likes?: number }).likes ?? 0
-      daily[day].replies += (post as { replies?: number }).replies ?? 0
-      daily[day].reposts += (post as { reposts?: number }).reposts ?? 0
-      daily[day].quotes += (post as { quotes?: number }).quotes ?? 0
+      const m = metricsMap.get(post.id) ?? { views: 0, likes: 0, replies: 0, reposts: 0, quotes: 0 }
+      daily[day].views += m.views
+      daily[day].likes += m.likes
+      daily[day].replies += m.replies
+      daily[day].reposts += m.reposts
+      daily[day].quotes += m.quotes
     }
 
-    response.status(200).json({ period: periodInsights, daily: Object.values(daily), posts: posts.slice(0, 50) })
+    const enrichedPosts = (published ?? []).map((post) => {
+      const m = metricsMap.get(post.id) ?? { views: 0, likes: 0, replies: 0, reposts: 0, quotes: 0 }
+      return { ...post, views: m.views, likes: m.likes, replies: m.replies, reposts: m.reposts, quotes: m.quotes }
+    })
+
+    response.status(200).json({ period: periodInsights, daily: Object.values(daily), posts: enrichedPosts.slice(0, 50) })
   } catch (error) {
     if (error instanceof RateLimitError) return response.status(429).json({ error: 'Слишком много запросов' })
     const message = error instanceof Error ? error.message : ''

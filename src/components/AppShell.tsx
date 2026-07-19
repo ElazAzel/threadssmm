@@ -110,7 +110,9 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     <div className={`app-shell ${routeClass}`}>
       <aside className={`sidebar ${menuOpen ? 'sidebar-open' : ''}`}>
         <div className="brand-lockup">
-          <div className="brand-mark">✦</div>
+          <div className="brand-mark">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2L2 7v5c0 5.5 3.8 10.7 10 12 6.2-1.3 10-6.5 10-12V7l-10-5z"/></svg>
+          </div>
           <div>
             <strong>Threads SMM</strong>
             <span>{workspace?.name ?? 'Workspace'}</span>

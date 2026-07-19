@@ -3,9 +3,11 @@ import { Check, Copy, RefreshCw, Sparkles, ThumbsUp, TrendingUp, AlertTriangle, 
 import { Button, Badge, Card, Modal } from './ui'
 import { scoreVariants, getBestVariant, critiqueVariant } from '../lib/intent-engine'
 import type { PipelineResult, VariantWithScore } from '../lib/intent-engine'
+import { ThreadsPost } from '../open-design/ThreadsPost'
+import { DeviceFrame } from '../open-design/DeviceFrame'
 
 interface ResultManagerProps {
-  variants: Array<{ id: string; text: string; tone: string; hookScore: number; complianceScore: number; complianceNote: string }>
+  variants: Array<{ id: string; text: string; tone: string; hookScore: number; complianceScore: number; complianceNote: string; spamVerdict?: string; spamWarnings?: string[] }>
   pipelineResult: PipelineResult | null
   onSave: (variantId: string) => void
   onApprove: (variantId: string) => void
@@ -28,11 +30,15 @@ export function ResultManager({
   const context = pipelineResult?.context ?? null
   const slots = pipelineResult?.slots ?? null
 
-  const scored: VariantWithScore[] = context && slots
-    ? scoreVariants(variants, context, slots)
+  type LocalVariant = VariantWithScore & { spamVerdict?: string; spamWarnings?: string[] }
+  const scored: LocalVariant[] = context && slots
+    ? scoreVariants(variants, context, slots).map((v) => {
+        const ext = variants.find((x) => x.id === v.id)
+        return { ...v, spamVerdict: ext?.spamVerdict, spamWarnings: ext?.spamWarnings ?? [] }
+      })
     : variants.map((v) => ({ ...v, criticScore: undefined }))
 
-  const best = context && slots ? getBestVariant(scored) : null
+  const best = context && slots ? getBestVariant(scored as VariantWithScore[]) : null
   const selectedVariant = scored.find((v) => v.id === selected) ?? scored[0]
 
   const copyVariant = (text: string, id: string) => {
@@ -91,6 +97,12 @@ export function ResultManager({
 
             <p className="variant-copy">{v.text}</p>
 
+            {v.spamVerdict === 'blocked' && (
+              <div className="spam-warning" style={{ background: 'var(--red-bg, #3b1515)', border: '1px solid var(--red, #ef4444)', borderRadius: 6, padding: '0.4rem 0.6rem', marginBottom: '0.5rem', fontSize: 12, color: '#ff8a8a' }}>
+                <AlertTriangle size={12} /> Заблокировано: {v.spamWarnings?.join(', ') || 'спам-сигнатура'}
+              </div>
+            )}
+
             <div className="variant-scores">
               <span>
                 <small>Hook</small>
@@ -148,6 +160,26 @@ export function ResultManager({
                 })}
               </div>
             )}
+
+            {/* Threads preview */}
+            <details className="threads-preview-toggle" style={{ marginBottom: '0.75rem' }}>
+              <summary style={{ cursor: 'pointer', fontSize: 12, color: 'var(--muted, #888)', userSelect: 'none' }}>Предпросмотр ▸</summary>
+              <div style={{ marginTop: '0.5rem' }}>
+                <div className="preview-tab-bar" style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.5rem' }}>
+                  <span style={{ fontSize: 11, color: 'var(--accent)', borderBottom: '2px solid var(--accent)', padding: '0.25rem 0.5rem', cursor: 'pointer' }}>Лента</span>
+                  <span style={{ fontSize: 11, color: '#666', padding: '0.25rem 0.5rem', cursor: 'pointer' }}>iPhone</span>
+                </div>
+                <DeviceFrame device="browser">
+                  <ThreadsPost
+                    username="brand"
+                    displayName="Бренд"
+                    avatar={<svg viewBox="0 0 24 24" width="36" height="36" fill="var(--accent)"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/></svg>}
+                    content={v.text}
+                    timestamp="только что"
+                  />
+                </DeviceFrame>
+              </div>
+            </details>
 
             {/* Actions */}
             <div className="split-actions">

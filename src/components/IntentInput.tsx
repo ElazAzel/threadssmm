@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react'
-import { Sparkles, ChevronRight, Zap, AlertCircle, Lightbulb } from 'lucide-react'
+import { useState, useMemo, type ReactNode } from 'react'
+import { Sparkles, ChevronRight, Zap, AlertCircle, Lightbulb, Layout } from 'lucide-react'
 import { Button, Badge, Modal } from './ui'
 import { PRESETS } from '../lib/intent-engine'
 import { runPipeline, type PipelineResult } from '../lib/intent-engine'
 import { useWorkspace } from '../contexts/WorkspaceContext'
+import { CONTENT_TYPES } from '../lib/content-factory'
 
 interface IntentInputProps {
   initialPrompt?: string
@@ -108,6 +109,7 @@ export function IntentInput({
           onChange={(e) => setRaw(e.target.value)}
           placeholder="Напишите, что нужно сделать… Например: «сделай пост про AI-аудит для предпринимателей»"
           rows={3}
+          aria-label="Ваш запрос"
         />
       </div>
 
@@ -166,6 +168,7 @@ export function IntentInput({
       {/* Preset grid modal */}
       {openPresetModal && onClosePresetModal && (
         <Modal title="Что будем создавать?" onClose={onClosePresetModal}>
+          <h3 style={{ color: '#888', fontSize: 13, margin: '0 0 0.5rem', textTransform: 'uppercase', letterSpacing: 1 }}>Сценарии</h3>
           <div className="preset-grid-modal">
             {PRESETS.map((preset) => (
               <button
@@ -176,6 +179,26 @@ export function IntentInput({
                 <span className="preset-icon">{preset.icon}</span>
                 <strong>{preset.label}</strong>
                 <small>{preset.description}</small>
+              </button>
+            ))}
+          </div>
+          <h3 style={{ color: '#888', fontSize: 13, margin: '1.5rem 0 0.5rem', textTransform: 'uppercase', letterSpacing: 1 }}>Фабрика контента</h3>
+          <div className="preset-grid-modal">
+            {CONTENT_TYPES.map((ct) => (
+              <button
+                key={ct.id}
+                className="preset-card-modal"
+                onClick={() => {
+                  const enhanced = `${raw ? raw + ' ' : ''}${ct.label}: ${ct.description}`
+                  const result = runPipeline({ rawInput: enhanced, brand: brands[0] ?? null, recentPosts: '' })
+                  onPipelineResult?.(result)
+                  onPromptReady(result.hiddenPrompt)
+                  onClosePresetModal()
+                }}
+              >
+                <Layout size={16} className="preset-icon" />
+                <strong>{ct.label}</strong>
+                <small>{ct.description}</small>
               </button>
             ))}
           </div>

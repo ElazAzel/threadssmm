@@ -1,0 +1,70 @@
+/* Open Design — Application design system integration
+ * Applied on top of the existing cosmic dark theme.
+ * See: C:\Users\elaz2\AppData\Local\Programs\Open Design\resources\open-design\design-systems\application\
+ */
+
+:root {
+  --od-bg: var(--bg);
+  --od-surface: var(--surface);
+  --od-surface-warm: var(--surface-warm);
+  --od-fg: var(--fg);
+  --od-fg-2: var(--fg-2);
+  --od-muted: var(--muted);
+  --od-meta: var(--meta);
+  --od-border: var(--border);
+  --od-border-soft: var(--border-soft);
+  --od-accent: var(--accent);
+  --od-accent-on: var(--accent-on);
+  --od-success: var(--success);
+  --od-warn: var(--warn);
+  --od-danger: var(--danger);
+  --od-font-display: var(--font-display);
+  --od-font-body: var(--font-body);
+  --od-font-mono: var(--font-mono);
+  --od-text-xs: var(--text-xs);
+  --od-text-sm: var(--text-sm);
+  --od-text-base: var(--text-base);
+  --od-text-lg: var(--text-lg);
+  --od-text-xl: var(--text-xl);
+  --od-text-2xl: var(--text-2xl);
+  --od-text-3xl: var(--text-3xl);
+  --od-text-4xl: var(--text-4xl);
+  --od-leading-body: var(--leading-body);
+  --od-leading-tight: var(--leading-tight);
+  --od-tracking-display: var(--tracking-display);
+  --od-space-1: var(--space-1);
+  --od-space-2: var(--space-2);
+  --od-space-3: var(--space-3);
+  --od-space-4: var(--space-4);
+  --od-space-5: var(--space-5);
+  --od-space-6: var(--space-6);
+  --od-space-8: var(--space-8);
+  --od-space-12: var(--space-12);
+  --od-radius-sm: var(--radius-sm);
+  --od-radius-md: var(--radius-md);
+  --od-radius-lg: var(--radius-lg);
+  --od-radius-pill: var(--radius-pill);
+  --od-elev-flat: var(--elev-flat);
+  --od-elev-ring: var(--elev-ring);
+  --od-elev-raised: var(--elev-raised);
+  --od-focus-ring: var(--focus-ring);
+  --od-motion-fast: var(--motion-fast);
+  --od-motion-base: var(--motion-base);
+  --od-ease-standard: var(--ease-standard);
+}
+
+/* State coverage patterns — every interactive surface needs these */
+.state-loading { display: grid; place-items: center; padding: var(--space-12); text-align: center; }
+.state-loading .spinner { margin-bottom: var(--space-4); }
+.state-loading p { color: var(--muted); font-size: var(--text-sm); }
+
+.state-empty { display: grid; place-items: center; padding: var(--space-12); text-align: center; }
+.state-empty .empty-icon { color: var(--muted); margin-bottom: var(--space-4); }
+.state-empty h3 { margin-bottom: var(--space-2); }
+.state-empty p { color: var(--muted); font-size: var(--text-sm); max-width: 400px; margin-bottom: var(--space-6); }
+
+.state-error { display: grid; place-items: center; padding: var(--space-12); text-align: center; }
+.state-error .error-icon { color: var(--danger); margin-bottom: var(--space-4); }
+.state-error h3 { margin-bottom: var(--space-2); }
+.state-error p { color: var(--muted); font-size: var(--text-sm); max-width: 400px; margin-bottom: var(--space-2); }
+.state-error .error-detail { color: var(--danger); font-size: var(--text-xs); font-family: var(--font-mono); margin-bottom: var(--space-6); }

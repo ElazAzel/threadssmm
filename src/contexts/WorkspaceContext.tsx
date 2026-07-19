@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Approval, ApprovalStatus, AuditLog, Brand, ContentFormat, Draft, MediaAsset, MonitorItem, MonitorSource, OnboardingInput, ThreadAccount, Workspace, WorkspaceSettings } from '../lib/domain'
-import type { DraftRow, Json } from '../lib/database.types'
+import type { DraftRow, Json, WorkspaceRole } from '../lib/database.types'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
 
@@ -35,6 +35,12 @@ interface WorkspaceContextValue {
   deleteMedia: (asset: MediaAsset) => Promise<void>
   deleteMonitorSource: (sourceId: string) => Promise<void>
   dismissMonitorItem: (itemId: string) => Promise<void>
+  deleteBrand: (brandId: string) => Promise<void>
+  deleteDraft: (draftId: string) => Promise<void>
+  teamMembers: { id: string; email: string; name: string; role: WorkspaceRole }[]
+  inviteTeamMember: (email: string, role: string) => Promise<void>
+  updateTeamMemberRole: (memberId: string, role: string) => Promise<void>
+  removeTeamMember: (memberId: string) => Promise<void>
 }
 
 const now = new Date().toISOString()
@@ -500,6 +506,94 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     setMonitorItems((items) => items.filter((item) => item.source_id !== sourceId))
   }, [demo])
 
+  const [teamMembers, setTeamMembers] = useState<{ id: string; email: string; name: string; role: WorkspaceRole }[]>([])
+
+  const loadTeamMembers = useCallback(async () => {
+    if (!workspace) return
+    if (demo) {
+      setTeamMembers([
+        { id: '1', email: 'owner@technova.demo', name: 'Алексей', role: 'owner' as WorkspaceRole },
+        { id: '2', email: 'editor@technova.demo', name: 'Мария', role: 'editor' as WorkspaceRole },
+        { id: '3', email: 'viewer@technova.demo', name: 'Дмитрий', role: 'viewer' as WorkspaceRole },
+      ])
+      return
+    }
+    const sb = supabase
+    if (!sb) return
+    const { data } = await sb.from('workspace_members').select('id, user_id, role').eq('workspace_id', workspace.id)
+    if (!data) return
+    const membersWithProfiles = await Promise.all(data.map(async (m) => {
+      const { data: profile } = await sb.from('profiles').select('email, display_name').eq('id', m.user_id).single()
+      return { id: m.id as string, email: (profile?.email as string) ?? '', name: (profile?.display_name as string) ?? '', role: m.role as WorkspaceRole }
+    }))
+    setTeamMembers(membersWithProfiles)
+  }, [demo, workspace])
+
+  useEffect(() => { void loadTeamMembers() }, [loadTeamMembers])
+
+  const inviteTeamMember = useCallback(async (email: string, role: string) => {
+    if (!workspace) throw new Error('Рабочее пространство не готово')
+    if (demo) {
+      setTeamMembers((items) => [...items, { id: crypto.randomUUID(), email, name: email.split('@')[0], role: role as WorkspaceRole }])
+      return
+    }
+    if (!supabase) throw new Error('Supabase не настроен')
+    const { data: users } = await supabase.from('profiles').select('id').eq('email', email).maybeSingle()
+    if (!users) throw new Error('Пользователь не найден')
+    const { error } = await supabase.from('workspace_members').insert({
+      workspace_id: workspace.id,
+      user_id: (users as { id: string }).id,
+      role: role as WorkspaceRole,
+      invited_by: user!.id,
+    })
+    if (error) throw error
+    await loadTeamMembers()
+  }, [demo, workspace, user, loadTeamMembers])
+
+  const updateTeamMemberRole = useCallback(async (memberId: string, role: string) => {
+    if (demo) {
+      setTeamMembers((items) => items.map((m) => m.id === memberId ? { ...m, role: role as WorkspaceRole } : m))
+      return
+    }
+    if (!supabase) throw new Error('Supabase не настроен')
+    const { error } = await supabase.from('workspace_members').update({ role: role as WorkspaceRole }).eq('id', memberId)
+    if (error) throw error
+    await loadTeamMembers()
+  }, [demo, loadTeamMembers])
+
+  const removeTeamMember = useCallback(async (memberId: string) => {
+    if (demo) {
+      setTeamMembers((items) => items.filter((m) => m.id !== memberId))
+      return
+    }
+    if (!supabase) throw new Error('Supabase не настроен')
+    const { error } = await supabase.from('workspace_members').delete().eq('id', memberId)
+    if (error) throw error
+    await loadTeamMembers()
+  }, [demo, loadTeamMembers])
+
+  const deleteBrand = useCallback(async (brandId: string) => {
+    if (demo) {
+      setBrands((items) => items.filter((b) => b.id !== brandId))
+      return
+    }
+    if (!supabase) throw new Error('Supabase не настроен')
+    const { error } = await supabase.from('brands').delete().eq('id', brandId)
+    if (error) throw error
+    setBrands((items) => items.filter((b) => b.id !== brandId))
+  }, [demo])
+
+  const deleteDraft = useCallback(async (draftId: string) => {
+    if (demo) {
+      setDrafts((items) => items.filter((d) => d.id !== draftId))
+      return
+    }
+    if (!supabase) throw new Error('Supabase не настроен')
+    const { error } = await supabase.from('drafts').delete().eq('id', draftId)
+    if (error) throw error
+    setDrafts((items) => items.filter((d) => d.id !== draftId))
+  }, [demo])
+
   const dismissMonitorItem = useCallback(async (itemId: string) => {
     if (demo) {
       setMonitorItems((items) => items.filter((item) => item.id !== itemId))
@@ -514,7 +608,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const value = useMemo<WorkspaceContextValue>(() => ({
     workspace, brands, accounts, drafts, approvals, mediaAssets, monitorSources, monitorItems, workspaceSettings, auditLogs, loading, error, refresh,
     createWorkspace, updateWorkspace, saveWorkspaceSettings, createBrand, saveBrand, addManualAccount, updateAccount, deleteAccount, createQuickDraft, updateDraft, requestApproval, reviewApproval, uploadMedia, deleteMedia, deleteMonitorSource, dismissMonitorItem,
-  }), [accounts, addManualAccount, approvals, auditLogs, brands, createBrand, createQuickDraft, createWorkspace, deleteAccount, deleteMedia, deleteMonitorSource, dismissMonitorItem, drafts, error, loading, mediaAssets, monitorItems, monitorSources, refresh, requestApproval, reviewApproval, saveBrand, saveWorkspaceSettings, updateAccount, updateDraft, updateWorkspace, uploadMedia, workspace, workspaceSettings])
+    deleteBrand, deleteDraft,
+    teamMembers, inviteTeamMember, updateTeamMemberRole, removeTeamMember,
+  }), [accounts, addManualAccount, approvals, auditLogs, brands, createBrand, createQuickDraft, createWorkspace, deleteAccount, deleteBrand, deleteDraft, deleteMedia, deleteMonitorSource, dismissMonitorItem, drafts, error, inviteTeamMember, loading, mediaAssets, monitorItems, monitorSources, refresh, removeTeamMember, requestApproval, reviewApproval, saveBrand, saveWorkspaceSettings, teamMembers, updateAccount, updateDraft, updateTeamMemberRole, updateWorkspace, uploadMedia, workspace, workspaceSettings])
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>
 }

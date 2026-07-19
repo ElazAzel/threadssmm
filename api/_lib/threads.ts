@@ -79,17 +79,17 @@ export async function publishDraft(admin: SupabaseClient<Database>, draftId: str
   if (token.expires_at && new Date(token.expires_at).getTime() <= Date.now()) throw new Error('THREADS_TOKEN_EXPIRED')
   const accessToken = decryptToken(token.access_token)
 
+  const authHeaders = { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' }
+
   const containerUrl = new URL(`https://graph.threads.net/v1.0/${account.threads_user_id}/threads`)
   containerUrl.searchParams.set('media_type', 'TEXT')
   containerUrl.searchParams.set('text', draft.content)
-  containerUrl.searchParams.set('access_token', accessToken)
-  const container = await graphJson(containerUrl, { method: 'POST' })
+  const container = await graphJson(containerUrl, { method: 'POST', headers: authHeaders })
   if (!container.id) throw new Error('THREADS_CONTAINER_FAILED')
 
   const publishUrl = new URL(`https://graph.threads.net/v1.0/${account.threads_user_id}/threads_publish`)
   publishUrl.searchParams.set('creation_id', container.id)
-  publishUrl.searchParams.set('access_token', accessToken)
-  const published = await graphJson(publishUrl, { method: 'POST' })
+  const published = await graphJson(publishUrl, { method: 'POST', headers: authHeaders })
   if (!published.id) throw new Error('THREADS_PUBLISH_FAILED')
 
   await Promise.all([

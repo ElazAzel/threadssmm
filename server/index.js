@@ -9,6 +9,8 @@ import fs from 'fs'
 import { randomUUID } from 'crypto'
 import { fileURLToPath } from 'url'
 
+const VALID_TABLES = ['profiles', 'workspaces', 'workspace_members', 'brands', 'ai_settings', 'workspace_settings', 'threads_accounts', 'drafts', 'approvals', 'media_assets', 'monitor_sources', 'monitor_items', 'post_metrics', 'usage_events', 'audit_logs', 'approval_comments', 'subscriptions', 'token_balances']
+
 const { Pool } = pg
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -109,8 +111,13 @@ app.post('/rest/v1/rpc/:fn', async (req, res) => {
 })
 
 // ===== REST endpoints =====
+function requireValidTable(table) {
+  if (!VALID_TABLES.includes(table)) throw new Error(`Invalid table: ${table}`)
+}
+
 app.get('/rest/v1/:table', async (req, res) => {
   const { table } = req.params
+  try { requireValidTable(table) } catch (e) { return res.status(400).json({ error: e.message }) }
   const select = req.query.select || '*'
   const order = req.query.order || 'created_at'
   const limit = req.query.limit ? parseInt(req.query.limit) : null
@@ -123,13 +130,24 @@ app.get('/rest/v1/:table', async (req, res) => {
   if (conditions.length) sql += ' WHERE ' + conditions.join(' AND ')
   if (order) sql += ` ORDER BY ${order}`
   if (limit) sql += ` LIMIT ${limit}`
+  const offset = req.query.offset ? parseInt(req.query.offset) : null
+  if (offset) sql += ` OFFSET ${offset}`
+
+  let count = null
+  if (req.headers['prefer'] === 'count=exact') {
+    const countResult = await execQuery(`SELECT COUNT(*) FROM public.${table}`, params)
+    if (countResult.data?.[0]) count = countResult.data[0].count
+  }
+
   const r = await execQuery(sql, params)
   if (r.error) return res.status(400).json(r)
+  if (count !== null) res.setHeader('Content-Range', `0-${r.data.length - 1}/${count}`)
   res.json(r.data)
 })
 
 app.post('/rest/v1/:table', async (req, res) => {
   const { table } = req.params
+  try { requireValidTable(table) } catch (e) { return res.status(400).json({ error: e.message }) }
   const body = req.body
   const keys = Object.keys(body).filter(k => k !== 'id')
   const vals = keys.map(k => body[k])
@@ -141,6 +159,7 @@ app.post('/rest/v1/:table', async (req, res) => {
 
 app.patch('/rest/v1/:table', async (req, res) => {
   const { table } = req.params
+  try { requireValidTable(table) } catch (e) { return res.status(400).json({ error: e.message }) }
   const body = req.body
   const keys = Object.keys(body)
   const vals = keys.map(k => body[k])
@@ -155,6 +174,7 @@ app.patch('/rest/v1/:table', async (req, res) => {
 
 app.delete('/rest/v1/:table', async (req, res) => {
   const { table } = req.params
+  try { requireValidTable(table) } catch (e) { return res.status(400).json({ error: e.message }) }
   const idVal = req.query.id
   const sql = idVal ? `DELETE FROM public.${table} WHERE id = '${idVal}' RETURNING *` : `DELETE FROM public.${table} RETURNING *`
   const r = await execQuery(sql)

@@ -1,72 +1,56 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ApiRequest, ApiResponse } from '../_lib/http.js'
-import { enforceRateLimit, requireUser } from '../_lib/supabaseServer.js'
+import { enforceRateLimit, RateLimitError, requireUser } from '../_lib/supabaseServer.js'
 
-interface ApprovalComment {
-  id: string
-  approvalId: string
-  authorId: string
-  authorName: string
-  body: string
-  parentId: string | null
-  createdAt: string
+function adminFrom(admin: any, table: string) {
+  return admin.from(table)
 }
-
-const MOCK_COMMENTS: ApprovalComment[] = [
-  { id: 'c1', approvalId: 'ap1', authorId: 'u1', authorName: 'Алексей', body: 'Проверил — всё ок по регламенту', parentId: null, createdAt: new Date(Date.now() - 3600000).toISOString() },
-  { id: 'c2', approvalId: 'ap1', authorId: 'u2', authorName: 'Мария', body: 'Я бы убрала второй абзац, слишком длинно', parentId: 'c1', createdAt: new Date(Date.now() - 1800000).toISOString() },
-]
 
 export default async function handler(request: ApiRequest, response: ApiResponse) {
   response.setHeader('Cache-Control', 'no-store')
+  try {
+    const { user, admin } = await requireUser(request)
+    await enforceRateLimit(admin, 'approval.comment', user.id, 20, 60)
 
-  if (request.method === 'GET') {
-    try {
-      const { user, admin } = await requireUser(request)
-      const query = request.query as { approvalId?: string }
-      if (typeof query.approvalId !== 'string') return response.status(400).json({ error: 'ID согласования не указан' })
-      const { data: approval } = await admin.from('approvals').select('workspace_id').eq('id', query.approvalId).single()
-      if (!approval) return response.status(404).json({ error: 'Согласование не найдено' })
-      const { data: membership } = await admin.from('workspace_members').select('role').eq('workspace_id', approval.workspace_id).eq('user_id', user.id).maybeSingle()
-      if (!membership) return response.status(403).json({ error: 'Нет доступа' })
-      await enforceRateLimit(admin, 'approvals.comment.list', user.id, 60, 60)
-      response.status(200).json({ comments: MOCK_COMMENTS.filter((c) => c.approvalId === query.approvalId) })
-    } catch (error) {
-      const message = error instanceof Error ? error.message : ''
-      if (message === 'UNAUTHORIZED') return response.status(401).json({ error: 'Войдите в аккаунт' })
-      response.status(500).json({ error: 'Ошибка загрузки комментариев' })
+    if (request.method === 'GET') {
+      const approvalId = request.query?.approvalId as string | undefined
+      if (!approvalId) return response.status(400).json({ error: 'approvalId обязателен' })
+      const { data: comments, error } = await adminFrom(admin, 'approval_comments')
+        .select('id, text, created_at, user_id, approval_id')
+        .eq('approval_id', approvalId)
+        .order('created_at', { ascending: true })
+      if (error) return response.status(500).json({ error: 'Ошибка загрузки комментариев' })
+      return response.status(200).json(comments ?? [])
     }
-    return
-  }
 
-  if (request.method === 'POST') {
-    try {
-      const { user, admin } = await requireUser(request)
-      const body = request.body as { approvalId?: string; body?: string; parentId?: string | null }
-      if (typeof body.approvalId !== 'string' || typeof body.body !== 'string' || !body.body.trim()) return response.status(400).json({ error: 'Некорректные данные' })
-      const { data: approval } = await admin.from('approvals').select('workspace_id').eq('id', body.approvalId).single()
-      if (!approval) return response.status(404).json({ error: 'Согласование не найдено' })
-      const { data: membership } = await admin.from('workspace_members').select('role').eq('workspace_id', approval.workspace_id).eq('user_id', user.id).maybeSingle()
-      if (!membership) return response.status(403).json({ error: 'Нет доступа' })
-      await enforceRateLimit(admin, 'approvals.comment.create', user.id, 30, 60)
-
-      const comment: ApprovalComment = {
-        id: `c${Date.now()}`,
-        approvalId: body.approvalId,
-        authorId: user.id,
-        authorName: user.user_metadata?.full_name ?? 'Пользователь',
-        body: body.body.trim(),
-        parentId: body.parentId ?? null,
-        createdAt: new Date().toISOString(),
+    if (request.method === 'POST') {
+      const { approvalId, text } = request.body as { approvalId?: string; text?: string }
+      if (typeof approvalId !== 'string' || typeof text !== 'string' || !text.trim()) {
+        return response.status(400).json({ error: 'approvalId и text обязательны' })
       }
-
-      response.status(201).json({ comment })
-    } catch (error) {
-      const message = error instanceof Error ? error.message : ''
-      if (message === 'UNAUTHORIZED') return response.status(401).json({ error: 'Войдите в аккаунт' })
-      response.status(500).json({ error: 'Ошибка создания комментария' })
+      const { data: comment, error } = await adminFrom(admin, 'approval_comments').insert({
+        approval_id: approvalId,
+        user_id: user.id,
+        text: text.trim(),
+      }).select().single()
+      if (error) return response.status(500).json({ error: 'Ошибка сохранения комментария' })
+      return response.status(201).json(comment)
     }
-    return
-  }
 
-  response.status(405).json({ error: 'Метод не поддерживается' })
+    if (request.method === 'DELETE') {
+      const commentId = request.query?.id as string | undefined
+      if (!commentId) return response.status(400).json({ error: 'id комментария обязателен' })
+      const { error } = await adminFrom(admin, 'approval_comments').delete().eq('id', commentId).eq('user_id', user.id)
+      if (error) return response.status(500).json({ error: 'Ошибка удаления комментария' })
+      return response.status(200).json({ deleted: true })
+    }
+
+    return response.status(405).json({ error: 'Метод не поддерживается' })
+  } catch (error) {
+    if (error instanceof RateLimitError) return response.status(429).json({ error: 'Слишком много запросов' })
+    const message = error instanceof Error ? error.message : ''
+    if (message === 'UNAUTHORIZED') return response.status(401).json({ error: 'Войдите в аккаунт' })
+    if (message === 'SUPABASE_SERVER_NOT_CONFIGURED') return response.status(503).json({ error: 'Сервер не настроен' })
+    return response.status(500).json({ error: 'Ошибка обработки комментария' })
+  }
 }

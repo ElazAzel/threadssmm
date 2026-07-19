@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ApiRequest, ApiResponse } from '../_lib/http.js'
 import { getBearerToken } from '../_lib/http.js'
 import { createClient } from '@supabase/supabase-js'
@@ -26,7 +25,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     const workspaceId = body.workspaceId
     if (!workspaceId) return response.status(400).json({ error: 'workspaceId required' })
 
-    const { data: subscription } = await (admin as any).from('subscriptions').select('stripe_customer_id').eq('workspace_id', workspaceId).maybeSingle()
+    const { data: subscription } = await admin.from('subscriptions').select('stripe_customer_id').eq('workspace_id', workspaceId).maybeSingle()
     if (!subscription?.stripe_customer_id) return response.status(400).json({ error: 'NO_ACTIVE_SUBSCRIPTION' })
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { typescript: true })

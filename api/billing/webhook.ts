@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ApiRequest, ApiResponse } from '../_lib/http.js'
 import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
@@ -11,12 +10,12 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     }
 
     const sig = (Array.isArray(request.headers['stripe-signature']) ? request.headers['stripe-signature'][0] : request.headers['stripe-signature']) as string
-    const rawBody = request.body as string
+    const rawBody = JSON.stringify(request.body)
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { typescript: true })
     let event: Stripe.Event
     try {
-      event = stripe.webhooks.constructEvent(rawBody as unknown as string, sig, process.env.STRIPE_WEBHOOK_SECRET)
+      event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET)
     } catch {
       return response.status(400).json({ error: 'INVALID_SIGNATURE' })
     }
@@ -26,7 +25,7 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     if (!url || !key) return response.status(503).json({ error: 'SUPABASE_SERVER_NOT_CONFIGURED' })
     const admin = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
 
-    const payload = event.data.object as any
+    const payload = event.data.object as unknown as Record<string, unknown>
     switch (event.type) {
       case 'checkout.session.completed':
         await handleCheckoutCompleted(admin, payload)
@@ -46,54 +45,49 @@ export default async function handler(request: ApiRequest, response: ApiResponse
   }
 }
 
-async function handleCheckoutCompleted(admin: any, session: any) {
-  const workspaceId = session.metadata?.workspaceId
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AdminClient = any
+
+async function handleCheckoutCompleted(admin: AdminClient, session: Record<string, unknown>) {
+  const workspaceId = session.metadata ? (session.metadata as Record<string, string>).workspaceId : undefined
   if (!workspaceId) return
 
-  try {
-    await admin.rpc('log_token_spend', {
-      p_workspace_id: workspaceId,
-      p_user_id: '00000000-0000-0000-0000-000000000000',
-      p_amount: 0,
-      p_model_id: 'stripe',
-      p_description: `checkout:${session.id}`,
-    })
-  } catch {
-    if (session.mode === 'subscription' && session.subscription) {
-      await admin.from('subscriptions').upsert({
-        workspace_id: workspaceId,
-        plan_id: 'starter',
-        status: 'active',
-        stripe_subscription_id: session.subscription,
-        stripe_customer_id: session.customer,
-        current_period_start: new Date(session.created * 1000).toISOString(),
-      }, { onConflict: 'workspace_id', ignoreDuplicates: false })
-    }
+  const subscription = session.subscription as string | undefined
+  if (session.mode === 'subscription' && subscription) {
+    await admin.from('subscriptions').upsert({
+      workspace_id: workspaceId,
+      plan_id: 'starter',
+      status: 'active',
+      stripe_subscription_id: subscription,
+      stripe_customer_id: session.customer as string,
+      current_period_start: new Date((session.created as number) * 1000).toISOString(),
+    }, { onConflict: 'workspace_id', ignoreDuplicates: false })
   }
 }
 
-async function handleSubscriptionChange(admin: any, sub: any) {
+async function handleSubscriptionChange(admin: AdminClient, sub: Record<string, unknown>) {
   try {
-    const mappedStatus = sub.status === 'active' ? 'active' : sub.status === 'past_due' ? 'past_due' : 'canceled'
+    const status = sub.status as string
+    const mappedStatus = status === 'active' ? 'active' : status === 'past_due' ? 'past_due' : 'canceled'
     await admin.from('subscriptions').update({
       status: mappedStatus,
-      current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+      current_period_end: new Date((sub.current_period_end as number) * 1000).toISOString(),
       canceled_at: mappedStatus === 'canceled' ? new Date().toISOString() : null,
-    }).eq('stripe_subscription_id', sub.id)
+    }).eq('stripe_subscription_id', sub.id as string)
   } catch (e) {
     console.error('subscription change error:', e)
   }
 }
 
-async function handleInvoicePaid(admin: any, invoice: any) {
-  const subId = invoice.subscription
+async function handleInvoicePaid(admin: AdminClient, invoice: Record<string, unknown>) {
+  const subId = invoice.subscription as string | undefined
   if (!subId) return
 
   try {
-    if (invoice.amount_due > 0 && invoice.status === 'paid') {
+    if ((invoice.amount_due as number) > 0 && invoice.status === 'paid') {
       await admin.from('subscriptions').update({
-        current_period_start: new Date(invoice.period_start * 1000).toISOString(),
-        current_period_end: new Date(invoice.period_end * 1000).toISOString(),
+        current_period_start: new Date((invoice.period_start as number) * 1000).toISOString(),
+        current_period_end: new Date((invoice.period_end as number) * 1000).toISOString(),
       }).eq('stripe_subscription_id', subId)
     }
   } catch (e) {

@@ -1,27 +1,9 @@
 import { useState } from 'react'
-import { Card } from '../components/ui/Card'
-import { Button } from '../components/ui/Button'
-import { Badge } from '../components/ui/Badge'
-import { Modal } from '../components/ui/Modal'
-import { Input } from '../components/ui/Input'
-import { Select } from '../components/ui/Select'
-import type { WorkspaceRole } from '../lib/database.types'
+import { Card, Button, Badge, Modal, Input, Select } from '../components/ui'
+import { useWorkspace } from '../contexts/WorkspaceContext'
+import { AppShell } from '../components/AppShell'
 
-interface TeamMember {
-  id: string
-  email: string
-  name: string
-  role: WorkspaceRole
-  created_at: string
-}
-
-const MOCK_MEMBERS: TeamMember[] = [
-  { id: '1', email: 'owner@technowa.ai', name: 'Алексей', role: 'owner', created_at: '2025-01-01' },
-  { id: '2', email: 'editor@technowa.ai', name: 'Мария', role: 'editor', created_at: '2025-02-15' },
-  { id: '3', email: 'viewer@technowa.ai', name: 'Дмитрий', role: 'viewer', created_at: '2025-03-01' },
-]
-
-const ROLE_LABELS: Record<WorkspaceRole, string> = {
+const ROLE_LABELS: Record<string, string> = {
   owner: 'Владелец',
   admin: 'Администратор',
   editor: 'Редактор',
@@ -35,66 +17,90 @@ const ROLE_OPTIONS = [
 ]
 
 export function TeamPage() {
-  const [members] = useState(MOCK_MEMBERS)
+  const { teamMembers, inviteTeamMember, updateTeamMemberRole, removeTeamMember, workspace } = useWorkspace()
   const [showInvite, setShowInvite] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<string>('editor')
 
+  const handleInvite = async () => {
+    if (!inviteEmail.includes('@')) return
+    await inviteTeamMember(inviteEmail, inviteRole)
+    setShowInvite(false)
+    setInviteEmail('')
+  }
+
   return (
-    <div style={{ padding: '1.5rem', maxWidth: 900, margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <div>
-          <h1 style={{ color: '#fff', fontSize: '1.5rem', margin: 0 }}>Команда</h1>
-          <p style={{ color: '#888', margin: '0.25rem 0 0', fontSize: '0.9rem' }}>Управление доступом к рабочему пространству</p>
-        </div>
-        <Button onClick={() => setShowInvite(true)}>Пригласить</Button>
-      </div>
-
-      <Card style={{ padding: 0, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid #2a2a2a' }}>
-              <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#888', fontWeight: 500, fontSize: '0.85rem' }}>Имя</th>
-              <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#888', fontWeight: 500, fontSize: '0.85rem' }}>Email</th>
-              <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#888', fontWeight: 500, fontSize: '0.85rem' }}>Роль</th>
-              <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#888', fontWeight: 500, fontSize: '0.85rem' }}>Дата</th>
-              <th style={{ padding: '0.75rem 1rem' }} />
-            </tr>
-          </thead>
-          <tbody>
-            {members.map((m) => (
-              <tr key={m.id} style={{ borderBottom: '1px solid #1a1a1a' }}>
-                <td style={{ padding: '0.75rem 1rem', color: '#fff' }}>{m.name}</td>
-                <td style={{ padding: '0.75rem 1rem', color: '#aaa', fontSize: '0.9rem' }}>{m.email}</td>
-                <td style={{ padding: '0.75rem 1rem' }}>
-                  <Badge variant={m.role === 'viewer' ? 'default' : 'accent'}>{ROLE_LABELS[m.role]}</Badge>
-                </td>
-                <td style={{ padding: '0.75rem 1rem', color: '#888', fontSize: '0.9rem' }}>{m.created_at}</td>
-                <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
-                  {m.role !== 'owner' && (
-                    <Select value={m.role} onChange={() => {}} options={ROLE_OPTIONS.slice(1)} />
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
-
-      {showInvite && (
-        <Modal title="Пригласить участника" onClose={() => setShowInvite(false)}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <Input label="Email" type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="email@company.com" />
-            <Select
-              label="Роль"
-              value={inviteRole}
-              onChange={(e) => setInviteRole(e.target.value)}
-              options={ROLE_OPTIONS.slice(1)}
-            />
-            <Button onClick={() => { setShowInvite(false); setInviteEmail('') }} disabled={!inviteEmail.includes('@')}>Отправить приглашение</Button>
+    <AppShell title="Команда">
+      <div className="page-content">
+        <div className="page-head compact-head">
+          <div>
+            <h1>Команда</h1>
+            <p>Управление доступом к рабочему пространству</p>
           </div>
-        </Modal>
-      )}
-    </div>
+          <Button onClick={() => setShowInvite(true)}>Пригласить</Button>
+        </div>
+
+        <Card style={{ overflow: 'hidden', padding: 0 }}>
+          <table className="model-table" style={{ width: '100%' }}>
+            <thead>
+              <tr>
+                <th>Имя</th>
+                <th>Email</th>
+                <th>Роль</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+              {teamMembers.length === 0 && (
+                <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--muted)', padding: '2rem' }}>Участников пока нет</td></tr>
+              )}
+              {teamMembers.map((m) => (
+                <tr key={m.id}>
+                  <td><b>{m.name || '—'}</b></td>
+                  <td><small>{m.email}</small></td>
+                  <td><Badge variant={m.role === 'viewer' ? 'default' : 'accent'}>{ROLE_LABELS[m.role] || m.role}</Badge></td>
+                  <td>
+                    <div className="inline-form">
+                      {m.role !== 'owner' && (
+                        <>
+                          <select value={m.role} onChange={(e) => updateTeamMemberRole(m.id, e.target.value)} style={{ width: 'auto', padding: '4px 8px', fontSize: '12px' }}>
+                            {ROLE_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                          </select>
+                          <button className="text-button" onClick={() => removeTeamMember(m.id)} style={{ color: 'var(--danger)' }}>Удалить</button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+
+        {workspace && (
+          <Card className="margin-card" style={{ marginTop: '1.5rem' }}>
+            <h3>О пространстве</h3>
+            <div className="margin-breakdown">
+              <div className="switch-row"><span>Название</span><strong>{workspace.name}</strong></div>
+              <div className="switch-row"><span>Регион</span><strong>{workspace.region || '—'}</strong></div>
+              <div className="switch-row"><span>Часовой пояс</span><strong>{workspace.timezone || '—'}</strong></div>
+            </div>
+          </Card>
+        )}
+
+        {showInvite && (
+          <Modal title="Пригласить участника" onClose={() => setShowInvite(false)}>
+            <div className="form-stack">
+              <Input label="Email" type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="email@company.com" />
+              <Select label="Роль" value={inviteRole} onChange={(e) => setInviteRole(e.target.value)} options={ROLE_OPTIONS} />
+              <div className="modal-actions">
+                <Button variant="secondary" onClick={() => setShowInvite(false)}>Отмена</Button>
+                <Button onClick={handleInvite} disabled={!inviteEmail.includes('@')}>Отправить приглашение</Button>
+              </div>
+            </div>
+          </Modal>
+        )}
+      </div>
+    </AppShell>
   )
 }

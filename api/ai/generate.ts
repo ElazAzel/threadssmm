@@ -6,6 +6,22 @@ import { callGrok } from './providers/grok.js'
 import { callAnthropic } from './providers/anthropic.js'
 import { callDeepSeek } from './providers/deepseek.js'
 
+const SPAM_PATTERNS = [
+  /\b(отличный пост|классная статья|согласен|полностью поддерживаю)\b/i,
+  /http[s]?:\/\/[^\s,]{100,}/g,
+  /(?:выиграл|бесплатно|заработок|крипта|биткоин|перейди по ссылке|оставь заявку|уникальное предложение|ограниченное время)/i,
+]
+
+function detectSpam(text: string): { isSpam: boolean; score: number; warnings: string[] } {
+  const warnings: string[] = []
+  for (const pattern of SPAM_PATTERNS) {
+    if (pattern.test(text)) warnings.push(`Обнаружен спам-паттерн: ${pattern}`)
+  }
+  const linkCount = (text.match(/https?:\/\//g) || []).length
+  if (linkCount > 3) warnings.push('Слишком много ссылок')
+  return { isSpam: warnings.length > 0, score: warnings.length, warnings }
+}
+
 interface GenerateBody {
   workspaceId: string
   prompt: string
@@ -68,6 +84,9 @@ export default async function handler(request: ApiRequest, response: ApiResponse
     const { data: membership } = await admin.from('workspace_members').select('role').eq('workspace_id', request.body.workspaceId).eq('user_id', user.id).maybeSingle()
     if (!membership) return response.status(403).json({ error: 'Нет доступа к рабочему пространству' })
     await enforceRateLimit(admin, 'ai.generate', user.id, 10, 60)
+
+    const spamCheck = detectSpam(request.body.prompt)
+    if (spamCheck.isSpam) return response.status(400).json({ error: 'Промпт содержит подозрительный контент', warnings: spamCheck.warnings })
 
     const modelId = request.body.modelId
     const tokenCost = MODEL_TOKEN_COST[modelId] ?? 1

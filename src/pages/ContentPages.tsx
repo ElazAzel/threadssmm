@@ -5,13 +5,13 @@ import { AppShell } from '../components/AppShell'
 import { Badge, Button, Card, Modal, Progress, SectionTitle } from '../components/ui'
 import { IntentInput } from '../components/IntentInput'
 import { ResultManager } from '../components/ResultManager'
-import { variants } from '../data'
 import { useAuth } from '../contexts/AuthContext'
 import { useWorkspace } from '../contexts/WorkspaceContext'
 import { ModelSelector } from '../components/ModelSelector'
 import { authenticatedJson } from '../lib/api'
 import type { Brand, ContentFormat } from '../lib/domain'
 import type { PipelineResult } from '../lib/intent-engine'
+import { assessRisk } from '../lib/anti-spam'
 
 interface AiVariantResponse {
   id: 'A' | 'B' | 'C'
@@ -20,6 +20,10 @@ interface AiVariantResponse {
   hookScore: number
   complianceScore: number
   complianceNote: string
+}
+
+interface DisplayVariant {
+  id: string; tone: string; badge: 'blue' | 'violet' | 'orange' | 'red'; score: string; compliance: string; text: string; spamVerdict?: string; spamWarnings?: string[]
 }
 
 export function AccountsPage() {
@@ -202,7 +206,7 @@ export function StudioPage() {
   const { workspace, drafts, createQuickDraft, requestApproval, refresh } = useWorkspace()
   const [prompt, setPrompt] = useState('')
   const [generated, setGenerated] = useState(demo)
-  const [currentVariants, setCurrentVariants] = useState(variants)
+  const [currentVariants, setCurrentVariants] = useState<DisplayVariant[]>([])
   const [notice, setNotice] = useState('')
   const [riskTolerance, setRiskTolerance] = useState(45)
   const [aiModel, setAiModel] = useState('gemini-2.0-flash')
@@ -231,16 +235,26 @@ export function StudioPage() {
         modelId: aiModel,
       })
       if (!payload.variants) throw new Error('AI не вернул варианты')
-      setCurrentVariants(payload.variants.map((item) => ({
+      const spamResults = payload.variants.map((item) => ({
+        risk: assessRisk({ text: item.text, targetType: 'post' as const }),
         id: item.id,
-        tone: item.tone,
-        badge: item.complianceScore < 70 ? 'orange' as const : item.id === 'B' ? 'violet' as const : 'blue' as const,
-        score: item.hookScore.toFixed(1),
-        compliance: `${item.complianceScore}% · ${item.complianceNote}`,
-        text: item.text,
-      })))
+      }))
+      const blockedCount = spamResults.filter((s) => s.risk.verdict === 'blocked').length
+      setCurrentVariants(payload.variants.map((item) => {
+        const spam = spamResults.find((s) => s.id === item.id)
+        return {
+          id: item.id,
+          tone: item.tone,
+          badge: spam?.risk.verdict === 'blocked' ? 'red' as const : item.complianceScore < 70 ? 'orange' as const : item.id === 'B' ? 'violet' as const : 'blue' as const,
+          score: item.hookScore.toFixed(1),
+          compliance: `${item.complianceScore}% · ${item.complianceNote}`,
+          text: item.text,
+          spamVerdict: spam?.risk.verdict,
+          spamWarnings: spam?.risk.warnings ?? [],
+        }
+      }))
       setGenerated(true)
-      setNotice('Созданы 3 варианта в голосе бренда')
+      setNotice(blockedCount > 0 ? `Созданы 3 варианта (${blockedCount} заблокировано анти-спам системой)` : 'Созданы 3 варианта в голосе бренда')
       await refresh()
     } catch (caught) {
       setNotice(caught instanceof Error ? caught.message : 'AI-генерация временно недоступна')
