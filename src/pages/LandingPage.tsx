@@ -14,7 +14,7 @@ const features = [
 const metrics = [
   { value: '5', label: 'провайдеров AI' },
   { value: '15', label: 'моделей генерации' },
-  { value: '99%', label: 'аптайм инфраструктуры' },
+  { value: '0', label: 'обязательных API-ключей' },
 ]
 
 const securityCards = [
@@ -38,19 +38,19 @@ export function LandingPage() {
         </nav>
         <div className="landing-header-actions">
           <Link className="button button-ghost" to="/login">Войти</Link>
-          <Link className="button button-primary" to="/login">Начать</Link>
+          <Link className="button button-primary" to="/assistant">Начать без API</Link>
         </div>
       </header>
 
       <main>
         <section className="hero-section">
           <div className="container">
-            <span className="hero-eyebrow">Threads API + 5 AI-провайдеров</span>
-            <h1>AI SMM-агент для Threads.<br />15 моделей, один интерфейс.</h1>
-            <p className="hero-lead">Gemini, GPT, Grok, Claude, DeepSeek — генерируйте посты, изображения и треды в голосе бренда. Согласование, публикация, аналитика.</p>
+            <span className="hero-eyebrow">Локальный режим без ключей + облачные интеграции</span>
+            <h1>AI SMM-агент для Threads.<br />Начните без API-ключей.</h1>
+            <p className="hero-lead">Импортируйте реальные посты, анализируйте темы вашей выборки и готовьте ветки и комментарии. Локальное сохранение, необязательная Ollama и публикация после вашей проверки.</p>
             <div className="hero-actions">
-              <Link className="button button-primary button-lg" to="/login">
-                Попробовать бесплатно <ArrowRight size={18} />
+              <Link className="button button-primary button-lg" to="/assistant">
+                Открыть локальный ассистент <ArrowRight size={18} />
               </Link>
               <Link className="button button-secondary button-lg" to="/login">
                 Войти в кабинет
@@ -151,8 +151,8 @@ export function LandingPage() {
             <div className="cta-card">
               <h2>Готовы управлять Threads с AI?</h2>
               <p>14 дней бесплатного доступа. 50 токенов на старте. Без привязки карты.</p>
-              <Link className="button button-primary button-lg" to="/login">
-                Попробовать бесплатно <ArrowRight size={18} />
+              <Link className="button button-primary button-lg" to="/assistant">
+                Открыть локальный ассистент <ArrowRight size={18} />
               </Link>
             </div>
           </div>

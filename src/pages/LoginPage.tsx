@@ -15,7 +15,7 @@ export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  if (!configured) return <Navigate to="/setup" replace />
+  if (!configured) return <Navigate to="/assistant" replace />
   if (user) return <Navigate to="/app/dashboard" replace />
 
   const submit = async (event: FormEvent) => {
@@ -41,6 +41,7 @@ export function LoginPage() {
       <Card className="auth-card">
         <span className="auth-icon"><LockKeyhole /></span>
         <h1>{mode === 'signin' ? 'Вход в workspace' : 'Создание аккаунта'}</h1>
+        <p><Link to="/assistant">Работать локально без регистрации и API</Link></p>
         <p>{mode === 'signin' ? 'Продолжите работу с контентом и согласованиями.' : 'Бесплатный MVP без привязки банковской карты.'}</p>
         <form onSubmit={submit} className="form-stack">
           {mode === 'signup' ? <label>Имя<input value={fullName} onChange={(event) => setFullName(event.target.value)} required autoComplete="name" /></label> : null}

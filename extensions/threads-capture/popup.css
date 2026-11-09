@@ -1,0 +1,11 @@
+:root { color-scheme: dark; font-family: system-ui, sans-serif; background: #161819; color: #f1f4f2; }
+body { width: 360px; padding: 20px; margin: 0; }
+h1 { font-size: 22px; margin: 0 0 16px; }
+p { font-size: 13px; line-height: 1.5; color: #c7cfcb; }
+button { min-height: 44px; padding: 10px 12px; border: 1px solid #617069; border-radius: 8px; background: #24382e; color: #fff; cursor: pointer; font: inherit; font-size: 13px; }
+button:disabled { opacity: .5; cursor: default; }
+button:focus-visible, textarea:focus-visible { outline: 3px solid #a4e6be; outline-offset: 3px; }
+#capture { width: 100%; }
+.actions { display: flex; gap: 8px; margin-bottom: 16px; }
+label { display: block; font-size: 13px; margin-bottom: 8px; }
+textarea { box-sizing: border-box; width: 100%; height: 140px; background: #0e1110; color: #e8eee9; border: 1px solid #617069; border-radius: 6px; padding: 8px; }

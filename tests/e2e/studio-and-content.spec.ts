@@ -12,8 +12,8 @@ function collectRuntimeErrors(page: Page) {
 test('intent engine displays pipeline slots and hidden prompt', async ({ page }) => {
   const errors = collectRuntimeErrors(page)
   await page.goto('/app/studio')
-  await page.getByRole('textbox').fill('сделай экспертный пост про AI-аудит для малого бизнеса')
-  const gist = page.getByText(/Пост|Тред|Ответ/)
+  await page.locator('.intent-input').getByRole('textbox', { name: 'Ваш запрос' }).fill('сделай экспертный пост про AI-аудит для малого бизнеса')
+  const gist = page.locator('.intent-input .slot-summary').getByText('Пост', { exact: true })
   await expect(gist).toBeVisible()
   await page.getByRole('button', { name: 'Показать промпт' }).click()
   await expect(page.getByText('Сформированный промпт для AI')).toBeVisible()
@@ -33,18 +33,18 @@ test('content factory presets appear in the preset modal', async ({ page }) => {
 test('ThreadsPost preview renders inside studio variant cards', async ({ page }) => {
   const errors = collectRuntimeErrors(page)
   await page.goto('/app/studio')
-  await page.getByRole('textbox').fill('создай пост про автоматизацию')
+  await page.locator('.intent-input').getByRole('textbox', { name: 'Ваш запрос' }).fill('создай пост про автоматизацию')
   await page.getByRole('button', { name: 'Сгенерировать' }).click()
-  await expect(page.getByText('Созданы 3 варианта')).toBeVisible()
+  await expect(page.locator('.variant-card')).toHaveCount(3)
   const summary = page.locator('.threads-preview-toggle summary')
   await summary.first().click()
-  await expect(page.locator('.threads-post')).toBeVisible()
+  await expect(page.locator('.variant-card').first().locator('.threads-post')).toBeVisible()
   expect(errors).toEqual([])
 })
 
 test('audience segments page shows empty state and creates new segment', async ({ page }) => {
   const errors = collectRuntimeErrors(page)
-  await page.goto('/app/audience-segments')
+  await page.goto('/app/audiences')
   await expect(page.getByText('Нет сегментов')).toBeVisible()
   expect(errors).toEqual([])
 })
@@ -59,6 +59,6 @@ test('locations page shows empty state', async ({ page }) => {
 test('team page loads with demo members', async ({ page }) => {
   const errors = collectRuntimeErrors(page)
   await page.goto('/app/team')
-  await expect(page.getByText('Участники команды')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Команда', exact: true })).toBeVisible()
   expect(errors).toEqual([])
 })

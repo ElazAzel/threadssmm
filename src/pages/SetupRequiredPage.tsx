@@ -76,6 +76,7 @@ export function SetupRequiredPage() {
           {demoMode && <Badge tone="blue">Demo mode</Badge>}
         </div>
         <h1>Требуется подключить production окружение</h1>
+        <p><Link className="button button-primary" to="/assistant">Продолжить без API и регистрации</Link></p>
         <p>Frontend уже опубликован. Чтобы платформа работала с реальными пользователями, нужно подключить Supabase, серверные ключи, Gemini и Meta Threads API.</p>
 
         <section className="setup-status-grid" aria-label="Статус окружения">

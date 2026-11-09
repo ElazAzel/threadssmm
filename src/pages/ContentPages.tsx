@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Bot, Check, CircleAlert, ExternalLink, Globe2, History, Link2, Plus, RefreshCw, Save, SlidersHorizontal, Sparkles, Trash2, Zap } from 'lucide-react'
 import { AppShell } from '../components/AppShell'
@@ -10,7 +10,7 @@ import { useWorkspace } from '../contexts/WorkspaceContext'
 import { ModelSelector } from '../components/ModelSelector'
 import { authenticatedJson } from '../lib/api'
 import type { Brand, ContentFormat } from '../lib/domain'
-import type { PipelineResult } from '../lib/intent-engine'
+import { composeHiddenPrompt, type PipelineResult } from '../lib/intent-engine'
 import { assessRisk } from '../lib/anti-spam'
 
 interface AiVariantResponse {
@@ -205,36 +205,51 @@ export function StudioPage() {
   const { demo, getAccessToken } = useAuth()
   const { workspace, drafts, createQuickDraft, requestApproval, refresh } = useWorkspace()
   const [prompt, setPrompt] = useState('')
-  const [generated, setGenerated] = useState(demo)
+  const [generated, setGenerated] = useState(false)
+  const [generating, setGenerating] = useState(false)
+  const generationLock = useRef(false)
+  const [manualFormat, setManualFormat] = useState<ContentFormat | null>(null)
+  const manualFormatRef = useRef<ContentFormat | null>(null)
+  const [generatedFormat, setGeneratedFormat] = useState<ContentFormat>('post')
   const [currentVariants, setCurrentVariants] = useState<DisplayVariant[]>([])
   const [notice, setNotice] = useState('')
   const [riskTolerance, setRiskTolerance] = useState(45)
   const [aiModel, setAiModel] = useState('gemini-2.0-flash')
   const [presetModalOpen, setPresetModalOpen] = useState(false)
   const [pipelineResult, setPipelineResult] = useState<PipelineResult | null>(null)
+  const [generatedPipeline, setGeneratedPipeline] = useState<PipelineResult | null>(null)
   const [historyOpen, setHistoryOpen] = useState(false)
   const navigate = useNavigate()
 
-  const format = pipelineResult?.slots.format ?? 'post'
+  const format = manualFormat ?? pipelineResult?.slots.format ?? 'post'
 
-  const generate = async (usePrompt?: string) => {
+  const generate = async (usePrompt?: string, requestedFormat: ContentFormat = format, requestedPipeline: PipelineResult | null = pipelineResult) => {
     const finalPrompt = usePrompt ?? prompt
-    if (!finalPrompt.trim() || !workspace) return
+    if (!finalPrompt.trim() || !workspace || generationLock.current) return
+    generationLock.current = true
+    setGenerating(true)
     setNotice('')
-    if (demo) {
-      window.setTimeout(() => { setGenerated(true); setNotice('Созданы 3 варианта в голосе бренда'); window.setTimeout(() => setNotice(''), 2500) }, 700)
-      return
-    }
-
     try {
+      if (demo) {
+        setCurrentVariants([
+          { id: 'A', tone: 'Демо · вопрос', badge: 'blue', score: '0', compliance: 'Демо: оценка не выполнялась', text: 'Демонстрационный пример: какое небольшое изменение помогло бы проверить вашу гипотезу? Это учебный текст, не результат AI-генерации.' },
+          { id: 'B', tone: 'Демо · подход', badge: 'violet', score: '0', compliance: 'Демо: оценка не выполнялась', text: 'Демонстрационный пример: сначала выберите одну задачу, затем определите критерий проверки. Это учебный текст, не утверждение об эффективности подхода.' },
+          { id: 'C', tone: 'Демо · обсуждение', badge: 'orange', score: '0', compliance: 'Демо: оценка не выполнялась', text: 'Демонстрационный пример: какие ограничения стоит обсудить до начала эксперимента? Дополните вопрос собственным контекстом перед публикацией.' },
+        ])
+        setGeneratedPipeline(requestedPipeline)
+        setGeneratedFormat(requestedFormat)
+        setGenerated(true)
+        setNotice('Созданы 3 демонстрационных варианта. Внешняя AI-модель не вызывалась.')
+        return
+      }
       const payload = await authenticatedJson<{ variants?: AiVariantResponse[] }>(getAccessToken, '/api/ai/generate', {
         workspaceId: workspace.id,
         prompt: finalPrompt,
-        format,
+        format: requestedFormat,
         riskTolerance,
         modelId: aiModel,
       })
-      if (!payload.variants) throw new Error('AI не вернул варианты')
+      if (!payload.variants?.length) throw new Error('AI не вернул варианты')
       const spamResults = payload.variants.map((item) => ({
         risk: assessRisk({ text: item.text, targetType: 'post' as const }),
         id: item.id,
@@ -253,28 +268,34 @@ export function StudioPage() {
           spamWarnings: spam?.risk.warnings ?? [],
         }
       }))
+      setGeneratedPipeline(requestedPipeline)
+      setGeneratedFormat(requestedFormat)
       setGenerated(true)
       setNotice(blockedCount > 0 ? `Созданы 3 варианта (${blockedCount} заблокировано анти-спам системой)` : 'Созданы 3 варианта в голосе бренда')
       await refresh()
     } catch (caught) {
       setNotice(caught instanceof Error ? caught.message : 'AI-генерация временно недоступна')
     } finally {
+      generationLock.current = false
+      setGenerating(false)
       window.setTimeout(() => setNotice(''), 3200)
     }
   }
 
   const handleRepairRequest = async (variantId: string, repairPrompt: string) => {
-    if (demo) return
+    if (demo || !workspace || generationLock.current) return
+    generationLock.current = true
+    setGenerating(true)
     setNotice('Улучшаем вариант...')
     try {
       const payload = await authenticatedJson<{ variants?: AiVariantResponse[] }>(getAccessToken, '/api/ai/generate', {
         workspaceId: workspace!.id,
         prompt: repairPrompt,
-        format,
+        format: generatedFormat,
         riskTolerance,
         modelId: aiModel,
       })
-      if (!payload.variants) throw new Error('AI не вернул исправление')
+      if (!payload.variants?.length) throw new Error('AI не вернул исправление')
       const repaired = payload.variants[0]
       setCurrentVariants((prev) => prev.map((v) =>
         v.id === variantId ? { ...v, id: v.id, tone: repaired.tone, badge: v.badge, score: repaired.hookScore.toFixed(1), compliance: `${repaired.complianceScore}% · ${repaired.complianceNote}`, text: repaired.text } : v
@@ -282,6 +303,9 @@ export function StudioPage() {
       setNotice('Вариант улучшен')
     } catch (caught) {
       setNotice(caught instanceof Error ? caught.message : 'Не удалось улучшить вариант')
+    } finally {
+      generationLock.current = false
+      setGenerating(false)
     }
     window.setTimeout(() => setNotice(''), 3000)
   }
@@ -290,7 +314,7 @@ export function StudioPage() {
     const variant = currentVariants.find((item) => item.id === variantId)
     if (!variant) return
     try {
-      const draft = await createQuickDraft(variant.text, format as ContentFormat, 'ai_studio')
+      const draft = await createQuickDraft(variant.text, generatedFormat, 'ai_studio')
       if (approve) await requestApproval(draft.id, `AI Studio, вариант ${variantId}`)
       setNotice(approve ? `Вариант ${variantId} отправлен на согласование` : `Вариант ${variantId} сохранён в черновики`)
       if (approve) window.setTimeout(() => navigate('/app/approvals'), 500)
@@ -299,9 +323,21 @@ export function StudioPage() {
     }
   }
 
-  const handlePromptReady = (hiddenPrompt: string) => {
-    setPrompt(hiddenPrompt)
-    void generate(hiddenPrompt)
+  const handlePromptReady = (hiddenPrompt: string, result?: PipelineResult) => {
+    if (generationLock.current) return
+    const override = manualFormatRef.current
+    const requestedFormat = override ?? result?.slots.format ?? format
+    let requestedPipeline = result ?? pipelineResult
+    let requestedPrompt = hiddenPrompt
+    if (override && requestedPipeline) {
+      const intent: PipelineResult['intent'] = { ...requestedPipeline.intent, intent: override === 'thread' ? 'create_thread' : override === 'reply' ? 'create_reply' : 'generate_post' }
+      const slots = { ...requestedPipeline.slots, format: override }
+      requestedPrompt = composeHiddenPrompt({ intent, slots, context: requestedPipeline.context })
+      requestedPipeline = { ...requestedPipeline, intent, slots, hiddenPrompt: requestedPrompt }
+      setPipelineResult(requestedPipeline)
+    }
+    setPrompt(requestedPrompt)
+    void generate(requestedPrompt, requestedFormat, requestedPipeline)
   }
 
   return (
@@ -313,6 +349,8 @@ export function StudioPage() {
             <SectionTitle icon={<Sparkles />} title="Content Intent Engine" />
             <IntentInput
               initialPrompt=""
+              busy={generating}
+              onInputChange={() => { manualFormatRef.current = null; setManualFormat(null) }}
               onPromptReady={handlePromptReady}
               onPipelineResult={setPipelineResult}
               openPresetModal={presetModalOpen}
@@ -333,7 +371,7 @@ export function StudioPage() {
                   {['Пост', 'Тред', 'Ответ'].map((item) => {
                     const val = ({ Пост: 'post', Тред: 'thread', Ответ: 'reply' } as const)[item as 'Пост' | 'Тред' | 'Ответ']
                     return (
-                      <button key={item} className={pipelineResult.slots.format === val ? 'active' : ''} onClick={() => setPipelineResult({ ...pipelineResult, slots: { ...pipelineResult.slots, format: val } })}>
+                      <button key={item} className={format === val ? 'active' : ''} onClick={() => { manualFormatRef.current = val; setManualFormat(val); setPipelineResult({ ...pipelineResult, slots: { ...pipelineResult.slots, format: val } }) }}>
                         {item}
                       </button>
                     )
@@ -368,7 +406,7 @@ export function StudioPage() {
                 complianceScore: Number(v.compliance.replace(/[^0-9]/g, '').slice(0, 3)),
                 complianceNote: v.compliance,
               }))}
-              pipelineResult={pipelineResult}
+              pipelineResult={generatedPipeline}
               onSave={(id) => void saveVariant(id, false)}
               onApprove={(id) => void saveVariant(id, true)}
               onRepairRequest={(id, repairPrompt) => void handleRepairRequest(id, repairPrompt)}

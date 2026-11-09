@@ -120,6 +120,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
               <span>{label}</span>
             </NavLink>
           ))}
+          <NavLink to="/assistant" onClick={() => setMenuOpen(false)}><Sparkles size={18} /><span>Без API-ключей</span></NavLink>
           <div className="sidebar-divider" />
           <div className="sidebar-section-label">Быстрый доступ</div>
           <NavLink to="/app/approvals" onClick={() => setMenuOpen(false)} className="sidebar-extra-link">
