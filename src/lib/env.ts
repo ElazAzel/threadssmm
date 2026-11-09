@@ -8,3 +8,5 @@ export const supabaseConfig = {
 export const isSupabaseConfigured = Boolean(supabaseConfig.url && supabaseConfig.publishableKey)
 
 export const sentryDsn = import.meta.env.VITE_SENTRY_DSN?.trim() || ''
+
+export const localMode = import.meta.env.VITE_LOCAL_MODE === 'true' || (!demoMode && !isSupabaseConfigured)

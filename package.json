@@ -6,15 +6,20 @@
   "scripts": {
     "dev": "vite",
     "dev:server": "node server/index.js",
-    "dev:demo": "cross-env VITE_DEMO_MODE=true vite",
+    "dev:demo": "cross-env VITE_LOCAL_MODE=false VITE_DEMO_MODE=true vite",
     "build": "tsc -b && vite build",
-    "build:test": "cross-env VITE_DEMO_MODE=true vite build",
+    "build:test": "cross-env VITE_LOCAL_MODE=false VITE_DEMO_MODE=true VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "verify": "npm run lint && npm run test && tsc -b && npm run build:test && npm run test:e2e"
+    "verify": "npm run lint && npm run test && npm run test:local-server && tsc -b && npm run build:test && npm run test:e2e && npm run test:e2e:local",
+    "build:local": "cross-env VITE_LOCAL_MODE=true VITE_DEMO_MODE=false VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= npm run build",
+    "dev:local": "cross-env VITE_LOCAL_MODE=true VITE_DEMO_MODE=false VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= vite",
+    "local": "npm run build:local && node server/local-assistant.mjs",
+    "test:local-server": "node --test tests/local-server.test.mjs",
+    "test:e2e:local": "npm run build:local && playwright test --config playwright.local.config.ts"
   },
   "dependencies": {
     "@google/genai": "^2.8.0",

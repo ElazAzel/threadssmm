@@ -8,7 +8,7 @@ export function ProtectedRoute({ children, workspaceRequired = true }: { childre
   const { workspace, loading: workspaceLoading } = useWorkspace()
   const location = useLocation()
 
-  if (!configured) return <Navigate to="/setup" replace />
+  if (!configured) return <Navigate to="/assistant" replace />
   if (authLoading || workspaceLoading) return <div className="route-loader" role="status">Загрузка рабочего пространства...</div>
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />
   if (workspaceRequired && !workspace) return <Navigate to="/onboarding" replace />

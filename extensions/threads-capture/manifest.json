@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3,
+  "name": "Threads: видимые посты",
+  "version": "1.0.0",
+  "description": "Ручной локальный экспорт видимых постов Threads для импорта в помощник.",
+  "permissions": ["activeTab", "scripting"],
+  "action": { "default_popup": "popup.html" }
+}

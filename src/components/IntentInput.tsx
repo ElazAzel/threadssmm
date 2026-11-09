@@ -8,7 +8,9 @@ import { CONTENT_TYPES } from '../lib/content-factory'
 
 interface IntentInputProps {
   initialPrompt?: string
-  onPromptReady: (prompt: string) => void
+  onPromptReady: (prompt: string, result?: PipelineResult) => void
+  busy?: boolean
+  onInputChange?: () => void
   onPipelineResult?: (result: PipelineResult) => void
   openPresetModal?: boolean
   onClosePresetModal?: () => void
@@ -16,6 +18,8 @@ interface IntentInputProps {
 
 export function IntentInput({
   initialPrompt = '',
+  busy = false,
+  onInputChange,
   onPromptReady,
   onPipelineResult,
   openPresetModal,
@@ -38,10 +42,10 @@ export function IntentInput({
   }, [raw, brand])
 
   const handleGenerate = () => {
-    if (!raw.trim()) return
+    if (busy || !raw.trim()) return
     const result = runPipeline({ rawInput: raw, brand, recentPosts: '' })
     onPipelineResult?.(result)
-    onPromptReady(result.hiddenPrompt)
+    onPromptReady(result.hiddenPrompt, result)
   }
 
   const applyPreset = (presetId: string) => {
@@ -50,6 +54,8 @@ export function IntentInput({
     setSelectedPreset(presetId)
     setShowPipeline(true)
     const enhanced = `${raw ? raw + ' ' : ''}${preset.description}`
+    setRaw(enhanced)
+    onInputChange?.()
     const result = runPipeline({ rawInput: enhanced, brand, recentPosts: '' })
     onPipelineResult?.(result)
   }
@@ -106,7 +112,7 @@ export function IntentInput({
       <div className="input-area">
         <textarea
           value={raw}
-          onChange={(e) => setRaw(e.target.value)}
+          onChange={(e) => { setRaw(e.target.value); onInputChange?.() }}
           placeholder="Напишите, что нужно сделать… Например: «сделай пост про AI-аудит для предпринимателей»"
           rows={3}
           aria-label="Ваш запрос"
@@ -140,10 +146,10 @@ export function IntentInput({
       <div className="input-actions">
         <Button
           onClick={handleGenerate}
-          disabled={!raw.trim() || raw.trim().length < 3}
+          disabled={busy || !raw.trim() || raw.trim().length < 3}
         >
           <Sparkles size={16} />
-          Сгенерировать
+          {busy ? 'Генерация…' : 'Сгенерировать'}
         </Button>
         <button
           className="pipeline-toggle"
@@ -190,9 +196,12 @@ export function IntentInput({
                 className="preset-card-modal"
                 onClick={() => {
                   const enhanced = `${raw ? raw + ' ' : ''}${ct.label}: ${ct.description}`
+                  if (busy) return
+                  setRaw(enhanced)
+                  onInputChange?.()
                   const result = runPipeline({ rawInput: enhanced, brand: brands[0] ?? null, recentPosts: '' })
                   onPipelineResult?.(result)
-                  onPromptReady(result.hiddenPrompt)
+                  onPromptReady(result.hiddenPrompt, result)
                   onClosePresetModal()
                 }}
               >

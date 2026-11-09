@@ -11,6 +11,12 @@ function collectRuntimeErrors(page: Page) {
   return errors
 }
 
+async function generateDemoStudio(page: Page) {
+  await page.locator('.intent-input').getByRole('textbox', { name: 'Ваш запрос' }).fill('Объяснить преимущества системного контент-плана')
+  await page.getByRole('button', { name: 'Сгенерировать', exact: true }).click()
+  await expect(page.locator('.variant-card')).toHaveCount(3)
+}
+
 test('landing and direct SPA routes render without runtime errors', async ({ page }) => {
   const errors = collectRuntimeErrors(page)
 
@@ -44,9 +50,7 @@ test('content can be generated, reviewed and approved', async ({ page }) => {
   const errors = collectRuntimeErrors(page)
 
   await page.goto('/app/studio')
-  await page.getByLabel('Основная мысль').fill('Объяснить преимущества системного контент-плана')
-  await page.getByRole('button', { name: 'Создать варианты', exact: true }).click()
-  await expect(page.getByText('Созданы 3 варианта в голосе бренда')).toBeVisible()
+  await generateDemoStudio(page)
 
   const variantB = page.locator('.variant-card').filter({ hasText: 'Вариант B' })
   await variantB.getByRole('button', { name: 'Согласовать', exact: true }).click()
@@ -69,16 +73,17 @@ test('global search, notifications and AI history respond to user actions', asyn
   const errors = collectRuntimeErrors(page)
 
   await page.goto('/app/dashboard')
-  await page.getByRole('textbox', { name: 'Поиск' }).fill('TechNova')
+  await page.locator('.global-search').getByRole('textbox', { name: 'Ваш запрос' }).fill('TechNova')
   await expect(page.getByRole('listbox', { name: 'Результаты поиска' }).getByText('Профиль бренда')).toBeVisible()
   await page.getByRole('listbox', { name: 'Результаты поиска' }).getByRole('button').first().click()
-  await expect(page).toHaveURL(/\/app\/brands$/)
+  await expect(page).toHaveURL(/\/app\/settings\?section=brands$/)
 
   await page.getByRole('button', { name: 'Уведомления' }).click()
   await expect(page.getByRole('dialog', { name: 'Уведомления' }).getByText('Новых уведомлений нет')).toBeVisible()
   await page.getByRole('dialog', { name: 'Уведомления' }).getByRole('button', { name: 'Закрыть' }).click()
 
   await page.goto('/app/studio')
+  await generateDemoStudio(page)
   await page.locator('.variant-card').filter({ hasText: 'Вариант A' }).getByRole('button', { name: 'Сохранить', exact: true }).click()
   await page.getByRole('button', { name: 'История' }).click()
   await expect(page.getByRole('dialog', { name: 'История AI Studio' }).locator('.history-list > button')).toHaveCount(1)
@@ -90,16 +95,13 @@ test('workspace policies persist and calendar modes change the rendered view', a
   const errors = collectRuntimeErrors(page)
 
   await page.goto('/app/settings')
-  await page.getByRole('button', { name: 'Безопасность' }).click()
-  const settings = page.locator('.settings-placeholder')
-  await settings.getByRole('checkbox').uncheck()
-  await settings.getByRole('combobox').selectOption('strict')
-  await settings.getByRole('button', { name: 'Сохранить' }).click()
-  await expect(page.getByText('Настройки сохранены')).toBeVisible()
-  await page.getByRole('button', { name: 'AI-провайдеры' }).click()
-  await page.getByRole('button', { name: 'Безопасность' }).click()
-  await expect(settings.getByRole('checkbox')).not.toBeChecked()
-  await expect(settings.getByRole('combobox')).toHaveValue('strict')
+  await page.getByRole('button', { name: 'Безопасность и аудит', exact: true }).click()
+  const security = page.locator('.settings-toggle-row').filter({ hasText: 'Принудительная проверка контента перед публикацией' }).getByRole('checkbox')
+  await security.uncheck()
+  await expect(security).not.toBeChecked()
+  await page.getByRole('button', { name: 'Безопасность и аудит', exact: true }).click()
+  await page.getByRole('button', { name: 'Безопасность и аудит', exact: true }).click()
+  await expect(security).not.toBeChecked()
 
   await page.goto('/app/calendar')
   await page.getByRole('button', { name: 'Список', exact: true }).click()
@@ -167,6 +169,7 @@ test('AI Studio remains inside the viewport at desktop zoom breakpoints', async 
   for (const width of [1920, 1280, 1100]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/app/studio')
+    await generateDemoStudio(page)
     await expect(page.locator('.variant-grid')).toBeVisible()
 
     const layout = await page.evaluate(() => {

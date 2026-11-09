@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Видимые посты Threads</title><link rel="stylesheet" href="popup.css"></head>
+<body>
+<h1>Видимые посты Threads</h1>
+<p>Только видимая часть текущей вкладки. Это выборка, а не вся лента. DOM-эвристика может пропустить пост или неточно выделить текст.</p>
+<button id="capture">Собрать видимые посты</button>
+<p id="status" role="status" aria-live="polite">Данные ещё не собраны.</p>
+<div class="actions"><button id="copy" disabled>Копировать JSON</button><button id="download" disabled>Скачать JSON</button></div>
+<label for="preview">Проверьте данные перед импортом</label>
+<textarea id="preview" readonly spellcheck="false" aria-label="Предпросмотр JSON"></textarea>
+<p>Без API-ключей, чтения cookies и токенов. Ничего не публикуется и не отправляется на сервер. Неизвестные метрики: null.</p>
+<script type="module" src="popup.js"></script>
+</body></html>
